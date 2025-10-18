@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/nav_profile"
+        android:title="Profile"
+        android:icon="@drawable/ic_profile"/>
+
+    <item
+        android:id="@+id/nav_my_listings"
+        android:title="My Listings"
+        android:icon="@drawable/to_do_list"/>
+
+    <item
+        android:id="@+id/nav_trade_requests"
+        android:title="Trade Requests"
+        android:icon="@drawable/exchange"/>
+
+    <item
+        android:id="@+id/nav_messages"
+        android:title="Messages"
+        android:icon="@drawable/chatting"/>
+
+    <item
+        android:id="@+id/nav_dark_mode"
+        android:title="Dark Mode"
+        android:icon="@drawable/night_mode"
+        app:actionLayout="@layout/switch_dark_mode_layout" />
+
+    <item
+        android:id="@+id/nav_settings"
+        android:title="Settings"
+        android:icon="@drawable/settings1"/>
+
+    <item
+        android:id="@+id/nav_logout"
+        android:title="Logout"
+        android:icon="@drawable/logout1"/>
+</menu>

@@ -1,0 +1,35 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Softer Dark Theme -->
+    <style name="Base.Theme.BarterHub" parent="Theme.Material3.DayNight.NoActionBar">
+
+        <item name="postTextColor">@android:color/white</item>
+        <item name="postTextColorSecondary">@android:color/darker_gray</item>
+        <item name="postPriceColor">#FFCDD2</item>
+        <item name="postWishlistIconColor">@android:color/white</item>
+
+
+
+        <!-- Backgrounds -->
+        <item name="android:colorBackground">@color/soft_dark_background</item>
+        <item name="colorSurface">@color/soft_dark_surface</item>
+        <item name="colorOnSurface">@color/soft_dark_text</item>
+
+        <!-- Primary -->
+        <item name="colorPrimary">@color/soft_dark_primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+
+        <!-- Secondary -->
+        <item name="colorSecondary">@color/soft_dark_secondary</item>
+        <item name="colorOnSecondary">@color/white</item>
+
+        <!-- Status & navigation bar -->
+        <item name="android:statusBarColor">@color/soft_dark_surface</item>
+        <item name="android:navigationBarColor">@color/soft_dark_surface</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
+
+    </style>
+
+    <style name="Theme.BarterHub" parent="Base.Theme.BarterHub" />
+</resources>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Kapag naka-press -->
+    <item android:state_pressed="true" android:drawable="@drawable/ic_send_pressed" />
+
+    <!-- Kapag naka-disable (optional) -->
+    <item android:state_enabled="false" android:drawable="@drawable/ic_send_disabled" />
+
+    <!-- Default (normal state) -->
+    <item android:drawable="@drawable/ic_send_normal" />
+
+</selector>

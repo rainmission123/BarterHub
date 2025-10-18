@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:ads="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/rootLayout"
+    android:background="@color/soft_dark_background">
+
+
+    <!-- Scrollable Content -->
+
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="400dp"
+        android:layout_height="60dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        ads:layout_constraintEnd_toEndOf="parent"
+        ads:layout_constraintStart_toStartOf="parent"
+        ads:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintHorizontal_bias="0.0">
+
+        <FrameLayout
+            android:id="@+id/itemWishlistNotification"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_margin="5dp">
+
+            <!-- Icon -->
+            <ImageView
+                android:id="@+id/itemWishlistIcon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="Trade Request"
+                android:src="@drawable/ic_heart"
+                app:tint="@color/black"
+                tools:ignore="HardcodedText" />
+
+        </FrameLayout>
+
+
+
+        <Space
+            android:layout_width="3dp"
+            android:layout_height="0dp" />
+
+        <LinearLayout
+            android:id="@+id/searchBar"
+            android:layout_width="260dp"
+            android:layout_height="40dp"
+            android:background="@drawable/rounded_corner"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="7dp">
+
+            <ImageView
+                android:id="@+id/searchIcon"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:contentDescription="@string/search"
+                android:src="@drawable/ic_search"
+                app:tint="@color/gray_700" />
+
+            <EditText
+                android:id="@+id/searchInput"
+                android:layout_width="180dp"
+                android:layout_height="48dp"
+                android:autofillHints=""
+                android:background="@android:color/transparent"
+                android:hint="@string/search_hint"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:maxLines="1"
+                android:minHeight="48dp"
+                android:paddingVertical="11dp"
+                android:paddingStart="8dp"
+                android:textColor="@color/gray_700"
+                android:textColorHint="#616161"
+                android:textSize="14sp"
+                tools:ignore="RtlSymmetry" />
+
+            <ImageView
+                android:id="@+id/Toolcamera"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:contentDescription="@string/search"
+                android:src="@drawable/camera"
+                app:tint="@color/gray_700" />
+
+        </LinearLayout>
+
+        <Space
+            android:layout_width="5dp"
+            android:layout_height="0dp" />
+
+        <FrameLayout
+            android:id="@+id/tradeRequestContainer"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_margin="5dp">
+
+            <!-- Icon -->
+            <ImageView
+                android:id="@+id/tradeRequestIcon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="Trade Request"
+                android:src="@drawable/handshake"
+                app:tint="@color/White"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:id="@+id/tradeRequestBadge"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="end|top"
+                android:background="@drawable/badge_background"
+                android:fontFamily="sans-serif-black"
+                android:gravity="center"
+                android:text="1"
+                android:textColor="@color/colorAccent"
+                android:textSize="15sp"
+                android:visibility="gone"
+                tools:ignore="HardcodedText" />
+            <!-- Badge -->
+        </FrameLayout>
+
+
+    </LinearLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollContent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        ads:layout_constraintTop_toBottomOf="@id/topBar"
+        ads:layout_constraintStart_toStartOf="parent"
+        ads:layout_constraintEnd_toEndOf="parent"
+        ads:layout_constraintBottom_toBottomOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/_90dp"
+            android:orientation="vertical">
+
+            <!-- Ad Banner -->
+            <com.google.android.gms.ads.AdView
+                android:id="@+id/adViewTop"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginTop="8dp"
+                ads:adSize="BANNER"
+                ads:adUnitId="ca-app-pub-3940256099942544/6300978111" />
+
+            <!-- Categories Section -->
+            <HorizontalScrollView
+                android:id="@+id/categoriesScroll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:overScrollMode="never">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp">
+
+                    <!-- Electronics -->
+                    <LinearLayout
+                        android:id="@+id/categoryElectronics"
+                        android:layout_width="110dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginEnd="12dp"
+                        android:gravity="center_horizontal">
+
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="match_parent"
+                            android:layout_height="160dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:contentDescription="@string/electronics"
+                                android:scaleType="centerCrop"
+                                android:src="@drawable/electronics"/>
+                        </androidx.cardview.widget.CardView>
+
+                        <TextView
+                            android:id="@+id/tvCategoryElectronics"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="@string/electronics"
+                            android:textColor="#121212"
+                            android:textSize="16sp"
+                            android:gravity="center"
+                            android:ellipsize="end"
+                            android:maxLines="1"/>
+                    </LinearLayout>
+
+                    <!-- Clothing -->
+                    <LinearLayout
+                        android:id="@+id/categoryClothing"
+                        android:layout_width="110dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginEnd="12dp"
+                        android:gravity="center_horizontal">
+
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="match_parent"
+                            android:layout_height="160dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:contentDescription="@string/clothing"
+                                android:scaleType="centerCrop"
+                                android:src="@drawable/clothing"/>
+                        </androidx.cardview.widget.CardView>
+
+                        <TextView
+                            android:id="@+id/tvCategoryClothing"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="@string/clothing"
+                            android:textColor="#121212"
+                            android:textSize="16sp"
+                            android:gravity="center"
+                            android:ellipsize="end"
+                            android:maxLines="1"/>
+                    </LinearLayout>
+
+                    <!-- Home & Kitchen -->
+                    <LinearLayout
+                        android:id="@+id/categoryHomeKitchen"
+                        android:layout_width="110dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginEnd="12dp"
+                        android:gravity="center_horizontal">
+
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="match_parent"
+                            android:layout_height="160dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:contentDescription="@string/home_kitchen"
+                                android:scaleType="centerCrop"
+                                android:src="@drawable/appliance"/>
+                        </androidx.cardview.widget.CardView>
+
+                        <TextView
+                            android:id="@+id/tvCategoryKitchen"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="@string/home_kitchen"
+                            android:textColor="#121212"
+                            android:textSize="16sp"
+                            android:gravity="center"
+                            android:ellipsize="end"
+                            android:maxLines="1"/>
+                    </LinearLayout>
+
+                    <!-- Books & Education -->
+                    <LinearLayout
+                        android:id="@+id/categoryBooks"
+                        android:layout_width="110dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginEnd="12dp"
+                        android:gravity="center_horizontal">
+
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="match_parent"
+                            android:layout_height="160dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:contentDescription="@string/books_educational"
+                                android:scaleType="centerCrop"
+                                android:src="@drawable/bookshelf"/>
+                        </androidx.cardview.widget.CardView>
+
+                        <TextView
+                            android:id="@+id/tvCategoryBooks"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="@string/books_educational"
+                            android:textColor="#121212"
+                            android:textSize="16sp"
+                            android:gravity="center"
+                            android:ellipsize="end"
+                            android:maxLines="1"/>
+                    </LinearLayout>
+
+                    <!-- Sports -->
+                    <LinearLayout
+                        android:id="@+id/categorySports"
+                        android:layout_width="110dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginEnd="12dp"
+                        android:gravity="center_horizontal">
+
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="match_parent"
+                            android:layout_height="160dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:contentDescription="@string/sports_outdoors"
+                                android:scaleType="centerCrop"
+                                android:src="@drawable/basketball"/>
+                        </androidx.cardview.widget.CardView>
+
+                        <TextView
+                            android:id="@+id/tvCategorySportsOutdoor"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="@string/sports_outdoors"
+                            android:textColor="#121212"
+                            android:textSize="16sp"
+                            android:gravity="center"
+                            android:ellipsize="end"
+                            android:maxLines="1"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/viewAllCategories"
+                        android:layout_width="110dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal"
+                        android:layout_marginEnd="12dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackground">
+
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="match_parent"
+                            android:layout_height="160dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardBackgroundColor="#E0E0E0"
+                            app:cardElevation="0dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:orientation="vertical"
+                                android:gravity="center"
+                                android:padding="16dp"
+                                tools:ignore="UseCompoundDrawables">
+
+                                <ImageView
+                                    android:layout_width="48dp"
+                                    android:layout_height="48dp"
+                                    android:src="@drawable/ic_view_all"
+                                    android:contentDescription="@string/view_all_icon"/>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/view_all"
+                                    android:textColor="#121212"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold"
+                                    android:layout_marginTop="8dp"
+                                    android:gravity="center"/>
+                            </LinearLayout>
+                        </androidx.cardview.widget.CardView>
+                    </LinearLayout>
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <!-- Icon Trigger - ITO NA ANG MAGPAPAKITA NG 19 CATEGORIES -->
+            <LinearLayout
+                android:id="@+id/filterButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="12dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:minHeight="50dp"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/filterButtonIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="@string/show_all_categories"
+                    android:src="@drawable/filter" />
+
+                <TextView
+                    android:id="@+id/filterButtonText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Show All Categories"
+                    android:textColor="#121212"
+                    android:textSize="14sp"
+                    tools:ignore="HardcodedText" />
+
+            </LinearLayout>
+
+            <HorizontalScrollView
+                android:id="@+id/expandedCategoriesScroll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:visibility="gone"
+                android:overScrollMode="never">
+
+                <LinearLayout
+                    android:id="@+id/expandedCategoriesContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp" />
+            </HorizontalScrollView>
+
+            <!-- ✅ Featured Items Section (fixed version) -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/featuredItems"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                android:visibility="visible"
+                tools:listitem="@layout/item_user_post" />
+
+
+            <ProgressBar
+                android:id="@+id/featuredProgressBar"
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center"
+                android:visibility="visible" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

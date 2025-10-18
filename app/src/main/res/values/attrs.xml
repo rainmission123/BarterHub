@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Custom attributes for post item colors -->
+    <attr name="postTextColor" format="color" />
+    <attr name="postTextColorSecondary" format="color" />
+    <attr name="postPriceColor" format="color" />
+    <attr name="postWishlistIconColor" format="color" />
+</resources>

@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Primary Color Palette -->
+    <color name="primary">#FF6B35</color>
+    <color name="primary_variant">#E05A2A</color>
+    <color name="primary_light">#FF9D6B</color>
+    <color name="primary_dark">#C44A21</color>
+
+    <!-- Secondary Color Palette -->
+    <color name="secondary">#2E86AB</color>
+    <color name="secondary_variant">#5FA8D3</color>
+    <color name="secondary_light">#7BC1E8</color>
+    <color name="secondary_dark">#1C658C</color>
+
+    <!-- Material Design Color System -->
+    <color name="colorPrimary">#6750A4</color>
+    <color name="colorPrimaryDark">#21005D</color>
+    <color name="colorPrimaryVariant">#625B71</color>
+    <color name="colorSecondary">#03DAC5</color>
+    <color name="colorSecondaryDark">#018786</color>
+    <color name="colorSecondaryVariant">#1D192B</color>
+    <color name="colorAccent">#03DAC5</color>
+
+    <!-- Neutral Colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+
+    <color name="gray_50">#FAFAFA</color>
+    <color name="gray_100">#F5F5F5</color>
+    <color name="gray_200">#EEEEEE</color>
+    <color name="gray_300">#E0E0E0</color>
+    <color name="gray_400">#BDBDBD</color>
+    <color name="gray_500">#9E9E9E</color>
+    <color name="gray_600">#757575</color>
+    <color name="gray_700">#616161</color>
+    <color name="gray_800">#424242</color>
+    <color name="gray_900">#212121</color>
+
+    <!-- Background Colors -->
+    <color name="background_light">#F8F9FA</color>
+    <color name="background_dark">#121212</color>
+    <color name="surface_light">#FFFFFF</color>
+    <color name="surface_dark">#1E1E1E</color>
+
+    <!-- Text Colors -->
+    <color name="text_primary_light">#212121</color>
+    <color name="text_secondary_light">#757575</color>
+    <color name="text_primary_dark">#FFFFFF</color>
+    <color name="text_secondary_dark">#BDBDBD</color>
+
+    <!-- Status Colors -->
+    <color name="success">#4CAF50</color>
+    <color name="success_light">#C8E6C9</color>
+    <color name="success_dark">#2E7D32</color>
+
+    <color name="warning">#FFC107</color>
+    <color name="warning_light">#FFECB3</color>
+    <color name="warning_dark">#FF8F00</color>
+    <color name="gray">@color/gray_500</color>
+    <color name="primaryLight">@color/primary_light</color>
+    <color name="lightGray">@color/gray_200</color>
+
+
+    <color name="error">#F44336</color>
+    <color name="error_light">#FFCDD2</color>
+    <color name="error_dark">#D32F2F</color>
+
+    <!-- Brand Colors -->
+    <color name="facebook_blue">#1877F2</color>
+    <color name="google_red">#DB4437</color>
+    <color name="spotify_green">#1DB954</color>
+    <color name="netflix_red">#E50914</color>
+
+    <!-- Transparent Overlays -->
+    <color name="transparent_10">#1A000000</color>
+    <color name="transparent_05">#0D000000</color>
+    <color name="transparent_20">#33000000</color>
+    <color name="transparent_40">#66000000</color>
+    <color name="transparent_60">#99000000</color>
+    <color name="transparent_80">#CC000000</color>
+
+    <color name="facebook_blue_transparent_80">#CC1877F2</color>
+    <color name="spotify_green_transparent_80">#CC1DB954</color>
+    <color name="netflix_red_transparent_80">#CCE50914</color>
+
+    <!-- UI Component Colors -->
+    <color name="divider_light">#1F000000</color>
+    <color name="divider_dark">#1FFFFFFF</color>
+
+    <color name="chip_background">#E0E0E0</color>
+    <color name="chip_stroke">#BDBDBD</color>
+
+    <color name="ripple_light">#1F000000</color>
+    <color name="ripple_dark">#33FFFFFF</color>
+
+    <!-- Legacy/Deprecated (for compatibility) -->
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="primaryColor">#6750A4</color>
+    <color name="primaryDarkColor">#21005D</color>
+    <color name="secondaryColor">#03DAC5</color>
+    <color name="secondaryDarkColor">#018786</color>
+    <color name="White">#FFFFFF</color>
+    <color name="textPrimary">@color/text_primary_light</color>
+    <color name="amber_500">#FFC107</color>
+    <color name="background">@color/background_light</color>
+    <color name="textPrimaryDark">@color/text_primary_dark</color>
+    <color name="backgroundDark">@color/background_dark</color>
+    <color name="amber_200">#FFECB3</color>
+    <color name="divider">@color/divider_light</color>
+    <color name="color_accent">@color/colorAccent</color>
+    <color name="premium_gold_transparent">#CCFFD700</color>
+    <color name="card_background">#FFFFFF</color>
+    <color name="primaryDark">#38006B</color>
+    <color name="textSecondary">#8A000000</color>
+    <color name="darker_gray">#424242</color>
+    <color name="hint_color">#9E9E9E</color>
+    <color name="card_stroke">#1F000000</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="on_surface_variant">#605D72</color>
+    <color name="online_green">#4CAF50</color>
+    <color name="on_surface">#1C1B1F</color>
+    <color name="outline_variant">#CAC4D0</color>
+    <color name="surface_container">#F5EEFA</color>
+    <color name="errorColor">#FF3B30</color>
+    <color name="gray_light">#F5F5F5</color>
+    <color name="gray_medium">#9E9E9E</color>
+    <color name="gray_dark">#616161</color>
+    <color name="teal_100">#E0F2F1</color>
+    <color name="teal_300">#4DB6AC</color>
+    <color name="teal_800">#00695C</color>
+    <color name="red_500">#F44336</color>
+    <color name="red_600">#E53935</color>
+    <color name="red">#F44336</color>
+    <color name="primary_color">#2196F3</color>
+    <color name="green_500">#FF4CAF50</color>
+    <color name="orange_500">#FFFF9800</color>
+    <color name="blue_500">#FF2196F3</color>
+    <!-- ✅ ADD THESE FACEBOOK COLORS -->
+    <color name="com_facebook_blue">#1877F2</color>
+
+
+    <!-- Optional: Add these if needed -->
+    <color name="com_facebook_device_auth_text">#000000</color>
+    <color name="com_facebook_likeboxcountview_border_color">#CCCCCC</color>
+    <color name="com_facebook_likeboxcountview_text_color">#000000</color>
+    <color name="com_facebook_likeview_text_color">#000000</color>
+    <color name="com_facebook_messenger_blue">#0084FF</color>
+    <color name="com_facebook_send_button_text_color">#FFFFFF</color>
+    <color name="green_light">#E8F5E8</color>
+    <color name="green_dark">#2E7D32</color>
+    <color name="yellow_light">#FFF8E1</color>
+    <color name="yellow_dark">#F57F17</color>
+    <color name="red_light">#FFEBEE</color>
+    <color name="red_dark">#C62828</color>
+    <color name="black_60">#99000000</color>
+    <color name="black_80">#CC000000</color>
+
+    <color name="soft_dark_background">#1E1E1E</color>  <!-- deep gray -->
+    <color name="soft_dark_surface">#2A2A2A</color>     <!-- slightly lighter -->
+    <color name="soft_dark_text">#F5F5F5</color>        <!-- off-white -->
+    <color name="soft_dark_primary">#3A3A3A</color>     <!-- medium gray -->
+    <color name="soft_dark_secondary">#4A4A4A</color>   <!-- accent gray -->
+
+
+
+
+</resources>

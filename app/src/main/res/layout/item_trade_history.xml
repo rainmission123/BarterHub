@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:layout_marginBottom="8dp"
+    android:elevation="2dp">
+
+    <TextView
+        android:id="@+id/itemTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/item_name"
+        android:textColor="@color/gray_800"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginBottom="4dp"/>
+
+    <TextView
+        android:id="@+id/partnerName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/with_partner_name"
+        android:textColor="@color/gray_700"
+        android:textSize="14sp"
+        android:layout_marginBottom="2dp"/>
+
+    <TextView
+        android:id="@+id/tradeDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/date_2025_10_03"
+        android:textColor="@color/gray_700"
+        android:textSize="14sp"
+        android:layout_marginBottom="2dp"/>
+
+    <TextView
+        android:id="@+id/status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/status_completed"
+        android:textSize="14sp"
+        android:textColor="@android:color/holo_green_dark"/>
+
+</LinearLayout>

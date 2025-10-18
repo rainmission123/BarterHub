@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="5dp">
+
+    <!-- PICTURE CARD -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="180dp"
+        android:layout_height="210dp"
+        app:cardCornerRadius="9dp"
+        app:cardElevation="2dp"
+        app:strokeColor="#20000000"
+        app:strokeWidth="1dp">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/itemImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_laptop"
+                tools:ignore="ContentDescription,ImageContrastCheck" />
+        </FrameLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- SPACING BETWEEN PICTURE AND DESCRIPTION -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp" />
+
+    <!-- DESCRIPTION CARD -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="2dp">
+
+            <TextView
+                android:id="@+id/itemTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:textColor="?attr/postTextColor"
+                android:lineSpacingExtra="2dp"
+                android:maxLines="2"
+                android:scrollHorizontally="false"
+                android:singleLine="false"
+                android:text="@string/macbook_pro_16_m3_max"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+
+            <!-- Product Description -->
+            <TextView
+                android:id="@+id/itemDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="16-core CPU, 40-core GPU, 48GB RAM"
+                android:textColor="?attr/postTextColorSecondary"
+                android:textSize="11sp"
+                tools:ignore="HardcodedText" />
+
+            <!-- Price Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <!-- Price Container -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <!-- Price Row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/itemPrice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="PHP50,499"
+                            android:textColor="?attr/postPriceColor"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            tools:ignore="HardcodedText" />
+
+                        <TextView
+                            android:id="@+id/itemOriginalPrice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:text="PHP60,999"
+                            android:textColor="?attr/postTextColorSecondary"
+                            android:textSize="11sp"
+                            tools:ignore="HardcodedText" />
+                    </LinearLayout>
+
+                    <!-- Owner Info -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <!-- Owner Profile Image -->
+                        <ImageView
+                            android:id="@+id/itemOwnerImage"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_marginEnd="4dp"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/ic_profile"
+                            tools:ignore="ContentDescription" />
+
+                        <!-- Owner Name -->
+                        <TextView
+                            android:id="@+id/itemOwner"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/posted_by_unknown"
+                            android:textColor="?attr/postTextColorSecondary"
+                            android:textSize="10sp"
+                            android:textStyle="italic"
+                            tools:ignore="SmallSp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/itemWishlistBottom"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="8dp"
+                    android:clickable="true"
+                    android:contentDescription="@string/todo"
+                    android:focusable="true"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_heart_selector"
+                    tools:ignore="TouchTargetSizeCheck,ImageContrastCheck" />
+
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+</LinearLayout>

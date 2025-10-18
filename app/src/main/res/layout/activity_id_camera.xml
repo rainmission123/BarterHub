@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black">
+
+    <!-- CameraX PreviewView - WITH MARGIN FOR TEXTVIEW -->
+    <androidx.camera.view.PreviewView
+        android:id="@+id/cameraPreview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <!-- Instruction Text - DAPAT NASA ITAAS -->
+    <TextView
+        android:id="@+id/tvInstruction"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:background="@color/black_60"
+        android:gravity="center"
+        android:padding="10dp"
+        android:text="@string/align_id_within_frame"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <!-- ID Frame Overlay - NASA GITNA -->
+    <View
+        android:layout_width="520dp"
+        android:layout_height="302dp"
+        android:layout_centerInParent="true"
+        android:background="@drawable/id_frame_overlay" />
+
+    <!-- Capture Button - DAPAT NASA BABA -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btnCapture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="2dp"
+        android:contentDescription="@string/todo"
+        android:src="@drawable/ic_camera"
+        app:backgroundTint="@color/colorAccent"
+        app:tint="@android:color/white" />
+
+    <!-- Cancel Button -->
+    <Button
+        android:id="@+id/btnCancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="16dp"
+        android:background="@color/black_60"
+        android:text="@string/cancel"
+        android:textColor="@android:color/white" />
+
+</RelativeLayout>

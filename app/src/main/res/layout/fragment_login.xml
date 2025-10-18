@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/login_background"
+    android:fitsSystemWindows="true">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="@dimen/padding_large">
+
+            <!-- Animated Logo Container -->
+            <com.airbnb.lottie.LottieAnimationView
+                android:id="@+id/animationView"
+                android:layout_width="167dp"
+                android:layout_height="129dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/margin_top_medium"
+                android:layout_marginBottom="@dimen/margin_bottom_small"
+                app:lottie_autoPlay="true"
+                app:lottie_loop="true"
+                app:lottie_rawRes="@raw/login_animation" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                app:cardBackgroundColor="@color/card_background"
+                app:cardCornerRadius="@dimen/card_corner_radius_large"
+                app:strokeColor="@color/color_accent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/padding_large">
+
+                    <!-- Welcome Text -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/margin_bottom_medium"
+                        android:text="@string/welcome_to_barter_hub_ph"
+                        android:textAlignment="center"
+                        android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"
+                        android:textColor="@color/primaryDark" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/margin_bottom_xlarge"
+                        android:text="@string/sign_in_to_continue_to_barterhub"
+                        android:textAlignment="center"
+                        android:textColor="@color/textSecondary"
+                        android:textSize="@dimen/text_size_body" />
+
+                    <!-- Email Input -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/margin_bottom_medium"
+                        app:boxStrokeColor="@color/colorSecondary"
+                        app:endIconMode="clear_text"
+                        app:hintTextColor="@color/colorPrimaryDark"
+                        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.MediumComponent"
+                        app:startIconDrawable="@drawable/ic_email_login"
+                        app:startIconTint="@color/gray_600">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/emailEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/email"
+                            android:inputType="textEmailAddress"
+                            android:minHeight="@dimen/input_min_height"
+                            android:paddingStart="@dimen/input_padding_start"
+                            android:textColor="@color/textPrimary"
+                            tools:ignore="RtlSymmetry" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Password Input -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/margin_bottom_medium"
+                        app:boxStrokeColor="@color/colorSecondary"
+                        app:endIconMode="password_toggle"
+                        app:hintTextColor="@color/colorPrimaryDark"
+                        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.MediumComponent"
+                        app:startIconDrawable="@drawable/ic_lock"
+                        app:startIconTint="@color/gray_600">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/passwordEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/password"
+                            android:inputType="textPassword"
+                            android:minHeight="@dimen/input_min_height"
+                            android:paddingStart="@dimen/input_padding_start"
+                            android:textColor="@color/textPrimary"
+                            tools:ignore="RtlSymmetry" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Forgot Password -->
+                    <TextView
+                        android:id="@+id/forgotPasswordText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:layout_marginBottom="@dimen/margin_bottom_large"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:text="@string/forgot_password"
+                        android:textColor="#4A148C"
+                        android:textSize="@dimen/text_size_small"
+                        tools:ignore="TouchTargetSizeCheck" />
+
+                    <!-- Login Button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnLogin"
+                        style="@style/Widget.Material3.Button"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_marginBottom="@dimen/margin_bottom_large"
+                        android:text="@string/login"
+                        android:textColor="@color/white"
+                        app:backgroundTint="@color/color_accent"
+                        app:cornerRadius="@dimen/button_corner_radius"
+                        app:icon="@drawable/ic_arrow_forward"
+                        app:iconGravity="end" />
+
+                    <!-- Resend Verification Email -->
+                    <TextView
+                        android:id="@+id/tvResendVerification"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginBottom="@dimen/margin_bottom_large"
+                        android:text="@string/resend_verification_email"
+                        android:textColor="@color/colorAccent"
+                        android:textSize="@dimen/text_size_small"
+                        android:visibility="gone" />
+
+                    <!-- Social Login Divider -->
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/margin_bottom_medium">
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_centerVertical="true"
+                            android:background="@color/divider" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerInParent="true"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp"
+                            android:background="@color/card_background"
+                            android:text="@string/or_continue_with"
+                            android:textColor="@color/textSecondary"
+                            android:textSize="@dimen/text_size_small" />
+                    </RelativeLayout>
+
+                    <!-- Social Login Buttons -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/margin_bottom_medium"
+                        android:gravity="center"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/googleLoginCard"
+                            android:layout_width="@dimen/card_width"
+                            android:layout_height="@dimen/card_height"
+                            android:layout_marginEnd="@dimen/icon_margin_end"
+                            app:cardBackgroundColor="@color/white"
+                            app:cardCornerRadius="@dimen/card_corner_radius"
+                            app:strokeColor="@color/divider"
+                            app:strokeWidth="1dp">
+
+                            <ImageView
+                                android:layout_width="@dimen/icon_size_small"
+                                android:layout_height="@dimen/icon_size_small"
+                                android:layout_gravity="center"
+                                android:contentDescription="@string/google_login"
+                                android:src="@drawable/google" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/facebookLoginCard"
+                            android:layout_width="@dimen/card_width"
+                            android:layout_height="@dimen/card_height"
+                            app:cardBackgroundColor="@color/white"
+                            app:cardCornerRadius="@dimen/card_corner_radius"
+                            app:strokeColor="@color/divider"
+                            app:strokeWidth="1dp">
+
+                            <ImageView
+                                android:layout_width="@dimen/icon_size_small"
+                                android:layout_height="@dimen/icon_size_small"
+                                android:layout_gravity="center"
+                                android:contentDescription="@string/facebook_login"
+                                android:src="@drawable/facebook" />
+                        </com.google.android.material.card.MaterialCardView>
+                    </LinearLayout>
+
+                    <!-- Sign Up Link -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/don_t_have_an_account"
+                            android:textColor="@color/textSecondary"
+                            android:textSize="@dimen/text_size_medium" />
+
+                        <TextView
+                            android:id="@+id/signUpText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/margin_small"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:text="@string/sign_up"
+                            android:textColor="#4A148C"
+                            android:textSize="@dimen/text_size_medium"
+                            android:textStyle="bold"
+                            tools:ignore="TouchTargetSizeCheck" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Progress Bar SA GITNA NG SCREEN -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        android:visibility="gone" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

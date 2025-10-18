@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "812276220118",
+    "firebase_url": "https://barterhub-3c947-default-rtdb.firebaseio.com",
+    "project_id": "barterhub-3c947",
+    "storage_bucket": "barterhub-3c947.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:812276220118:android:1e5fc4b97f816a24598977",
+        "android_client_info": {
+          "package_name": "com.example.barterhub"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "812276220118-juvr2c7trtn4v8kl14p9atoc1ltkh544.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.barterhub",
+            "certificate_hash": "ff2f30f737dc5417ce8926ed4350704cdfd28d36"
+          }
+        },
+        {
+          "client_id": "812276220118-s617dq3tokn662objh4qn93tr4e8obh5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlG1AI2ZO1Xnj-cgG9ekguZOcXKelfZaA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "812276220118-s617dq3tokn662objh4qn93tr4e8obh5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

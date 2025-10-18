@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="16dp">
+
+    <!-- CARD CONTENT -->
+    <LinearLayout
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:layout_margin="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:elevation="4dp"
+        android:clipToPadding="false"
+        android:clipChildren="false"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp">
+
+        <!-- LEFT: Images -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginEnd="12dp">
+
+            <ImageView
+                android:id="@+id/ivRequesterPhoto"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_profile"
+                android:contentDescription="@string/requester_photo"
+                android:background="@drawable/circle_background"/>
+
+            <ImageView
+                android:id="@+id/ivItemImage"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/circle_background"
+                android:contentDescription="Item Image"
+                android:scaleType="centerCrop"
+                android:src="@drawable/login_background"
+                tools:ignore="HardcodedText,ImageContrastCheck" />
+        </LinearLayout>
+
+        <!-- CENTER: Text Content -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvRequester"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Requester"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="@color/gray_800"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:id="@+id/tvItemTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Item title"
+                android:textSize="14sp"
+                android:textColor="@color/gray_600"
+                android:layout_marginTop="2dp"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Status: Pending"
+                android:textSize="14sp"
+                android:textColor="@color/gray_700"
+                android:layout_marginTop="4dp"
+                tools:ignore="HardcodedText" />
+        </LinearLayout>
+
+        <!-- RIGHT: Accept/Reject Buttons -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="bottom|center_horizontal">
+
+            <Button
+                android:id="@+id/btnAccept"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
+                android:backgroundTint="@color/color_accent"
+                android:text="Accept"
+                android:textColor="@android:color/white"
+                android:textSize="9sp"
+                tools:ignore="HardcodedText,SmallSp,TextContrastCheck,TouchTargetSizeCheck" />
+
+            <Button
+                android:id="@+id/btnReject"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
+                android:backgroundTint="@color/error"
+                android:text="Reject"
+                android:textColor="#000000"
+                android:textSize="9sp"
+                tools:ignore="HardcodedText,SmallSp,TouchTargetSizeCheck" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- FLOATING REMOVE BUTTON (X) -->
+    <ImageButton
+        android:id="@+id/btnRemove"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        android:background="@drawable/circle_button_background"
+        android:contentDescription="@string/remove_request"
+        android:elevation="6dp"
+
+        android:src="@drawable/ic_close"
+        android:visibility="visible"
+        app:tint="@color/White"
+        tools:ignore="ImageContrastCheck,TouchTargetSizeCheck" />
+</FrameLayout>

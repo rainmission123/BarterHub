@@ -1,0 +1,118 @@
+[versions]
+android = "1.1.1"
+androidGradlePlugin = "8.13.0"
+cloudinaryAndroid = "3.1.2"
+firebaseAnalytics = "23.0.0"
+firebaseDatabaseVersion = "22.0.1"
+firebaseMessaging = "25.0.1"
+firebaseStorageKtx = "21.0.2"
+kotlin = "2.2.20"
+googleGmsServicesPlugin = "4.4.4"
+firebase-bom = "34.4.0"
+
+notificationBadge = "1.0.4"
+notificationbadgeVersion = "1.0.2"
+okhttp = "5.2.1"
+play-services-ads = "24.7.0"
+play-services-auth = "21.4.0"
+play-services-basement = "18.9.0"
+
+facebook-login = "18.1.3"
+glide = "5.0.5"
+desugar-jdk-libs = "2.1.5" # ✅ latest available
+androidx-core-ktx = "1.17.0"
+androidx-appcompat = "1.7.1"
+material = "1.13.0"
+androidx-activity = "1.11.0"
+androidx-constraintlayout = "2.2.1"
+lottie = "6.6.10"
+circleimageview = "3.1.0"
+imagepicker = "2.1"
+junit = "4.13.2"
+androidx-junit = "1.3.0"
+androidx-espresso-core = "3.7.0"
+androidx-navigation = "2.9.5"
+androidx-recyclerview = "1.4.0"
+firebaseDatabase = "22.0.1"
+firebaseAuth = "24.0.1"
+credentials = "1.5.0"
+credentialsPlayServicesAuth = "1.5.0"
+googleid = "1.1.1"
+firebaseAuthVersion = "24.0.1"
+playServicesLocation = "21.3.0"
+playServicesMaps = "19.2.0"
+navigationFragmentKtx = "2.9.5"
+navigationUiKtx = "2.9.5"
+simplebadgeview = "1.0.8"
+
+[libraries]
+android = { module = "io.imagekit:android", version.ref = "android" }
+cloudinary-android = { module = "com.cloudinary:cloudinary-android", version.ref = "cloudinaryAndroid" }
+firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx" }
+firebase-database-ktx = { module = "com.google.firebase:firebase-database-ktx" }
+firebase-database-v2201 = { module = "com.google.firebase:firebase-database", version.ref = "firebaseDatabaseVersion" }
+firebase-messaging = { module = "com.google.firebase:firebase-messaging", version.ref = "firebaseMessaging" }
+firebase-messaging-ktx = { module = "com.google.firebase:firebase-messaging-ktx" }
+firebase-storage = { module = "com.google.firebase:firebase-storage", version.ref = "firebaseDatabaseVersion" }
+google-firebase-analytics = { module = "com.google.firebase:firebase-analytics", version.ref = "firebaseAnalytics" }
+jetbrains-kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib" }
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+# Firebase
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics-ktx", version = "22.5.0" }
+firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore-ktx", version = "25.1.4" }
+
+# Play Services
+firebase-storage-ktx = { module = "com.google.firebase:firebase-storage-ktx", version.ref = "firebaseStorageKtx" }
+logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okhttp" }
+notification-badge = { module = "com.github.nex3z:notification-badge", version.ref = "notificationBadge" }
+notificationbadge = { module = "com.github.nex3z:NotificationBadge", version.ref = "notificationbadgeVersion" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+play-services-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "play-services-ads" }
+play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "play-services-auth" }
+play-services-basement = { group = "com.google.android.gms", name = "play-services-basement", version.ref = "play-services-basement" }
+
+# Facebook
+facebook-login = { group = "com.facebook.android", name = "facebook-login", version.ref = "facebook-login" }
+
+# Desugaring
+android-desugar-jdk-libs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugar-jdk-libs" }
+
+# AndroidX
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-activity = { group = "androidx.activity", name = "activity-ktx", version.ref = "androidx-activity" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidx-constraintlayout" }
+
+# UI
+lottie = { group = "com.airbnb.android", name = "lottie", version.ref = "lottie" }
+glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
+glide-compiler = { group = "com.github.bumptech.glide", name = "compiler", version.ref = "glide" }
+circleimageview = { group = "de.hdodenhof", name = "circleimageview", version.ref = "circleimageview" }
+imagepicker = { group = "com.github.dhaval2404", name = "imagepicker", version.ref = "imagepicker" }
+
+# Navigation + RecyclerView
+androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "androidx-navigation" }
+androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "androidx-navigation" }
+androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "androidx-recyclerview" }
+
+# Testing
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-junit" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidx-espresso-core" }
+firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
+androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
+androidx-credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentialsPlayServicesAuth" }
+googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuthVersion" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
+play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
+navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
+navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigationUiKtx" }
+simplebadgeview = { module = "com.github.ome450901:SimpleBadgeView", version.ref = "simplebadgeview" }
+
+[plugins]
+androidApplication = { id = "com.android.application", version.ref = "androidGradlePlugin" }
+kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+googleGmsServices = { id = "com.google.gms.google-services", version.ref = "googleGmsServicesPlugin" }

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="@color/amber_500"> <!-- pressed color -->
+
+    <!-- Parehong path gaya ng ic_image_normal.xml -->
+    <path
+        android:fillColor="@android:color/black"
+        android:pathData="M21,19V5c0,-1.1 -0.9,-2 -2,-2H5c-1.1,0 -2,0.9 -2,2v14c0,1.1 0.9,2 2,2h14c1.1,0 2,-0.9 2,-2zM5,5h14v8l-3.5,-3.5 -4.5,6L9.5,13l-4.5,6V5z"/>
+</vector>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ad-services-config>
+    <custom-audiences>
+        <ad-tech-identifier allow="true">https://www.google.com</ad-tech-identifier>
+        <ad-tech-identifier allow="true">https://googleads.g.doubleclick.net</ad-tech-identifier>
+    </custom-audiences>
+</ad-services-config>

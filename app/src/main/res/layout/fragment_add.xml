@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginBottom="@dimen/_60dp"
+    android:background="@drawable/login_background"
+    android:fillViewport="true"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:orientation="vertical">
+
+
+        <TextView
+            android:id="@+id/verificationMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:background="@color/warning_light"
+            android:drawablePadding="8dp"
+            android:padding="16dp"
+            android:text="@string/you_need_to_verify_your_id_to_post_items_please_go_to_your_profile_to_verify"
+            android:textColor="#BF360C"
+            android:textSize="14sp"
+            android:visibility="gone"
+            app:drawableStartCompat="@drawable/ic_warning" />
+
+        <!-- Image Upload Section -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/upload_images_max_5"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary_light"
+            android:layout_marginBottom="8dp" />
+
+        <!-- ProgressBar (hidden by default) -->
+        <ProgressBar
+            android:id="@+id/uploadProgressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="6dp"
+            android:layout_marginBottom="12dp"
+            android:indeterminate="false"
+            android:progress="0"
+            android:progressTint="@color/colorAccent"
+            android:visibility="gone" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <LinearLayout
+                android:id="@+id/imageContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="120dp"
+                android:orientation="horizontal">
+
+                <!-- Add Image Button -->
+                <LinearLayout
+                    android:id="@+id/addImageButton"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:layout_marginEnd="8dp"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:background="@drawable/dotted_border_background"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="8dp"
+                    tools:ignore="UselessParent">
+
+                    <ImageView
+                        android:id="@+id/selectedImageView"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/ic_add_photo"
+                        android:contentDescription="@string/todo"
+                        app:tint="@color/colorPrimary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/add_photo"
+                        android:textSize="12sp"
+                        android:textColor="@color/colorPrimary"
+                        android:layout_marginTop="4dp" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <!-- Item Title -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="@string/item_title"
+            app:boxStrokeColor="@color/colorSecondary"
+            android:textColorHint="@color/black"
+            app:boxBackgroundColor="@color/textPrimaryDark"
+            app:startIconDrawable="@drawable/ic_title"
+            app:startIconTint="@color/gray_600">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/itemTitleEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="40dp"
+                android:maxLines="1"
+                android:inputType="textCapWords"
+                android:textColor="@color/black"
+                tools:ignore="RtlSymmetry" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Description -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="@string/description"
+            app:boxStrokeColor="@color/colorSecondary"
+            app:boxBackgroundColor="@color/textPrimaryDark"
+            android:textColorHint="@color/black"
+            app:startIconDrawable="@drawable/ic_description"
+            app:startIconTint="@color/gray_600">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/descriptionEditText"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:gravity="top"
+                android:inputType="textMultiLine|textCapSentences"
+                android:maxLines="5"
+                android:minLines="3"
+                android:textColor="@color/black" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Category -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="@string/category"
+            app:endIconMode="dropdown_menu"
+            app:boxStrokeColor="@color/colorSecondary"
+            app:boxBackgroundColor="@color/textPrimaryDark"
+            android:textColorHint="@color/black"
+            app:startIconDrawable="@drawable/ic_category"
+            app:startIconTint="@color/gray_600">
+
+            <AutoCompleteTextView
+                android:id="@+id/categorySpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                android:minHeight="56dp"
+                android:paddingStart="40dp"
+                android:textColor="@color/black"
+                tools:ignore="LabelFor,RtlSymmetry,SpeakableTextPresentCheck" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Condition -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="@string/condition"
+            app:endIconMode="dropdown_menu"
+            app:boxStrokeColor="@color/colorSecondary"
+            app:boxBackgroundColor="@color/textPrimaryDark"
+            android:textColorHint="@color/black"
+            app:startIconDrawable="@drawable/ic_condition"
+            app:startIconTint="@color/gray_600">
+
+            <AutoCompleteTextView
+                android:id="@+id/conditionSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                android:minHeight="56dp"
+                android:paddingStart="40dp"
+                android:textColor="@color/black"
+                tools:ignore="LabelFor,RtlSymmetry,SpeakableTextPresentCheck" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Price -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="@string/price"
+            app:helperText="Optional – leave empty if barter only"
+            app:helperTextTextColor="@color/gray_700"
+            android:textColorHint="@color/black"
+            app:boxStrokeColor="@color/colorSecondary"
+            app:boxBackgroundColor="@color/textPrimaryDark"
+            app:startIconDrawable="@drawable/ic_price"
+            app:prefixText="₱ "
+            app:startIconTint="@color/gray_600">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/priceEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="40dp"
+                android:inputType="numberDecimal"
+                android:maxLines="1"
+                android:textColor="@color/black"
+                tools:ignore="RtlSymmetry" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Location -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:hint="@string/item_location"
+            android:textColorHint="@color/black"
+            app:boxStrokeColor="@color/colorSecondary"
+            app:boxBackgroundColor="@color/textPrimaryDark"
+            app:startIconDrawable="@drawable/ic_location"
+            app:endIconMode="clear_text"
+            app:startIconTint="@color/gray_600">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/locationEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="40dp"
+                android:inputType="textMultiLine"
+                android:scrollHorizontally="false"
+                android:scrollbars="vertical"
+                android:gravity="top|start"
+                android:minLines="1"
+                android:maxLines="5"
+                android:focusable="false"
+                android:clickable="false"
+                android:textColor="@color/black"
+                tools:ignore="RtlSymmetry" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Get Location Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/getLocationButton"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:text="@string/get_location"
+            android:textAllCaps="false"
+            android:layout_marginBottom="24dp"
+            app:backgroundTint="@color/colorAccent"
+            app:iconGravity="start"
+            app:cornerRadius="12dp"
+            style="@style/Widget.Material3.Button" />
+
+        <!-- Submit Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/submitButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="@string/list_item"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            app:icon="@drawable/ic_list"
+            app:backgroundTint="@color/colorAccent"
+            app:iconGravity="start"
+            app:cornerRadius="12dp"
+            style="@style/Widget.Material3.Button" />
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

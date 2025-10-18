@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="120dp"
+    android:layout_height="120dp"
+    android:layout_margin="8dp"
+    android:background="@drawable/image_item_background">
+
+    <ImageView
+        android:id="@+id/uploadImageView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/uploaded_image" />
+
+    <ProgressBar
+        android:id="@+id/uploadProgress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="80dp"
+        android:layout_height="8dp"
+        android:layout_centerInParent="true"
+        android:progressTint="@color/teal_700"
+        android:visibility="gone" />
+
+    <!-- Remove button -->
+    <ImageView
+        android:id="@+id/btnRemoveImage"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="4dp"
+        android:background="@drawable/circle_background_red"
+        android:src="@drawable/ic_close"
+        android:contentDescription="@string/remove_image"
+        android:padding="4dp" />
+
+    <!-- Error indicator (optional) -->
+    <ImageView
+        android:id="@+id/errorIndicator"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_centerInParent="true"
+        android:contentDescription="@string/upload_error"
+        android:src="@drawable/ic_error"
+        android:visibility="gone" />
+
+</RelativeLayout>

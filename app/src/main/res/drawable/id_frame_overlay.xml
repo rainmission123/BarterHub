@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 🔹 ID FRAME ONLY - WALANG SEMI-TRANSPARENT BACKGROUND -->
+    <item
+        android:width="520dp"
+        android:height="302dp"
+        android:gravity="center">
+        <shape android:shape="rectangle">
+            <stroke
+                android:width="4dp"
+                android:color="@color/colorAccent" />
+            <solid android:color="@android:color/transparent" />
+            <corners android:radius="12dp" />
+        </shape>
+    </item>
+
+</layer-list>
