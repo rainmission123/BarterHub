@@ -21,9 +21,8 @@
             android:id="@+id/userProfileSection"
             android:layout_width="72dp"
             android:layout_height="72dp"
-            android:src="@drawable/ic_profile_placeholder"
+            android:src="@drawable/ic_profile"
             app:civ_border_width="2dp"
-            app:civ_border_color="@color/White"
             android:elevation="8dp"
             android:contentDescription="@string/profile_image_description" />
 
@@ -40,7 +39,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/user_name_default"
-                android:textColor="@color/gray_800"
+                android:textColor="?attr/postTextColor"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:maxLines="1"
@@ -49,19 +48,19 @@
 
             <TextView
                 android:id="@+id/userEmail"
-                android:layout_width="wrap_content"
+                android:layout_width="252dp"
                 android:layout_height="wrap_content"
-                android:text="@string/user_email_com"
-                android:textColor="@color/black"
-                android:textSize="14sp"
-                android:maxLines="1"
+                android:layout_marginTop="4dp"
                 android:ellipsize="end"
-                android:layout_marginTop="4dp" />
+                android:maxLines="1"
+                android:text="@string/user_email_com"
+                android:textColor="?attr/postTextColor"
+                android:textSize="14sp" />
 
             <View
-                android:layout_width="24dp"
+                android:layout_width="wrap_content"
                 android:layout_height="2dp"
-                android:background="@color/white"
+                android:background="?attr/postTextColor"
                 android:layout_marginTop="8dp"
                 android:alpha="0.8" />
 
@@ -97,7 +96,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/online"
-            android:textColor="#A0FFFFFF"
+            android:textColor="?attr/postTextColor"
             android:textSize="12sp"
             android:layout_marginStart="8dp" />
 

@@ -30,7 +30,7 @@
         android:layout_alignParentEnd="true"
         android:layout_margin="4dp"
         android:background="@drawable/circle_background_red"
-        android:src="@drawable/ic_close"
+        android:src="@drawable/ic_close1"
         android:contentDescription="@string/remove_image"
         android:padding="4dp" />
 

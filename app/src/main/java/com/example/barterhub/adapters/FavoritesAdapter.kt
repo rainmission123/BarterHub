@@ -23,6 +23,9 @@ class FavoritesAdapter(private val items: MutableList<FeaturedItem>) :
         val price: TextView = itemView.findViewById(R.id.itemPrice)
         val image: ImageView = itemView.findViewById(R.id.itemImage)
         val removeButton: ImageView = itemView.findViewById(R.id.removeFavoriteButton)
+
+        // ✅ Added owner name TextView
+        val owner: TextView = itemView.findViewById(R.id.itemOwner)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FavoritesViewHolder {
@@ -35,10 +38,12 @@ class FavoritesAdapter(private val items: MutableList<FeaturedItem>) :
     override fun onBindViewHolder(holder: FavoritesViewHolder, position: Int) {
         val item = items[position]
 
+        // Bind data
         holder.title.text = item.title
-        holder.price.text = if (item.price != null) "₱${item.price}" else "Barter Only"
+        holder.price.text = if (item.price != 0.0) "₱${item.price}" else "Barter Only"
+        holder.owner.text = "Posted by: ${item.ownerName.ifEmpty { "Unknown" }}"
 
-        // Load image
+        // Load first image
         val firstImage = item.imageUrls.split(",").firstOrNull()?.trim() ?: ""
         Glide.with(holder.itemView.context)
             .load(firstImage)
@@ -46,6 +51,7 @@ class FavoritesAdapter(private val items: MutableList<FeaturedItem>) :
             .error(R.drawable.login_background)
             .into(holder.image)
 
+        // Navigate to item detail
         holder.itemView.setOnClickListener { view ->
             val bundle = android.os.Bundle().apply {
                 putString("itemId", item.itemId)
@@ -55,9 +61,6 @@ class FavoritesAdapter(private val items: MutableList<FeaturedItem>) :
         }
 
         holder.removeButton.setOnClickListener {
-            val currentPosition = holder.absoluteAdapterPosition // ✅ USE THIS INSTEAD
-            if (currentPosition == RecyclerView.NO_POSITION) return@setOnClickListener
-
             val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@setOnClickListener
             val favRef = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
                 .getReference("favorites")
@@ -67,22 +70,18 @@ class FavoritesAdapter(private val items: MutableList<FeaturedItem>) :
             favRef.removeValue()
                 .addOnSuccessListener {
                     Toast.makeText(holder.itemView.context, "Removed from Favorites", Toast.LENGTH_SHORT).show()
-
-                    // ✅ SAFE REMOVE WITH BOUNDS CHECK
-                    if (currentPosition in 0 until items.size) {
-                        items.removeAt(currentPosition)
-                        notifyItemRemoved(currentPosition)
-                    }
+                    // ❌ Huwag na manual remove sa list
                 }
                 .addOnFailureListener {
                     Toast.makeText(holder.itemView.context, "Failed to remove favorite", Toast.LENGTH_SHORT).show()
                 }
         }
+
     }
 
     override fun getItemCount() = items.size
 
-    // ✅ OPTIONAL: Add function to update entire list safely
+    // Optional: Update entire list
     @SuppressLint("NotifyDataSetChanged")
     fun updateItems(newItems: List<FeaturedItem>) {
         items.clear()

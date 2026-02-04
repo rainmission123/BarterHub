@@ -4,133 +4,322 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="?attr/colorSurface"
     android:layout_marginBottom="16dp">
 
     <!-- CARD CONTENT -->
     <LinearLayout
-        android:baselineAligned="false"
-        android:orientation="horizontal"
-        android:padding="12dp"
-        android:layout_margin="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        android:elevation="4dp"
-        android:clipToPadding="false"
-        android:clipChildren="false"
+        android:layout_margin="10dp"
         android:layout_marginStart="4dp"
-        android:layout_marginEnd="4dp">
+        android:layout_marginEnd="4dp"
+        android:background="?attr/colorSurface"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:elevation="4dp"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <!-- LEFT: Images -->
+        <!-- HEADER: Requester Info -->
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginEnd="12dp">
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
 
             <ImageView
                 android:id="@+id/ivRequesterPhoto"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:scaleType="centerCrop"
-                android:src="@drawable/ic_profile"
                 android:contentDescription="@string/requester_photo"
-                android:background="@drawable/circle_background"/>
-
-            <ImageView
-                android:id="@+id/ivItemImage"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginTop="4dp"
-                android:background="@drawable/circle_background"
-                android:contentDescription="Item Image"
                 android:scaleType="centerCrop"
-                android:src="@drawable/login_background"
-                tools:ignore="HardcodedText,ImageContrastCheck" />
-        </LinearLayout>
+                android:src="@drawable/ic_profile" />
 
-        <!-- CENTER: Text Content -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/tvRequester"
-                android:layout_width="match_parent"
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Requester"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:textColor="@color/gray_800"
-                tools:ignore="HardcodedText" />
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="12dp">
 
-            <TextView
-                android:id="@+id/tvItemTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Item title"
-                android:textSize="14sp"
-                android:textColor="@color/gray_600"
-                android:layout_marginTop="2dp"
-                tools:ignore="HardcodedText" />
+                <TextView
+                    android:id="@+id/tvRequester"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/user_a"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvTradeSummary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/wants_to_trade_with_your_item"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="12sp"
+                    android:layout_marginTop="2dp" />
+
+                <!-- ✅ ADD: LOCATION -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="2dp">
+
+                    <ImageView
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:src="@drawable/ic_location"
+                        android:contentDescription="@string/location"
+                        app:tint="?attr/colorOnSurface" />
+
+                    <TextView
+                        android:id="@+id/tvUserLocation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:text="@string/manila_philippines"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <!-- ✅ ADD: DATE & TIME -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="2dp">
+
+                    <ImageView
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:src="@drawable/ic_calendar"
+                        android:contentDescription="@string/date"
+                        app:tint="?attr/colorOnSurface" />
+
+                    <TextView
+                        android:id="@+id/tvDate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:text="@string/oct_19_2024"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/tvTime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="@string/_3_45_pm"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/tvStatus"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Status: Pending"
-                android:textSize="14sp"
-                android:textColor="@color/gray_700"
-                android:layout_marginTop="4dp"
-                tools:ignore="HardcodedText" />
+                android:background="@drawable/status_pending_background"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:text="@string/pending"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- RIGHT: Accept/Reject Buttons -->
+        <!-- TRADE COMPARISON: Your Item vs Their Item -->
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:gravity="bottom|center_horizontal">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="16dp">
 
-            <Button
-                android:id="@+id/btnAccept"
-                android:layout_width="80dp"
-                android:layout_height="40dp"
-                android:backgroundTint="@color/color_accent"
-                android:text="Accept"
-                android:textColor="@android:color/white"
-                android:textSize="9sp"
-                tools:ignore="HardcodedText,SmallSp,TextContrastCheck,TouchTargetSizeCheck" />
+            <!-- YOUR ITEM (Target Item - kay User B) -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
 
-            <Button
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:strokeColor="@color/gray_300"
+                    app:strokeWidth="1dp">
+
+                    <ImageView
+                        android:id="@+id/ivTargetItem"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="Your item"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_image_placeholder"
+                        tools:ignore="HardcodedText,ImageContrastCheck" />
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:id="@+id/tvTargetItemTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/your_item_title"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="12sp"
+                    android:gravity="center"
+                    android:layout_marginTop="8dp"
+                    android:maxLines="2"
+                    android:ellipsize="end" />
+            </LinearLayout>
+
+            <!-- TRADE ARROW -->
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginHorizontal="12dp"
+                android:contentDescription="@string/todo"
+                android:src="@drawable/ic_swap"
+                app:tint="@color/color_accent"
+                tools:ignore="ImageContrastCheck" />
+
+            <!-- THEIR ITEM (Offered Item - kay User A) -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:strokeColor="@color/gray_300"
+                    app:strokeWidth="1dp">
+
+                    <ImageView
+                        android:id="@+id/ivOfferedItem"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="@string/their_offered_item"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_image_placeholder"
+                        tools:ignore="ImageContrastCheck" />
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:id="@+id/tvOfferedItemTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/their_item_title"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="12sp"
+                    android:gravity="center"
+                    android:layout_marginTop="8dp"
+                    android:maxLines="2"
+                    android:ellipsize="end" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- ✅ ADDITIONAL PHOTOS FROM OFFER -->
+        <TextView
+            android:id="@+id/tvPhotosLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/additional_photos_of_their_item"
+            android:textColor="@color/gray_700"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp"
+            android:visibility="gone" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvOfferPhotos"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginBottom="12dp"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            tools:listitem="@layout/item_small_photo" />
+
+        <TextView
+            android:id="@+id/tvMessageLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/message_from_user_a"
+            android:textColor="@color/gray_700"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tvMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/no_message"
+            android:textColor="@color/gray_600"
+            android:textSize="13sp"
+            android:background="@color/gray_100"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone" />
+
+        <!-- ACTION BUTTONS -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnReject"
-                android:layout_width="80dp"
-                android:layout_height="40dp"
-                android:backgroundTint="@color/error"
-                android:text="Reject"
-                android:textColor="#000000"
-                android:textSize="9sp"
-                tools:ignore="HardcodedText,SmallSp,TouchTargetSizeCheck" />
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reject"
+                android:textColor="#DD2C00" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAccept"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="@string/accept_trade"
+                android:textColor="#5E35B1"
+                app:backgroundTint="@color/color_accent" />
+
         </LinearLayout>
 
     </LinearLayout>
 
-    <!-- FLOATING REMOVE BUTTON (X) -->
+    <!-- FLOATING REMOVE BUTTON -->
     <ImageButton
         android:id="@+id/btnRemove"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         android:layout_gravity="top|end"
-        android:layout_marginTop="4dp"
-        android:layout_marginEnd="4dp"
-        android:background="@drawable/circle_button_background"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/circle_background_red"
         android:contentDescription="@string/remove_request"
         android:elevation="6dp"
-
         android:src="@drawable/ic_close"
         android:visibility="visible"
-        app:tint="@color/White"
-        tools:ignore="ImageContrastCheck,TouchTargetSizeCheck" />
+        app:tint="@color/gray_700"
+        tools:ignore="TouchTargetSizeCheck" />
 </FrameLayout>

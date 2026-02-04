@@ -12,10 +12,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.edit
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.doOnLayout
 import androidx.core.view.updateLayoutParams
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
@@ -35,8 +34,12 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.messaging.FirebaseMessaging
 import de.hdodenhof.circleimageview.CircleImageView
-import androidx.core.content.edit
 import com.google.android.material.snackbar.Snackbar
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import com.example.barterhub.ads.AppOpenAdManager
 
 @Suppress("DEPRECATION")
 class HomeActivity : AppCompatActivity() {
@@ -47,14 +50,8 @@ class HomeActivity : AppCompatActivity() {
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
-        val sharedPrefs = getSharedPreferences("AppPrefs", MODE_PRIVATE)
-        val isDarkMode = sharedPrefs.getBoolean("dark_mode", false)
-        AppCompatDelegate.setDefaultNightMode(
-            if (isDarkMode) AppCompatDelegate.MODE_NIGHT_YES
-            else AppCompatDelegate.MODE_NIGHT_NO
-        )
-
         super.onCreate(savedInstanceState)
+
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -75,7 +72,6 @@ class HomeActivity : AppCompatActivity() {
         // 👉 Make indicator follow drawer movement
         drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
-                // Move indicator along with drawer
                 val translationX = drawerView.width * slideOffset
                 swipeIndicator.translationX = translationX
             }
@@ -91,7 +87,7 @@ class HomeActivity : AppCompatActivity() {
             override fun onDrawerStateChanged(newState: Int) {}
         })
 
-        // Optional swipe gesture sa indicator
+        // 👉 Optional swipe gesture sa indicator
         swipeIndicator.setOnTouchListener(object : View.OnTouchListener {
             private var startX = 0f
             private val SWIPE_THRESHOLD = 50
@@ -119,10 +115,16 @@ class HomeActivity : AppCompatActivity() {
         setupSimpleWindowInsets()
         saveFcmToken()
         showSwipeTutorial()
+        listenForBottomNavUnread()
+        requestNotificationPermission()
     }
 
+    override fun onStart() {
+        super.onStart()
+        val isPremiumUser = false
+        AppOpenAdManager.showAdIfAvailable(this, isPremiumUser)
+    }
 
-    // ✅ Recalculate drawer width after layout
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) setDrawerWidth()
@@ -172,9 +174,9 @@ class HomeActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_add -> {
-                    if (navController.currentDestination?.id != R.id.nav_add)
-                        navController.navigate(R.id.nav_add)
-                    true
+                    // ✅ UPDATED: Verification check before adding item
+                    checkVerificationBeforeAddingItem()
+                    false // Return false to prevent automatic navigation
                 }
                 R.id.nav_messages -> {
                     if (navController.currentDestination?.id != R.id.nav_messages)
@@ -191,6 +193,75 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    private fun checkVerificationBeforeAddingItem() {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+
+        if (currentUser == null) {
+            Toast.makeText(this, "Please login first to post items", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Check verification status
+        val userRef = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
+            .getReference("users")
+            .child(currentUser.uid)
+
+        userRef.get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                val isVerified = snapshot.child("isIDVerified").getValue(String::class.java) == "verified"
+
+                if (isVerified) {
+                    navigateToAddItem()
+                } else {
+                    showVerificationRequiredDialog()
+                }
+            } else {
+                // User data not found - treat as not verified
+                showVerificationRequiredDialog()
+            }
+        }.addOnFailureListener {
+            Toast.makeText(this, "Error checking verification status", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun navigateToAddItem() {
+        try {
+            navController.navigate(R.id.addPhotosFragment)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Navigation error: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showVerificationRequiredDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_verification_required, null)
+
+        // ✅ FIXED: Remove R.style.ModernAlertDialog or use existing theme
+        val dialog = android.app.AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(false)
+            .create()
+
+        // Make dialog background transparent
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        val btnGoToProfile = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnGoToProfile)
+        val btnCancel = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnCancel)
+
+        btnGoToProfile.setOnClickListener {
+            try {
+                navController.navigate(R.id.nav_profile)
+            } catch (e: Exception) {
+                Toast.makeText(this, "Error navigating to profile", Toast.LENGTH_SHORT).show()
+            }
+            dialog.dismiss()
+        }
+
+        btnCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
     private fun updateBottomNavigationVisibility(destination: NavDestination) {
         when (destination.id) {
             R.id.nav_home, R.id.nav_search, R.id.nav_add,
@@ -259,32 +330,6 @@ class HomeActivity : AppCompatActivity() {
                 })
         }
 
-        // 🔹 Handle the Dark Mode switch
-        val darkModeItem = navigationView.menu.findItem(R.id.nav_dark_mode)
-        val switchLayout = darkModeItem.actionView
-        val switchDarkMode = switchLayout?.findViewById<android.widget.Switch>(R.id.switchDarkMode)
-
-        if (switchDarkMode == null) {
-            Log.e("DARK_MODE", "❌ switchDarkMode is NULL! Check if ID exists in XML")
-        } else {
-            Log.d("DARK_MODE", "✅ switchDarkMode connected successfully!")
-
-            // Set the initial switch state from SharedPreferences
-            val sharedPrefs = getSharedPreferences("AppPrefs", MODE_PRIVATE)
-            val isDarkMode = sharedPrefs.getBoolean("dark_mode", false)
-            switchDarkMode.isChecked = isDarkMode
-
-            // Listen for switch toggle
-            switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
-                AppCompatDelegate.setDefaultNightMode(
-                    if (isChecked) AppCompatDelegate.MODE_NIGHT_YES
-                    else AppCompatDelegate.MODE_NIGHT_NO
-                )
-                sharedPrefs.edit { putBoolean("dark_mode", isChecked) }
-                Toast.makeText(this, if (isChecked) "Dark mode enabled" else "Light mode enabled", Toast.LENGTH_SHORT).show()
-            }
-        }
-
         // 🔹 Handle the rest of the drawer items
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
@@ -349,6 +394,98 @@ class HomeActivity : AppCompatActivity() {
                     .getReference("users/$userId/fcmToken")
                     .setValue(token)
                 Log.d("FCM_DEBUG", "Saved FCM token for user $userId")
+            }
+        }
+    }
+
+    private fun setupMessagesBadge() {
+        val currentUser = FirebaseAuth.getInstance().currentUser ?: return
+        val bottomNav = binding.bottomNavigation
+
+        // Reference sa Firebase chat messages ng current user
+        val chatsRef = FirebaseDatabase.getInstance()
+            .getReference("users/${currentUser.uid}/chats")
+
+        chatsRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                var totalUnread = 0
+
+                snapshot.children.forEach { chatSnapshot ->
+                    val messagesSnapshot = chatSnapshot.child("messages")
+                    messagesSnapshot.children.forEach { message ->
+                        val read = message.child("read").getValue(Boolean::class.java) ?: true
+                        val receiverId = message.child("receiverId").getValue(String::class.java)
+                        if (!read && receiverId == currentUser.uid) totalUnread++
+                    }
+                }
+
+                val badge = bottomNav.getOrCreateBadge(R.id.nav_messages)
+                if (totalUnread > 0) {
+                    badge.isVisible = true
+                    badge.number = if (totalUnread > 99) 99 else totalUnread // max 99+
+                } else {
+                    badge.isVisible = false
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Hide badge if error occurs
+                val badge = bottomNav.getOrCreateBadge(R.id.nav_messages)
+                badge.isVisible = false
+            }
+        })
+    }
+
+    private fun updateBottomNavBadge(count: Int) {
+        val badge = binding.bottomNavigation.getOrCreateBadge(R.id.nav_messages)
+
+        if (count > 0) {
+            badge.isVisible = true
+            badge.number = if (count > 99) 99 else count
+        } else {
+            badge.clearNumber()
+            badge.isVisible = false
+        }
+    }
+
+    private fun listenForBottomNavUnread() {
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        val inboxRef = FirebaseDatabase.getInstance()
+            .getReference("user_inbox")
+            .child(currentUserId)
+
+        inboxRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                var totalUnread = 0
+
+                for (chatSnap in snapshot.children) {
+                    totalUnread += chatSnap
+                        .child("unreadCount")
+                        .getValue(Int::class.java) ?: 0
+                }
+
+                updateBottomNavBadge(totalUnread)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                updateBottomNavBadge(0)
+            }
+        })
+    }
+
+    private fun requestNotificationPermission() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    1001
+                )
             }
         }
     }

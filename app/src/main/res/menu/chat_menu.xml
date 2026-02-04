@@ -4,20 +4,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/menu_call"
-        android:title="Voice Call"
-        android:icon="@drawable/ic_call"
-        app:showAsAction="ifRoom"
-        tools:ignore="HardcodedText" />
-
-    <item
-        android:id="@+id/menu_video_call"
-        android:title="Video Call"
-        android:icon="@drawable/ic_videocam"
-        app:showAsAction="ifRoom"
-        tools:ignore="HardcodedText" />
-
-    <item
         android:id="@+id/menu_info"
         android:title="Chat Info"
         android:icon="@drawable/ic_info"

@@ -1,13 +1,16 @@
 package com.example.barterhub.ui
 
 import android.annotation.SuppressLint
-import android.graphics.Color
+import android.app.AlertDialog
+import android.content.Intent
+import android.content.SharedPreferences
+import android.graphics.Rect
 import android.os.Bundle
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
-import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -18,12 +21,13 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.barterhub.R
 import com.example.barterhub.adapters.FeaturedAdapter
-import com.example.barterhub.adapters.UserItemAdapter
-import com.example.barterhub.data.models.UserItem
+import com.example.barterhub.data.models.FeaturedItem
 import com.example.barterhub.databinding.FragmentHomeBinding
 import com.example.barterhub.ui.viewmodel.HomeViewModel
+import com.example.barterhub.utils.Categories
 import com.google.android.gms.ads.AdRequest
 import com.google.android.material.chip.Chip
 import com.google.firebase.auth.FirebaseAuth
@@ -32,242 +36,286 @@ import com.google.firebase.database.*
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
 
-    private var isDarkMode = false
-
+    private lateinit var prefs: SharedPreferences
     private lateinit var auth: FirebaseAuth
-    private lateinit var userItemAdapter: UserItemAdapter
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
-    // ✅ Connect to our ViewModel
-    private val viewModel: HomeViewModel by viewModels()
+    private lateinit var progressBar: ProgressBar
+    private lateinit var mainContent: LinearLayout
 
+    private val viewModel: HomeViewModel by viewModels()
     private lateinit var featuredAdapter: FeaturedAdapter
 
-    private fun setupUserItemsRecyclerView(items: List<UserItem>, isDarkMode: Boolean) {
-        userItemAdapter = UserItemAdapter(items)
-        userItemAdapter.setDarkMode(isDarkMode)
-        binding.featuredItems.adapter = userItemAdapter
-        binding.featuredItems.layoutManager = GridLayoutManager(requireContext(), 2)
-    }
-
+    private var isCategoriesExpanded = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentHomeBinding.bind(view)
         auth = FirebaseAuth.getInstance()
+        prefs = requireActivity().getSharedPreferences("AppPrefs", AppCompatActivity.MODE_PRIVATE)
 
-        // 🌗 Dark mode adaptation
-        val sharedPrefs = requireActivity().getSharedPreferences("AppPrefs", AppCompatActivity.MODE_PRIVATE)
-        val isDarkMode = sharedPrefs.getBoolean("dark_mode", false)
-        val rootLayout = binding.rootLayout
-
-        val categoryTextViews = listOf(
-            binding.tvCategoryElectronics,
-            binding.tvCategoryClothing,
-            binding.tvCategoryKitchen,
-            binding.tvCategoryBooks,
-            binding.tvCategorySportsOutdoor
-        )
-
-        val filterText = binding.filterButtonText
-        val filterIcon = binding.filterButtonIcon
-        val tradeRequestIcon = binding.tradeRequestIcon
-        val wishlistIcon = binding.itemWishlistIcon
-
-        if (isDarkMode) {
-            rootLayout.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.soft_dark_background))
-            categoryTextViews.forEach { it.setTextColor(Color.WHITE) }
-            filterText.setTextColor(Color.WHITE)
-            filterIcon.setColorFilter(Color.WHITE)
-            tradeRequestIcon.setColorFilter(Color.WHITE)
-        } else {
-            rootLayout.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.white))
-            categoryTextViews.forEach { it.setTextColor(Color.BLACK) }
-            filterText.setTextColor(Color.BLACK)
-            filterIcon.setColorFilter(Color.BLACK)
-            tradeRequestIcon.setColorFilter(Color.BLACK)
-        }
-
-        setupStatusBarInsets()
-        setupAd()
+        initializeLoadingViews(view)
+        showLoading(true)
         setupRecyclerView()
-        setupClickListeners()
-        setupTradeRequestBadgeListener()
-        observeViewModel()
-        viewModel.loadAllItems()
+        setupUI()
+        diagnoseFirebaseData()
+        cleanupDatabaseFields()
+
+        view.postDelayed({
+            setupStatusBarInsets()
+            setupAd()
+            setupClickListeners()
+            setupTradeRequestBadgeListener()
+            observeViewModel()
+            viewModel.loadAllItems()
+            setupScrollListener()
+        }, 1)
     }
 
+    private fun initializeLoadingViews(view: View) {
+        progressBar = view.findViewById(R.id.progressBar)
+        mainContent = view.findViewById(R.id.mainContent)
+    }
 
+    private fun showLoading(show: Boolean) {
+        progressBar.visibility = if (show) View.VISIBLE else View.GONE
+        mainContent.visibility = if (show) View.GONE else View.VISIBLE
+    }
 
-    private fun observeViewModel() {
-            // 🧩 Observe LiveData for items
-            viewModel.items.observe(viewLifecycleOwner, Observer { itemList ->
-                Log.d("HomeFragment", "✅ Loaded ${itemList.size} items")
-
-                // Optional: log bawat item para makita kung tama ang data
-                itemList.forEach { item ->
-                    Log.d("HomeFragment", "Item: ${item.title}, ID: ${item.itemId}")
-                }
-
-                featuredAdapter.updateData(itemList)
-            })
-
-
-            // 🌀 Optional: show loading
-            viewModel.isLoading.observe(viewLifecycleOwner, Observer { isLoading ->
-                binding.featuredProgressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-            })
+    private fun setupUI() {
+        Log.d("ThemeDebug", "🎨 Using default theme from XML")
+    }
+    private fun setupRecyclerView() {
+        featuredAdapter = FeaturedAdapter()
+        featuredAdapter.setOnThreeDotsClickListener { item ->
+            showItemOptionsMenu(item)
         }
 
-
-    private fun setupRecyclerView() {
-        featuredAdapter = FeaturedAdapter(mutableListOf())
-        featuredAdapter.setDarkMode(isDarkMode)
         binding.featuredItems.apply {
             layoutManager = GridLayoutManager(requireContext(), 2)
             adapter = featuredAdapter
+
+            // ✅ 2dp spacing sa gitna lang
+            addItemDecoration(GridItemDecoration(4.dpToPx(this)))
+        }
+    }
+    class GridItemDecoration(private val spacing: Int) : RecyclerView.ItemDecoration() {
+        override fun getItemOffsets(
+            outRect: Rect,
+            view: View,
+            parent: RecyclerView,
+            state: RecyclerView.State
+        ) {
+            super.getItemOffsets(outRect, view, parent, state)
+
+            val position = parent.getChildAdapterPosition(view)
+            val column = position % 2
+
+            // ✅ SPACING SA GITNA LANG (2dp)
+            if (column == 0) {
+                // Left item: right spacing only
+                outRect.right = spacing / 2
+            } else {
+                // Right item: left spacing only
+                outRect.left = spacing / 2
+            }
+
+            // ✅ Bottom spacing (2dp din)
+            outRect.bottom = spacing
+
+            // ✅ Top spacing for first row only
+            if (position < 2) {
+                outRect.top = spacing
+            }
         }
     }
 
+    private fun showItemOptionsMenu(item: FeaturedItem) {
+        val title = item.title
+        val itemId = item.itemId
 
-    private fun setupTradeRequestBadgeListener() {
-        val currentUserId = auth.currentUser?.uid ?: return
+        val options = arrayOf("Share", "Report", "Cancel")
 
-        FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
-            .getReference("trade_requests")
-            .orderByChild("owner")
-            .equalTo(currentUserId)
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-
-                    if (!isAdded || _binding == null) {
-                        return
-                    }
-                    
-                    val pendingCount = snapshot.children.count { reqSnap ->
-                        val status = reqSnap.child("status").getValue(String::class.java)
-                        status == "Pending"
-                    }
-
-                    updateTradeRequestBadge(pendingCount)
+        AlertDialog.Builder(requireContext())
+            .setTitle("Item Options")
+            .setItems(options) { dialog, which ->
+                when (which) {
+                    0 -> shareItem(item, title)
+                    1 -> reportItem(itemId, title)
+                    // 2 is Cancel - do nothing
                 }
+                dialog.dismiss()
+            }
+            .show()
+    }
 
-                override fun onCancelled(error: DatabaseError) {
-                    Log.e("HomeFragment", "❌ Failed: ${error.message}")
+    private fun shareItem(item: FeaturedItem, title: String) {
+        val shareText = "Check out this item on BarterHub:\n\n" +
+                "📱 $title\n\n" +
+                "Download BarterHub to see more!"
+
+        val shareIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, shareText)
+            type = "text/plain"
+        }
+        startActivity(Intent.createChooser(shareIntent, "Share Item"))
+    }
+
+    private fun reportItem(itemId: String, title: String) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Report Item")
+            .setMessage("Report '$title'? This will notify our moderators.")
+            .setPositiveButton("Report") { dialog, _ ->
+                reportItemToModerators(itemId, title)
+                Toast.makeText(requireContext(), "Item reported successfully", Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
+            }
+            .setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    private fun diagnoseFirebaseData() {
+        val ref = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
+            .getReference("items")
+
+        ref.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                Log.d("DIAGNOSE", "=== FIREBASE DATA DIAGNOSIS ===")
+                Log.d("DIAGNOSE", "Total items in DB: ${snapshot.childrenCount}")
+
+                var index = 0
+                snapshot.children.forEach { child ->
+                    index++
+                    Log.d("DIAGNOSE", "--- Item $index (${child.key}) ---")
+
+                    // Check ALL fields
+                    child.children.forEach { field ->
+                        val key = field.key
+                        val value = field.value
+                        val type = value?.javaClass?.simpleName ?: "NULL"
+
+                        Log.d("DIAGNOSE", "  $key: '$value' (type: $type)")
+                    }
+
+                    // Special check for description
+                    val desc = child.child("description").value
+                    Log.d("DIAGNOSE", "  DESCRIPTION ANALYSIS:")
+                    Log.d("DIAGNOSE", "    Raw value: '$desc'")
+                    Log.d("DIAGNOSE", "    Type: ${desc?.javaClass?.simpleName ?: "NULL"}")
+                    Log.d("DIAGNOSE", "    Is null: ${desc == null}")
+                    Log.d("DIAGNOSE", "    Is empty string: ${desc == ""}")
+                    Log.d("DIAGNOSE", "    Is blank string: ${(desc as? String)?.isBlank()}")
                 }
-            })
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("DIAGNOSE", "Error: ${error.message}")
+            }
+        })
     }
 
-    private fun updateTradeRequestBadge(count: Int) {
-
-        if (!isAdded || _binding == null) {
-            return
-        }
-
-        val badgeTextView = binding.tradeRequestBadge
-        if (count > 0) {
-            badgeTextView.text = count.toString()
-            badgeTextView.visibility = View.VISIBLE
-        } else {
-            badgeTextView.visibility = View.GONE
-        }
+    private fun reportItemToModerators(itemId: String, title: String) {
+        Log.d("Report", "Reporting item: $itemId - $title")
     }
 
-    private fun setupStatusBarInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
-            val statusBarHeight = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
-            (view.layoutParams as? ViewGroup.MarginLayoutParams)?.topMargin = -statusBarHeight
-            insets
-        }
-    }
+    private fun observeViewModel() {
+        viewModel.items.observe(viewLifecycleOwner, Observer { itemList ->
+            // ✅ ADDITIONAL DEBUG: Check each item
+            itemList.forEachIndexed { index, item ->
+                Log.d("FragmentDebug", "Item $index received:")
+                Log.d("FragmentDebug", "  Title: '${item.title}'")
+                Log.d("FragmentDebug", "  Description: '${item.description}'")
+                Log.d("FragmentDebug", "  Desc length: ${item.description.length}")
+            }
 
-    private fun setupAd() {
-        val adRequest = AdRequest.Builder().build()
-        binding.adViewTop.loadAd(adRequest)
+            featuredAdapter.updateData(itemList)
+            showLoading(false)
+        })
+
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            binding.featuredProgressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        }
     }
 
     private fun setupClickListeners() {
         binding.tradeRequestIcon.setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_tradeRequestsFragment)
         }
-
         binding.itemWishlistIcon.setOnClickListener {
-            Toast.makeText(requireContext(), "Wishlist feature coming soon!", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.action_homeFragment_to_favoritesFragment)
+        }
+        binding.searchIcon.setOnClickListener {
+            binding.searchInput.requestFocus()
         }
 
-        binding.searchIcon.setOnClickListener { binding.searchInput.requestFocus() }
+        binding.Toolcamera.setOnClickListener {
+            navigateToAddPhotos()
+        }
 
         setupCategoryClicks()
         setupFilterButton()
+    }
+
+    private fun navigateToAddPhotos() {
+        try {
+            findNavController().navigate(R.id.action_homeFragment_to_addPhotosFragment)
+        } catch (e: Exception) {
+            Log.e("HomeFragment", "Error navigating to Add Photos: ${e.message}")
+            Toast.makeText(requireContext(), "Cannot open camera", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun setupCategoryClicks() {
+        val categories = mapOf(
+            binding.categoryElectronics to "Electronics",
+            binding.categoryClothing to "Clothing",
+            binding.categoryHomeKitchen to "Kitchen",
+            binding.categoryBooks to "Books",
+            binding.categorySports to "Sports & Outdoors"
+        )
+
+        categories.forEach { (view, category) ->
+            view.setOnClickListener {
+                showLoading(true)
+                viewModel.loadItemsByCategory(category)
+            }
+        }
+
+        binding.viewAllCategories.setOnClickListener {
+            showLoading(true)
+            viewModel.loadAllItems()
+        }
     }
 
     private fun setupFilterButton() {
         binding.filterButton.setOnClickListener {
             toggleCategoriesExpansion()
         }
-
         setupExpandedCategories()
     }
 
-    private var isCategoriesExpanded = false
-
     @SuppressLint("SetTextI18n")
-    private fun toggleCategoriesExpansion() {
-        isCategoriesExpanded = !isCategoriesExpanded
-        if (isCategoriesExpanded) {
-            binding.expandedCategoriesScroll.visibility = View.VISIBLE
-            binding.filterButtonText.text = "Hide All Categories"
-        } else {
-            binding.expandedCategoriesScroll.visibility = View.GONE
-            binding.filterButtonText.text = "Show All Categories"
-        }
-    }
-
     private fun setupExpandedCategories() {
-        val categories = mapOf(
-            "Electronics" to R.drawable.ic_electronics,
-            "Kitchen" to R.drawable.ic_kitchen,
-            "Clothing" to R.drawable.ic_clothings,
-            "Books" to R.drawable.ic_books,
-            "Sports & Outdoors" to R.drawable.ic_sports,
-            "Food & Beverages" to R.drawable.food,
-            "Vehicles" to R.drawable.car,
-            "Baby & Kids" to R.drawable.baby,
-            "Pet Supplies" to R.drawable.pet,
-            "Rice" to R.drawable.rice,
-            "Fish & Seafood" to R.drawable.fish,
-            "Meat & Poultry" to R.drawable.meat,
-            "Fruits & Vegetables" to R.drawable.vegetable,
-            "Groceries" to R.drawable.grocery,
-            "Home Appliances" to R.drawable.furniture,
-            "Handmade & Crafts" to R.drawable.craft,
-            "Livestock" to R.drawable.livestock,
-            "Services" to R.drawable.service,
-            "Others" to R.drawable.ic_others,
-        )
-
         val container = binding.expandedCategoriesContainer
-
-        categories.forEach { (categoryName, iconRes) ->
-            val chip = createCategoryChip(categoryName, iconRes)
-            container.addView(chip)
+        Categories.CATEGORIES_WITH_ICONS.forEach { (name, icon) ->
+            container.addView(createCategoryChip(name, icon))
         }
     }
 
-    private fun createCategoryChip(categoryName: String, iconRes: Int): Chip {
+    private fun createCategoryChip(name: String, icon: Int): Chip {
         return Chip(requireContext()).apply {
-            text = categoryName
+            text = name
             isCheckable = false
             isClickable = true
-
-            setChipIconResource(iconRes)
+            setChipIconResource(icon)
             isChipIconVisible = true
             chipIconSize = 45f
-
             setChipBackgroundColorResource(R.color.gray_200)
             setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_700))
-
             setPadding(20, 12, 20, 12)
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -275,33 +323,124 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             ).apply { setMargins(8, 8, 8, 8) }
 
             setOnClickListener {
-                Toast.makeText(requireContext(), "Showing: $categoryName", Toast.LENGTH_SHORT).show()
-                viewModel.loadItemsByCategory(categoryName)
+                showLoading(true)
+                viewModel.loadItemsByCategory(name)
                 if (isCategoriesExpanded) toggleCategoriesExpansion()
             }
         }
     }
 
-    private fun setupCategoryClicks() {
-        binding.categoryElectronics.setOnClickListener {
-            viewModel.loadItemsByCategory("Electronics")
+    private fun toggleCategoriesExpansion() {
+        isCategoriesExpanded = !isCategoriesExpanded
+        binding.expandedCategoriesScroll.visibility = if (isCategoriesExpanded) View.VISIBLE else View.GONE
+    }
+
+    private fun setupTradeRequestBadgeListener() {
+        val currentUserId = auth.currentUser?.uid ?: return
+        val ref = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
+            .getReference("trade_requests")
+
+        ref.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (!isAdded || _binding == null) return
+                var pendingCount = 0
+                for (tradeSnap in snapshot.children) {
+                    val tradeMap = tradeSnap.value as? Map<*, *> ?: continue
+                    val toUserId = (tradeMap["toUser"] as? Map<*, *>)?.get("userId") as? String ?: ""
+                    val fromUserId = (tradeMap["fromUser"] as? Map<*, *>)?.get("userId") as? String ?: ""
+                    val status = tradeMap["status"] as? String ?: ""
+                    if ((toUserId == currentUserId || fromUserId == currentUserId) && status == "Pending") pendingCount++
+                }
+                updateTradeRequestBadge(pendingCount)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("HomeFragment", "Failed to load trade requests: ${error.message}")
+            }
+        })
+    }
+
+    private fun updateTradeRequestBadge(count: Int) {
+        if (!isAdded || _binding == null) return
+        binding.tradeRequestBadge.visibility = if (count > 0) {
+            binding.tradeRequestBadge.text = count.toString()
+            View.VISIBLE
+        } else View.GONE
+    }
+
+    private fun setupStatusBarInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
+            val statusBarHeight = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+            view.setPadding(0, statusBarHeight, 0, 0)
+            insets
         }
-        binding.categoryClothing.setOnClickListener {
-            viewModel.loadItemsByCategory("Clothing")
+    }
+
+    private fun setupAd() {
+        binding.adViewTop.loadAd(AdRequest.Builder().build())
+    }
+
+    private fun setupScrollListener() {
+        val scrollView = binding.scrollContent
+        val filterButtonContainer = binding.filterButton
+        val categoriesView = binding.categoriesScroll
+
+        scrollView.viewTreeObserver.addOnScrollChangedListener {
+            val scrollY = scrollView.scrollY
+            val categoryBottom = categoriesView.bottom
+            if (scrollY >= categoryBottom) {
+                filterButtonContainer.translationY = scrollY - categoryBottom.toFloat()
+                filterButtonContainer.elevation = 10f
+            } else {
+                filterButtonContainer.translationY = 0f
+                filterButtonContainer.elevation = 0f
+            }
         }
-        binding.categoryHomeKitchen.setOnClickListener {
-            viewModel.loadItemsByCategory("Kitchen")
-        }
-        binding.categoryBooks.setOnClickListener {
-            viewModel.loadItemsByCategory("Books")
-        }
-        binding.categorySports.setOnClickListener {
-            viewModel.loadItemsByCategory("Sports & Outdoors")
-        }
-        binding.viewAllCategories.setOnClickListener {
-            Toast.makeText(requireContext(), "Showing all items", Toast.LENGTH_SHORT).show()
-            viewModel.loadAllItems()
-        }
+    }
+
+    private fun cleanupDatabaseFields() {
+        val ref = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
+            .getReference("items")
+
+        ref.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                snapshot.children.forEach { child ->
+                    val updates = HashMap<String, Any>()
+
+                    // Remove originalPrice if exists
+                    if (child.child("originalPrice").exists()) {
+                        updates["originalPrice"] = ""
+                    }
+
+                    // Remove ownerProfileImage from items (keep in users only)
+                    if (child.child("ownerProfileImage").exists()) {
+                        updates["ownerProfileImage"] = ""
+                    }
+
+                    // Apply updates if needed
+                    if (updates.isNotEmpty()) {
+                        child.ref.updateChildren(updates)
+                            .addOnSuccessListener {
+                                Log.d("Cleanup", "✅ Cleaned item ${child.key}")
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("Cleanup", "❌ Failed to clean item ${child.key}: ${e.message}")
+                            }
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("Cleanup", "Error: ${error.message}")
+            }
+        })
+    }
+
+    override fun onResume() {
+        super.onResume()
+        setupTradeRequestBadgeListener()
+        viewModel.loadAllItems() // ✅ Refresh data when coming back
+        view?.postDelayed({ binding.scrollContent.scrollTo(0, 0) }, 100)
     }
 
     override fun onDestroyView() {
@@ -310,7 +449,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 }
 
-// --- Extension function for dp → px ---
 fun Int.dpToPx(view: View): Int {
     return TypedValue.applyDimension(
         TypedValue.COMPLEX_UNIT_DIP,

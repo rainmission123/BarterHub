@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    android:background="@drawable/login_background">
+    android:background="?attr/colorSurface">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -20,7 +20,7 @@
             android:text="ID Verification"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:textColor="@color/text_primary_light"
+            android:textColor="?attr/colorOnSurface"
             android:gravity="center"
             android:layout_marginBottom="8dp"
             tools:ignore="HardcodedText" />
@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:text="@string/upload_clear_photos_of_your_government_issued_id"
             android:textSize="14sp"
-            android:textColor="@color/gray_600"
+            android:textColor="?attr/colorOnSurface"
             android:gravity="center"
             android:layout_marginBottom="24dp" />
 

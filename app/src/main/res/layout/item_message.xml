@@ -13,8 +13,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Sender"
-        android:textStyle="bold"
         android:textSize="12sp"
+        android:textStyle="bold"
         android:visibility="gone"
         tools:ignore="HardcodedText" />
 
@@ -23,9 +23,9 @@
         android:id="@+id/tvMessage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@drawable/message_background_received"
         android:padding="8dp"
         android:textColor="@android:color/black"
-        android:background="@drawable/message_background_received"
         android:visibility="gone" />
 
     <!-- Message Image -->
@@ -44,7 +44,7 @@
         android:layout_height="wrap_content"
         android:text="12:30 PM"
         android:textSize="10sp"
-        android:textColor="@android:color/darker_gray"
+        android:textColor="?attr/colorOnSurface"
         tools:ignore="HardcodedText,SmallSp" />
 
 

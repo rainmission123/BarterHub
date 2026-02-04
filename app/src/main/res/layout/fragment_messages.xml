@@ -2,9 +2,8 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="@drawable/login_background"
+    android:background="?attr/colorSurface"
     android:paddingBottom="125dp"
-    android:layout_margin="1dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -65,9 +64,9 @@
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/searchCard"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:layout_marginBottom="16dp"
-            app:cardCornerRadius="24dp"
+            app:cardCornerRadius="12dp"
             app:cardBackgroundColor="@color/background_light"
             app:cardElevation="4dp">
 
@@ -100,18 +99,9 @@
                     android:minHeight="48dp"
                     android:textColor="@android:color/black"
                     android:textColorHint="#546E7A"
-                    android:textSize="16sp"
-                    tools:ignore="VisualLintTextFieldSize" />
+                    android:textSize="14sp"
+                    tools:ignore="VisualLintTextFieldSize,TouchTargetSizeCheck" />
 
-                <ImageView
-                    android:id="@+id/filterButton"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginStart="8dp"
-                    android:contentDescription="@string/todo"
-                    android:src="@drawable/ic_filter"
-                    app:tint="@color/gray_700" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -165,16 +155,22 @@
             android:visibility="gone" />
     </LinearLayout>
 
-    <!-- Floating Action Button -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/newMessageFab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <FrameLayout
+        android:id="@+id/botFabContainer"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
         android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
-        android:contentDescription="@string/todo"
-        android:src="@drawable/ic_add"
-        android:tint="@color/color_accent"
-        app:backgroundTint="@color/colorAccent"
-        tools:ignore="ClassNameCheck,DuplicateSpeakableTextCheck,ImageContrastCheck" />
+        android:layout_margin="6dp"
+        android:clickable="true"
+        android:focusable="true">
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/fabLottie"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:lottie_rawRes="@raw/chat_bot"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true" />
+    </FrameLayout>
+
 </FrameLayout>

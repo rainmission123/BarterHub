@@ -1,0 +1,63 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="400dp"
+    android:height="400dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- Wheel Base -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M100,100 m-95,0 a95,95 0 1,0 190,0 a95,95 0 1,0 -190,0" />
+
+    <!-- 8 Equal Slices -->
+    <group>
+
+        <!-- Slice 1 – GOLD -->
+        <path android:fillColor="#FFD700"
+            android:pathData="M100,100 L100,5 A95,95 0 0,1 167.68,32.32 Z"/>
+
+        <!-- Slice 2 – ORANGE -->
+        <path android:fillColor="#FF6B35"
+            android:pathData="M100,100 L167.68,32.32 A95,95 0 0,1 195,100 Z"/>
+
+        <!-- Slice 3 – TEAL -->
+        <path android:fillColor="#4ECDC4"
+            android:pathData="M100,100 L195,100 A95,95 0 0,1 167.68,167.68 Z"/>
+
+        <!-- Slice 4 – LIGHT BLUE -->
+        <path android:fillColor="#45B7D1"
+            android:pathData="M100,100 L167.68,167.68 A95,95 0 0,1 100,195 Z"/>
+
+        <!-- Slice 5 – GOLD -->
+        <path android:fillColor="#FFD700"
+            android:pathData="M100,100 L100,195 A95,95 0 0,1 32.32,167.68 Z"/>
+
+        <!-- Slice 6 – ORANGE -->
+        <path android:fillColor="#FF6B35"
+            android:pathData="M100,100 L32.32,167.68 A95,95 0 0,1 5,100 Z"/>
+
+        <!-- Slice 7 – TEAL -->
+        <path android:fillColor="#4ECDC4"
+            android:pathData="M100,100 L5,100 A95,95 0 0,1 32.32,32.32 Z"/>
+
+        <!-- Slice 8 – LIGHT BLUE -->
+        <path android:fillColor="#45B7D1"
+            android:pathData="M100,100 L32.32,32.32 A95,95 0 0,1 100,5 Z"/>
+    </group>
+
+    <!-- White Center Circle -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:strokeColor="#000000"
+        android:strokeWidth="2"
+        android:pathData="M100,100 m-25,0 a25,25 0 1,0 50,0 a25,25 0 1,0 -50,0" />
+
+    <!-- RED Center Circle - ADDED THIS -->
+    <path
+        android:fillColor="#FF0000"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.5"
+        android:pathData="M100,100 m-15,0 a15,15 0 1,0 30,0 a15,15 0 1,0 -30,0" />
+
+
+</vector>

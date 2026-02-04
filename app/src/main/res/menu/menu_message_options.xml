@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_view_profile"
+        android:title="View Profile" />
+    <item
+        android:id="@+id/menu_delete_message"
+        android:title="Delete Message" />
+    <item
+        android:id="@+id/menu_react_message"
+        android:title="React" />
+</menu>
+

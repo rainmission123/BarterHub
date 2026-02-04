@@ -52,12 +52,12 @@ class EditProfileActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance().reference
 
-        // Initialize views
+        // Initialize views - FIXED ID REFERENCES
         ivProfileImage = findViewById(R.id.ivProfileImage)
         fabChangePhoto = findViewById(R.id.fabChangePhoto)
         etFullName = findViewById(R.id.editFullName)
         etBio = findViewById(R.id.editBio)
-        etPhone = findViewById(R.id.editphone)
+        etPhone = findViewById(R.id.editPhone) // CHANGED: editphone -> editPhone
         etLocation = findViewById(R.id.editLocation)
         btnSave = findViewById(R.id.btnSave)
 
@@ -107,7 +107,7 @@ class EditProfileActivity : AppCompatActivity() {
         val uid = auth.currentUser?.uid ?: return
         val fullName = etFullName.text.toString().trim()
         val bio = etBio.text.toString().trim()
-        val phone = etPhone.text.toString().trim()
+        val phone = etPhone.text.toString().trim() // CHANGED: etPhone
         val location = etLocation.text.toString().trim()
 
         if (fullName.isEmpty()) {
@@ -149,15 +149,15 @@ class EditProfileActivity : AppCompatActivity() {
             val fileName = "profile_${System.currentTimeMillis()}.jpg"
             val requestBody = imageBytes.toRequestBody("image/*".toMediaTypeOrNull())
 
-            // ✅ FIXED: Use YOUR existing unsigned preset
+            // Use YOUR existing unsigned preset
             val multipartBody = MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("file", fileName, requestBody)
-                .addFormDataPart("upload_preset", "barterhub_ids") // ✅ PALITAN ITO
+                .addFormDataPart("upload_preset", "barterhub_ids") // CHANGE THIS TO YOUR PRESET
                 .build()
 
             val request = Request.Builder()
-                .url("https://api.cloudinary.com/v1_1/dtccox0s0/image/upload")
+                .url("https://api.cloudinary.com/v1_1/dtccox0s0/image/upload") // CHANGE CLOUD NAME
                 .post(multipartBody)
                 .build()
 

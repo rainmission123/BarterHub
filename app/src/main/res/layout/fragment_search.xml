@@ -5,143 +5,176 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/login_background"
+    android:background="@color/background_gray"
     android:fitsSystemWindows="true">
-
-
 
     <!-- Scrollable Content -->
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/searchScrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:background="?attr/colorSurface"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="5dp">
+            android:padding="16dp">
 
-            <!-- Modern Search Card -->
+            <!-- Modern Search Bar -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                app:cardElevation="1dp"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="12dp"
-                app:strokeColor="@color/White"
+                app:cardCornerRadius="28dp"
+                app:cardElevation="4dp"
+                app:strokeColor="@color/colorAccent"
                 app:strokeWidth="1dp">
 
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
-                    app:startIconDrawable="@drawable/ic_search"
-                    app:startIconTint="@color/darker_gray"
-                    app:hintTextColor="@color/black"
-                    app:boxStrokeColor="@color/color_accent"
-                    app:boxBackgroundColor="@color/surface"
-                    app:shapeAppearanceOverlay="@style/RoundedTextField">
+                    android:orientation="horizontal"
+                    android:background="?attr/colorSurface"
+                    android:padding="12dp"
+                    android:gravity="center_vertical">
 
-                    <com.google.android.material.textfield.TextInputEditText
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginEnd="12dp"
+                        android:src="@drawable/ic_search"
+                        android:contentDescription="@string/search_icon"
+                        app:tint="@color/gray_600" />
+
+                    <EditText
                         android:id="@+id/searchEditText"
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@android:color/transparent"
                         android:hint="@string/search_for_items_to_barter"
-                        android:textColor="@color/black"
-                        android:paddingStart="@dimen/_40dp"
-                        android:textColorHint="@color/hint_color"
                         android:imeOptions="actionSearch"
                         android:inputType="text"
-                        tools:ignore="RtlSymmetry" />
-                </com.google.android.material.textfield.TextInputLayout>
+                        android:maxLines="1"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textColorHint="@color/gray_500"
+                        android:textSize="16sp"
+                        tools:ignore="TouchTargetSizeCheck" />
+
+                    <ImageButton
+                        android:id="@+id/btnClearSearch"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginStart="8dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_close"
+                        android:contentDescription="@string/clear_search"
+                        android:visibility="gone"
+                        app:tint="@color/gray_500" />
+                </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <!-- Recent Searches Section -->
-            <TextView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/recent_searches"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="@color/black"
-                android:layout_marginBottom="16dp" />
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/recent_searches"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"
+                    android:drawablePadding="8dp" />
+
+                <TextView
+                    android:id="@+id/tvClearRecent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="8dp"
+                    android:text="@string/clear_all"
+                    android:textColor="@color/primary_500"
+                    android:textSize="14sp"
+                    tools:ignore="TouchTargetSizeCheck" />
+            </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recentSearchesRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp" />
+                android:layout_marginBottom="32dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tvNoRecent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/no_recent_searches"
+                android:textSize="14sp"
+                android:textColor="@color/gray_500"
+                android:gravity="center"
+                android:layout_marginBottom="32dp"
+                android:padding="16dp" />
 
             <!-- Popular Categories Section -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/popular_categories"
-                android:textSize="16sp"
+                android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="@color/black"
+                android:textColor="?attr/colorOnSurface"
                 android:layout_marginBottom="16dp" />
 
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/categoryChipGroup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:singleSelection="false"
-                app:selectionRequired="false"
-                app:chipSpacing="8dp">
+                app:chipSpacing="8dp"
+                app:singleLine="false" />
 
-                <com.google.android.material.chip.Chip
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/black"
-                    android:text="Electronics"
-                    app:chipBackgroundColor="@color/chip_background"
-                    app:chipStrokeColor="@color/colorAccent"
-                    app:chipStrokeWidth="1dp"
-                    tools:ignore="HardcodedText" />
+            <!-- Trending Now Section -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/trending_now"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface"
+                android:layout_marginTop="32dp"
+                android:layout_marginBottom="16dp" />
 
-                <com.google.android.material.chip.Chip
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/black"
-                    android:text="Clothing"
-                    app:chipBackgroundColor="@color/chip_background"
-                    app:chipStrokeColor="@color/colorAccent"
-                    app:chipStrokeWidth="1dp"
-                    tools:ignore="HardcodedText" />
-
-                <com.google.android.material.chip.Chip
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/books"
-                    android:textColor="@color/black"
-                    app:chipBackgroundColor="@color/chip_background"
-                    app:chipStrokeColor="@color/colorAccent"
-                    app:chipStrokeWidth="1dp" />
-
-                <com.google.android.material.chip.Chip
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Home Items"
-                    android:textColor="@color/black"
-                    app:chipBackgroundColor="@color/chip_background"
-                    app:chipStrokeColor="@color/colorAccent"
-                    app:chipStrokeWidth="1dp"
-                    tools:ignore="HardcodedText" />
-            </com.google.android.material.chip.ChipGroup>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/trendingRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:minHeight="240dp"
+                android:nestedScrollingEnabled="false"
+                android:layout_marginBottom="70dp" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
     <!-- Centered Loading Indicator -->
-    <ProgressBar
+    <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/searchProgressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_gravity="center"
-        android:visibility="gone" />
+        android:visibility="gone"
+        app:indicatorColor="@color/primary_500"
+        app:trackColor="@color/gray_200" />
+
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

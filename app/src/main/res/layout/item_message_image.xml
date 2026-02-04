@@ -1,20 +1,187 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="8dp">
+    android:paddingVertical="6dp">
 
-    <!-- Image bubble -->
-    <ImageView
-        android:id="@+id/messageImageView"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:adjustViewBounds="true"
+    <!-- Profile Image -->
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/ivProfile"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="8dp"
         android:scaleType="centerCrop"
-        android:contentDescription="@string/message_image"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:src="@drawable/ic_profile_placeholder"/>
+
+    <!-- IMAGE BUBBLE -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/imageContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="48dp"
+        android:layout_marginTop="28dp"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <FrameLayout
+            android:layout_width="160dp"
+            android:layout_height="284dp"
+            android:background="@drawable/rounded_message_bg"
+            android:clipToOutline="true">
+
+            <ImageView
+                android:id="@+id/image1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:visibility="invisible"
+                tools:src="@drawable/ic_image_placeholder" />
+
+            <ImageView
+                android:id="@+id/image2"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="invisible"
+                app:layout_constraintTop_toTopOf="@id/image1"
+                app:layout_constraintBottom_toBottomOf="@id/image1"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/image3"
+                app:layout_constraintWidth_percent="0.5"
+                tools:src="@drawable/ic_image_placeholder" />
+
+            <ImageView
+                android:id="@+id/image3"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone"
+                app:layout_constraintTop_toTopOf="@id/image1"
+                app:layout_constraintBottom_toBottomOf="@id/image1"
+                app:layout_constraintStart_toEndOf="@id/image2"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintWidth_percent="0.5"
+                tools:src="@drawable/ic_image_placeholder" />
+
+            <View
+                android:id="@+id/uploadOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#66000000"
+                android:visibility="gone" />
+
+            <ProgressBar
+                android:id="@+id/progressBar2"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="90dp"
+                android:layout_gravity="center"
+                android:layout_height="6dp"
+                android:layout_marginHorizontal="8dp"
+                android:max="100"
+                android:progress="0"
+                android:visibility="invisible"
+                android:progressTint="@color/colorAccent"
+                android:progressBackgroundTint="@color/gray_light" />
+
+            <TextView
+                android:id="@+id/extraCountText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rounded_dark_bg"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:textColor="@android:color/white"
+                android:textSize="12sp"
+                android:visibility="gone"
+                android:elevation="12dp"
+                app:layout_constraintBottom_toBottomOf="@id/image1"
+                app:layout_constraintEnd_toEndOf="@id/image1"
+                app:layout_constraintTop_toTopOf="@id/image1"
+                app:layout_constraintStart_toStartOf="@id/image1"
+                tools:text="+2" />
+        </FrameLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- THREE DOT MENU BUTTON -->
+    <ImageView
+        android:id="@+id/btnMessageMenu"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:src="@drawable/ic_more_vert"
+        android:padding="4dp"
+        android:visibility="visible"
+        app:layout_constraintStart_toEndOf="@id/imageContainer"
+        app:layout_constraintTop_toTopOf="@id/imageContainer"
+        app:layout_constraintBottom_toBottomOf="@id/imageContainer"
+        android:layout_marginStart="4dp"
+        app:tint="@color/text_hint" />
+
+    <!-- 👇 REACTION CONTAINER (SAME AS VIDEO) -->
+    <LinearLayout
+        android:id="@+id/singleReactionContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:background="@drawable/bg_reaction_default"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="6dp"
+        android:paddingVertical="2dp"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@id/imageContainer"
+        app:layout_constraintTop_toBottomOf="@id/imageContainer">
+
+        <TextView
+            android:id="@+id/tvReactionEmoji"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="👍"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tvReactionCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:text="1"
+            android:textColor="@color/text_secondary"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+    <!-- TIMESTAMP AND STATUS -->
+    <LinearLayout
+        android:id="@+id/statusContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:orientation="vertical"
+        android:paddingHorizontal="4dp"
+        android:paddingTop="4dp"
+        app:layout_constraintStart_toStartOf="@id/imageContainer"
+        app:layout_constraintTop_toBottomOf="@id/imageContainer"
+        app:layout_constraintEnd_toEndOf="@id/imageContainer">
+
+        <TextView
+            android:id="@+id/tvTimestamp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="10:30 AM"
+            android:textColor="@color/text_hint"
+            android:textSize="9sp" />
+
+        <TextView
+            android:id="@+id/tvReadStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sent"
+            android:textColor="@color/text_hint"
+            android:textSize="9sp" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

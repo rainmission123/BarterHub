@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/reactionItem"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingHorizontal="6dp"
+    android:paddingVertical="2dp"
+    android:layout_marginEnd="4dp"
+    android:gravity="center_vertical"
+    android:background="@drawable/bg_reaction_default">
+
+    <TextView
+        android:id="@+id/tvReactionEmoji"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:layout_marginEnd="2dp"/>
+
+    <TextView
+        android:id="@+id/tvReactionCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="10sp"
+        android:textColor="@color/gray_600"
+        android:textStyle="bold"/>
+</LinearLayout>

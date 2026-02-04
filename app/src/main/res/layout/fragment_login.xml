@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/login_background"
+    android:background="?attr/colorSurface"
     android:fitsSystemWindows="true">
 
     <androidx.core.widget.NestedScrollView
@@ -20,8 +20,8 @@
             <!-- Animated Logo Container -->
             <com.airbnb.lottie.LottieAnimationView
                 android:id="@+id/animationView"
-                android:layout_width="167dp"
-                android:layout_height="129dp"
+                android:layout_width="wrap_content"
+                android:layout_height="110dp"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="@dimen/margin_top_medium"
                 android:layout_marginBottom="@dimen/margin_bottom_small"
@@ -33,9 +33,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                app:cardBackgroundColor="@color/card_background"
-                app:cardCornerRadius="@dimen/card_corner_radius_large"
-                app:strokeColor="@color/color_accent">
+                app:cardBackgroundColor="?attr/colorSurface"
+                app:cardCornerRadius="@dimen/card_corner_radius_large">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -51,7 +50,7 @@
                         android:text="@string/welcome_to_barter_hub_ph"
                         android:textAlignment="center"
                         android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"
-                        android:textColor="@color/primaryDark" />
+                        android:textColor="@color/welcomeTextColor"/>
 
                     <TextView
                         android:layout_width="match_parent"
@@ -59,21 +58,20 @@
                         android:layout_marginBottom="@dimen/margin_bottom_xlarge"
                         android:text="@string/sign_in_to_continue_to_barterhub"
                         android:textAlignment="center"
-                        android:textColor="@color/textSecondary"
+                        android:textColor="@color/welcomeTextColor"
                         android:textSize="@dimen/text_size_body" />
-
                     <!-- Email Input -->
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="@dimen/margin_bottom_medium"
-                        app:boxStrokeColor="@color/colorSecondary"
+                        android:background="?attr/colorSurface"
                         app:endIconMode="clear_text"
-                        app:hintTextColor="@color/colorPrimaryDark"
                         app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.MediumComponent"
                         app:startIconDrawable="@drawable/ic_email_login"
-                        app:startIconTint="@color/gray_600">
+                        app:startIconTint="?attr/colorOnSurfaceVariant"
+                        app:hintTextColor="?attr/colorOnSurface">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/emailEditText"
@@ -83,9 +81,8 @@
                             android:inputType="textEmailAddress"
                             android:minHeight="@dimen/input_min_height"
                             android:paddingStart="@dimen/input_padding_start"
-                            android:textColor="@color/textPrimary"
-                            tools:ignore="RtlSymmetry" />
-
+                            android:textColor="?attr/colorOnSurface"
+                            android:textColorHint="?attr/colorOnSurfaceVariant" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <!-- Password Input -->
@@ -94,12 +91,12 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="@dimen/margin_bottom_medium"
-                        app:boxStrokeColor="@color/colorSecondary"
+                        android:background="?attr/colorSurface"
                         app:endIconMode="password_toggle"
-                        app:hintTextColor="@color/colorPrimaryDark"
                         app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.MediumComponent"
                         app:startIconDrawable="@drawable/ic_lock"
-                        app:startIconTint="@color/gray_600">
+                        app:startIconTint="?attr/colorOnSurfaceVariant"
+                        app:hintTextColor="?attr/colorOnSurface">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/passwordEditText"
@@ -109,9 +106,10 @@
                             android:inputType="textPassword"
                             android:minHeight="@dimen/input_min_height"
                             android:paddingStart="@dimen/input_padding_start"
-                            android:textColor="@color/textPrimary"
-                            tools:ignore="RtlSymmetry" />
+                            android:textColor="?attr/colorOnSurface"
+                            android:textColorHint="?attr/colorOnSurfaceVariant" />
                     </com.google.android.material.textfield.TextInputLayout>
+
 
                     <!-- Forgot Password -->
                     <TextView
@@ -123,7 +121,7 @@
                         android:clickable="true"
                         android:focusable="true"
                         android:text="@string/forgot_password"
-                        android:textColor="#4A148C"
+                        android:textColor="?attr/colorPrimary"
                         android:textSize="@dimen/text_size_small"
                         tools:ignore="TouchTargetSizeCheck" />
 
@@ -163,18 +161,19 @@
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
                             android:layout_centerVertical="true"
-                            android:background="@color/divider" />
+                            android:background="?attr/colorOnSurface" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_centerInParent="true"
+                            android:background="?attr/colorSurface"
                             android:paddingStart="16dp"
                             android:paddingEnd="16dp"
-                            android:background="@color/card_background"
                             android:text="@string/or_continue_with"
-                            android:textColor="@color/textSecondary"
-                            android:textSize="@dimen/text_size_small" />
+                            android:textColor="@color/welcomeTextColor"
+                            android:textSize="@dimen/text_size_small"
+                            tools:ignore="TextContrastCheck" />
                     </RelativeLayout>
 
                     <!-- Social Login Buttons -->
@@ -232,7 +231,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/don_t_have_an_account"
-                            android:textColor="@color/textSecondary"
+                            android:textColor="@color/welcomeTextColor"
                             android:textSize="@dimen/text_size_medium" />
 
                         <TextView
@@ -243,7 +242,7 @@
                             android:clickable="true"
                             android:focusable="true"
                             android:text="@string/sign_up"
-                            android:textColor="#4A148C"
+                            android:textColor="?attr/colorPrimary"
                             android:textSize="@dimen/text_size_medium"
                             android:textStyle="bold"
                             tools:ignore="TouchTargetSizeCheck" />

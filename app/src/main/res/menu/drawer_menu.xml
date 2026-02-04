@@ -22,11 +22,6 @@
         android:title="Messages"
         android:icon="@drawable/chatting"/>
 
-    <item
-        android:id="@+id/nav_dark_mode"
-        android:title="Dark Mode"
-        android:icon="@drawable/night_mode"
-        app:actionLayout="@layout/switch_dark_mode_layout" />
 
     <item
         android:id="@+id/nav_settings"

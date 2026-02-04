@@ -7,12 +7,13 @@
     android:background="@android:color/black">
 
     <!-- CameraX PreviewView - WITH MARGIN FOR TEXTVIEW -->
+
+    <!-- Instruction Text - DAPAT NASA ITAAS -->
     <androidx.camera.view.PreviewView
         android:id="@+id/cameraPreview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
 
-    <!-- Instruction Text - DAPAT NASA ITAAS -->
     <TextView
         android:id="@+id/tvInstruction"
         android:layout_width="match_parent"
@@ -36,14 +37,13 @@
     <!-- Capture Button - DAPAT NASA BABA -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btnCapture"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="2dp"
         android:contentDescription="@string/todo"
         android:src="@drawable/ic_camera"
-        app:backgroundTint="@color/colorAccent"
+        app:backgroundTint="@color/black_50_transparent"
         app:tint="@android:color/white" />
 
     <!-- Cancel Button -->
@@ -51,9 +51,9 @@
         android:id="@+id/btnCancel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        android:layout_margin="16dp"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="20dp"
         android:background="@color/black_60"
         android:text="@string/cancel"
         android:textColor="@android:color/white" />

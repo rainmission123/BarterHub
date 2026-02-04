@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="300dp"
+    android:layout_height="400dp"
+    android:padding="25dp"
+    android:background="@drawable/popup_rounded_bg">
+
+    <!-- Gift Box Image -->
+    <ImageView
+        android:id="@+id/imgGiftBox"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="40dp"
+        android:src="@drawable/giftbox"
+        android:contentDescription="Mystery gift box" />
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/tvMysteryTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Mystery Gift"
+        android:textColor="@color/colorOnSurfaceVariant"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_below="@id/imgGiftBox"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp" />
+
+    <!-- Gift Message (initially hidden) -->
+    <TextView
+        android:id="@+id/tvGiftMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/colorAccent"
+        android:gravity="center"
+        android:visibility="gone"
+        android:layout_below="@id/tvMysteryTitle"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp" />
+
+    <!-- Claim Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnClaimGift"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="OPEN GIFT"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/colorPrimary"
+        android:layout_below="@id/tvGiftMessage"
+        android:layout_marginTop="30dp"
+        android:layout_centerHorizontal="true" />
+
+</RelativeLayout>

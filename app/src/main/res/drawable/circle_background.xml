@@ -2,7 +2,7 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
 
-    <solid android:color="#E0E0E0"/> <!-- light gray, pwede palitan -->
+    <solid android:color="#E0E0E0"/>
 
     <!-- optional: stroke -->
     <stroke

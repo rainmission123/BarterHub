@@ -236,7 +236,7 @@ class UploadIdFragment : Fragment() {
                 }
                 "rejected" -> {
                     binding.tvVerificationStatus.text = "❌ REJECTED! Please upload valid ID photos."
-                    binding.tvVerificationStatus.setBackgroundColor(ContextCompat.getColor(requireContext(), android.R.color.holo_red_light))
+                    binding.tvVerificationStatus.setBackgroundColor(ContextCompat.getColor(requireContext(), android.R.color.white))
                     binding.tvVerificationStatus.setTextColor(redColor)
                     binding.btnSubmitVerification.visibility = View.VISIBLE
                     binding.btnSubmitVerification.text = "Resubmit Verification"

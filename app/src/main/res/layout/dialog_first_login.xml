@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="12dp">
+
+    <!-- CLOSE BUTTON (OUTSIDE THE POPUP) -->
+    <ImageView
+        android:id="@+id/btnCloseFirstLogin"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="1dp"
+        android:layout_marginTop="1dp"
+        android:src="@drawable/ic_close1"
+        android:padding="9dp"
+        android:background="@drawable/bg_floating_close"
+        android:contentDescription="@string/close"
+        android:elevation="12dp"
+        app:tint="@color/White" />
+
+    <!-- POPUP CARD -->
+    <LinearLayout
+        android:id="@+id/dialogContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="18dp"
+        android:background="@drawable/popup_rounded_bg"
+        android:layout_marginTop="49dp"
+        android:elevation="8dp"
+        android:gravity="center_horizontal">
+
+            <ImageView
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:layout_gravity="center"
+                android:contentDescription="@string/todo"
+                android:src="@drawable/handshake3"
+                app:tint="@color/premium_gold" />
+
+
+        <TextView
+            android:id="@+id/tvWelcomeTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/welcome_to_barterhub"
+            android:textColor="@color/black"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="4dp"/>
+
+        <TextView
+            android:id="@+id/tvWelcomeSubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/your_trading_adventure_begins"
+            android:textColor="@color/gray_600"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- DESCRIPTION -->
+        <TextView
+            android:id="@+id/tvWelcomeDescription"
+            android:background="@color/background_light"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/start_your_journey_and_earn_amazing_rewards_by_completing_daily_challenges_trade_earn_and_grow_with_our_community"
+            android:textColor="@color/gray_800"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:lineSpacingExtra="6dp"
+            android:layout_marginBottom="18dp" />
+
+        <!-- FEATURES (SIMPLIFIED, LESS HEIGHT) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:dividerPadding="6dp"
+            android:showDividers="middle"
+            android:layout_marginBottom="20dp">
+
+            <!-- Feature Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_trophy"
+                    android:layout_marginEnd="10dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/complete_daily_challenges"
+                    android:textColor="@color/black"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <!-- Feature Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/giftbox"
+                    android:layout_marginEnd="10dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/earn_exclusive_rewards"
+                    android:textColor="@color/black"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <!-- Feature Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:contentDescription="@string/todo"
+                    android:src="@drawable/ic_connect"
+                    android:layout_marginEnd="10dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/build_your_trading_network"
+                    android:textColor="@color/black"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:contentDescription="@string/todo"
+                    android:src="@drawable/ic_games"
+                    android:layout_marginEnd="10dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Play Mini Games &amp; Win Rewards"
+                    android:textSize="14sp"
+                    android:textColor="@color/black"
+                    android:layout_marginBottom="10dp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- BUTTONS -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnStartFirstChallenge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/start_my_trading_journey"
+            android:backgroundTint="@color/premium_gold"
+            android:textColor="@color/black"
+            android:textSize="14sp"
+            android:paddingVertical="12dp"
+            android:textStyle="bold"
+            app:cornerRadius="12dp"
+            android:layout_marginBottom="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnMaybeLater"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/explore_first"
+            android:textColor="@color/gray_600"
+            android:textSize="13sp"
+            android:paddingVertical="10dp" />
+
+    </LinearLayout>
+
+</RelativeLayout>

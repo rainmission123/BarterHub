@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="2dp">
+
+    <!-- Bot Profile Picture (LEFT SIDE) -->
+    <ImageView
+        android:id="@+id/botProfileImage"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginEnd="8dp"
+        android:visibility="visible"
+        android:src="@drawable/ic_bot_avatar"
+        android:contentDescription="Bot Avatar"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="@id/messageText"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/messageText"/>
+
+    <!-- Message Bubble -->
+    <TextView
+        android:id="@+id/messageText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="12dp"
+        android:textSize="14sp"
+        android:maxWidth="280dp"
+        android:layout_gravity="center_vertical"/>
+</LinearLayout>

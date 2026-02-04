@@ -7,15 +7,18 @@
     android:layout_margin="24dp"
     app:cardCornerRadius="28dp"
     app:cardElevation="8dp"
+    android:background="?attr/colorSurface"
+    app:strokeColor="@color/colorAccent"
     app:strokeWidth="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:background="?attr/colorSurface"
         android:padding="24dp">
 
-        <!-- Header with icon -->
+        <!-- Header -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -29,8 +32,7 @@
                 android:layout_marginEnd="12dp"
                 android:contentDescription="@string/todo"
                 android:src="@drawable/ic_offer"
-                app:tint="@color/colorAccent"
-                tools:ignore="ImageContrastCheck" />
+                app:tint="@color/colorAccent" />
 
             <TextView
                 android:layout_width="0dp"
@@ -39,18 +41,8 @@
                 android:text="@string/make_an_offer"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                android:textColor="?attr/colorOnSurface"
-                android:letterSpacing="0.02" />
+                android:textColor="?attr/colorOnSurface" />
 
-            <ImageButton
-                android:id="@+id/closeButton"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/close_dialog"
-                android:src="@drawable/ic_close"
-                app:tint="?attr/colorOnSurfaceVariant"
-                tools:ignore="TouchTargetSizeCheck" />
         </LinearLayout>
 
         <!-- Subtitle -->
@@ -61,75 +53,131 @@
             android:textSize="14sp"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:lineSpacingExtra="4sp"
-            android:layout_marginBottom="20dp" />
+            android:layout_marginBottom="16dp" />
 
-        <!-- Items to offer -->
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.Material3.TextInputLayout.FilledBox"
+        <!-- Photo Upload Section -->
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:hint="@string/select_an_item_to_offer"
-            app:boxBackgroundColor="?attr/colorSurfaceContainerLow"
-            app:boxCornerRadiusTopStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusBottomEnd="12dp"
-            app:endIconMode="dropdown_menu"
-            app:startIconDrawable="@drawable/ic_inventory">
+            android:text="@string/add_photos_optional"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnSurface"
+            android:layout_marginBottom="8dp" />
 
-            <AutoCompleteTextView
-                android:id="@+id/itemsSpinner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:clickable="true"
-                android:focusable="true"
-                android:inputType="none"
-                android:minHeight="56dp"
-                tools:ignore="LabelFor,SpeakableTextPresentCheck,VisualLintTextFieldSize"
-                android:paddingStart="40dp"
-                android:paddingEnd="8dp" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Message Input -->
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.Material3.TextInputLayout.FilledBox"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            android:hint="@string/add_a_message_optional"
-            app:boxBackgroundColor="?attr/colorSurfaceContainerLow"
-            app:boxCornerRadiusTopStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusBottomEnd="12dp"
-            app:counterEnabled="true"
-            app:counterMaxLength="200"
-            app:startIconDrawable="@drawable/ic_message">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="14dp">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/messageEditText"
+            <!-- Camera Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnTakePhoto"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="@string/take_photo"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                app:icon="@drawable/ic_camera"
+                app:iconGravity="start"
+                app:iconTint="?attr/colorOnSurfaceVariant" />
+
+            <!-- Gallery Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnChooseFromGallery"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="1dp"
+                android:text="@string/choose_from_gallery"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                app:icon="@drawable/upload_photo"
+                app:iconGravity="start"
+                app:iconTint="?attr/colorOnSurfaceVariant" />
+
+        </LinearLayout>
+
+        <!-- ✅ ADD CONTAINER FOR THE ENTIRE PHOTO PREVIEW SECTION -->
+        <LinearLayout
+            android:id="@+id/photoPreviewContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <!-- Selected Photos Preview -->
+            <TextView
+                android:id="@+id/tvSelectedPhotos"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="@dimen/_40dp"
-                android:inputType="textMultiLine|textCapSentences"
-                android:minLines="3"
-                android:maxLines="5"
-                android:maxLength="200"
-                tools:ignore="RtlSymmetry" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:text="@string/selected_photos"
+                android:textSize="14sp"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:layout_marginBottom="8dp" />
 
-        <!-- Buttons -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvSelectedPhotos"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:layout_marginBottom="16dp"
+                android:orientation="horizontal"
+                android:background="?attr/colorSurfaceVariant"
+                tools:listitem="@layout/item_selected_photo" />
+
+        </LinearLayout>
+
+        <!-- Optional Message -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="24dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="12dp"
+                android:contentDescription="@string/todo"
+                android:src="@drawable/ic_message"
+                app:tint="@color/colorAccent" />
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.FilledBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/add_a_message_optional"
+                app:counterEnabled="true"
+                app:counterMaxLength="200"
+                android:textColorHint="?attr/colorOnSurfaceVariant">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/messageEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColorHint="?attr/colorOnSurfaceVariant"
+                    android:inputType="textMultiLine|textCapSentences"
+                    android:maxLength="200"
+                    android:maxLines="5"
+                    android:minLines="3"
+                    android:textColor="?attr/colorOnSurface"
+                    tools:ignore="TextContrastCheck" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </LinearLayout>
+
         <!-- Buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="end"
-            android:paddingTop="8dp"
-            android:paddingEnd="8dp"
-            android:paddingBottom="8dp"
-            tools:ignore="RtlSymmetry">
+            android:gravity="end">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/cancelButton"
@@ -138,28 +186,21 @@
                 android:layout_height="wrap_content"
                 android:text="@string/cancel"
                 android:textAllCaps="true"
-
-                android:textSize="14sp"
-                android:letterSpacing="0.05" />
+                android:textColor="#DD2C00" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/sendOfferButton"
-                style="@style/Widget.MaterialComponents.Button"
+                style="@style/Widget.Material3.Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
-                android:letterSpacing="0.05"
                 android:text="@string/send_offer"
                 android:textAllCaps="true"
-                android:textColor="#5E35B1"
-                android:textSize="14sp"
-                app:backgroundTint="@color/colorAccent"
                 app:icon="@drawable/ic_send"
                 app:iconGravity="end"
-                app:iconPadding="4dp"
-                app:iconTint="@color/white" />
+                app:iconTint="?attr/colorOnPrimary"
+            app:backgroundTint="@color/colorAccent" />
+
         </LinearLayout>
-
-
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

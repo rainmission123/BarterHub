@@ -150,7 +150,7 @@ class SignupActivity : AppCompatActivity() {
     private fun saveUserToRealtimeDatabase(userId: String, fullName: String, email: String, profileImageUrl: String) {
         val userMap = hashMapOf(
             "fullName" to fullName,
-            "username" to fullName, // optional: pwede iba kung may username field
+            "username" to fullName,
             "email" to email,
             "profileImage" to profileImageUrl,
             "rating" to 0.0, // default rating
@@ -165,7 +165,6 @@ class SignupActivity : AppCompatActivity() {
             .addOnSuccessListener { Log.d("SignupActivity", "User saved to Realtime DB") }
             .addOnFailureListener { e -> Log.e("SignupActivity", "Failed to save user to Realtime DB", e) }
     }
-
 
     private fun generateAndUploadProfileImage(userId: String, initials: String) {
         try {

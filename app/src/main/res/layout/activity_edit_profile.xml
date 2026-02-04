@@ -4,26 +4,24 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="6dp"
-    android:background="@drawable/login_background"
+    android:padding="12dp"
+    android:background="?attr/colorSurface"
     tools:context=".ui.EditProfileActivity">
 
     <LinearLayout
-        android:layout_marginBottom="@dimen/_90dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="8dp">
 
-        <!-- Profile-->
+        <!-- Profile Image Section -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="220dp"
+            android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:paddingVertical="24dp">
 
-            <!-- Profile Image -->
             <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -34,13 +32,14 @@
                     android:layout_width="120dp"
                     android:layout_height="120dp"
                     android:src="@drawable/ic_profile_placeholder"
-                    app:civ_border_width="1dp" />
+                    app:civ_border_width="1dp"
+                    app:civ_border_color="@color/gray_300"
+                    android:elevation="4dp" />
 
-                <!-- Change Photo Button -->
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/fabChangePhoto"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_alignEnd="@id/ivProfileImage"
                     android:layout_alignBottom="@id/ivProfileImage"
                     android:contentDescription="@string/change_photo"
@@ -51,229 +50,303 @@
 
             </RelativeLayout>
 
-            <!-- Change Photo Text -->
             <TextView
                 android:id="@+id/changePhotoText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
                 android:text="@string/change_photo"
                 android:textColor="@color/gray_500"
                 android:textSize="14sp"
                 android:textStyle="bold" />
-
         </LinearLayout>
 
-        <!-- Profile Information Card -->
-        <com.google.android.material.card.MaterialCardView
+        <!-- Modern Profile Info Section -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            app:cardBackgroundColor="@color/card_background"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="2dp"
-            app:strokeColor="@color/colorAccent"
-            app:strokeWidth="1dp">
+            android:orientation="vertical"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="32dp"
+            android:background="@drawable/shape_card_modern"
+            android:clipToPadding="false"
+            android:elevation="8dp"
+            android:outlineAmbientShadowColor="@color/surface_shadow"
+            android:outlineSpotShadowColor="@color/surface_shadow"
+            android:padding="0dp">
 
+            <!-- Card Header with Gradient -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="24dp">
+                android:background="@drawable/gradient_card_header"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="16dp">
 
-                <!-- Card Title -->
+                <!-- Title with Icon -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="4dp">
+
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_information"
+                        android:textSize="20sp"
+                        android:textColor="@color/white"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.02" />
+                </LinearLayout>
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    android:text="@string/profile_information"
-                    android:textColor="@color/gray_600"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:text="Update your personal details"
+                    android:textSize="14sp"
+                    android:textColor="@color/white_alpha_80"
+                    android:letterSpacing="0.01" />
+            </LinearLayout>
 
-                <!-- Full Name -->
+            <!-- Form Content -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="20dp"
+                android:paddingTop="24dp"
+                android:paddingBottom="20dp">
+
+                <!-- Full Name with Floating Label -->
                 <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.Material3.TextInputLayout.FilledBox"
+                    android:id="@+id/fullNameContainer"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    android:hint="@string/full_name"
-                    app:boxCornerRadiusBottomEnd="12dp"
-                    app:boxCornerRadiusBottomStart="12dp"
-                    app:boxCornerRadiusTopEnd="12dp"
-                    app:boxBackgroundColor="@color/gray_200"
+                    android:layout_marginBottom="20dp"
+                    app:boxBackgroundMode="outline"
+                    app:boxBackgroundColor="@android:color/transparent"
+                    app:boxStrokeColor="@color/surface_variant"
+                    app:boxStrokeWidth="1dp"
                     app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
                     app:startIconDrawable="@drawable/ic_person"
-                    app:startIconTint="@color/gray_500">
+                    app:startIconTint="@color/primary_500"
+                    app:hintTextColor="@color/on_surface_variant"
+                    app:errorIconTint="@color/error_500"
+                    app:counterTextColor="@color/on_surface_variant"
+                    app:placeholderText="@string/full_name">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editFullName"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:minHeight="56dp"
                         android:inputType="textPersonName|textCapWords"
-                        android:minHeight="52dp"
-                        android:paddingStart="40dp"
-                        android:textColor="@color/gray_700"
-                        android:textColorHint="@color/gray_900"
-                        tools:ignore="RtlSymmetry" />
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                        android:textColor="@color/on_surface"
+                        android:maxLines="1"
+                        app:drawableTint="@color/primary_500" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Bio -->
+                <!-- Bio with Character Counter -->
                 <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.Material3.TextInputLayout.FilledBox"
+                    android:id="@+id/bioContainer"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    android:hint="@string/bio"
-                    app:boxBackgroundColor="@color/gray_200"
-                    app:boxCornerRadiusBottomEnd="12dp"
-                    app:boxCornerRadiusBottomStart="12dp"
-                    app:boxCornerRadiusTopEnd="12dp"
+                    android:layout_marginBottom="20dp"
+                    app:boxBackgroundMode="outline"
+                    app:boxBackgroundColor="@android:color/transparent"
+                    app:boxStrokeColor="@color/surface_variant"
+                    app:boxStrokeWidth="1dp"
                     app:boxCornerRadiusTopStart="12dp"
-                    android:textColorHint="@color/gray_600"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:startIconDrawable="@drawable/ic_edit"
+                    app:startIconTint="@color/primary_500"
                     app:counterEnabled="true"
-                    app:counterMaxLength="150"
-                    app:startIconDrawable="@drawable/ic_info"
-                    app:startIconTint="@color/gray_600">
+                    app:counterMaxLength="160"
+                    app:placeholderText="@string/bio"
+                    app:hintTextColor="@color/on_surface_variant">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editBio"
                         android:layout_width="match_parent"
-                        android:layout_height="100dp"
+                        android:layout_height="wrap_content"
+                        android:minHeight="80dp"
                         android:gravity="top"
                         android:inputType="textMultiLine|textCapSentences"
-                        android:maxLength="150"
-                        android:maxLines="5"
-                        android:minLines="3"
-                        android:textColor="@color/gray_700"
-                        android:textColorHint="@color/gray_900"
-                        android:paddingStart="@dimen/_40dp"
-                        tools:ignore="RtlSymmetry" />
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:paddingTop="16dp"
+                        android:paddingBottom="16dp"
+                        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                        android:textColor="@color/on_surface"
+                        android:maxLength="160"
+                        android:maxLines="4"
+                        android:scrollbars="vertical" />
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <!-- Phone Number with Country Code Picker -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="16dp"
+                    android:layout_marginBottom="20dp"
                     android:gravity="center_vertical">
 
-                    <!-- Static +63 -->
-                    <TextView
-                        android:layout_width="48dp"
-                        android:layout_height="52dp"
-                        android:gravity="center"
-                        android:text="+63"
-                        android:textColor="@color/gray_700"
-                        android:textSize="16sp"
-                        android:background="@color/gray_200" />
+                    <!-- Country Code Picker -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/countryCodePicker"
+                        android:layout_width="wrap_content"
+                        android:layout_height="56dp"
+                        android:layout_marginEnd="12dp"
+                        app:cardBackgroundColor="@color/surface_variant"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="@color/outline"
+                        app:strokeWidth="1dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackground">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="16dp">
+
+                            <!-- Corrected TextView for country code -->
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="+63"
+                                android:textSize="16sp"
+                                android:textColor="@color/on_surface"
+                                android:textStyle="bold"
+                                android:fontFamily="sans-serif-medium"
+                                android:letterSpacing="0.01" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
 
                     <!-- Phone Input -->
                     <com.google.android.material.textfield.TextInputLayout
-                        style="@style/Widget.Material3.TextInputLayout.FilledBox"
+                        android:id="@+id/phoneContainer"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="0dp"
-                        android:layout_height="52dp"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:hint="@string/phone"
-                        app:boxBackgroundColor="@color/gray_200"
-                        app:boxStrokeWidth="0dp"
-                        app:hintEnabled="true">
+                        app:boxBackgroundMode="outline"
+                        app:boxBackgroundColor="@android:color/transparent"
+                        app:boxStrokeColor="@color/surface_variant"
+                        app:boxStrokeWidth="1dp"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp"
+                        app:startIconTint="@color/primary_500"
+                        app:placeholderText="@string/phone"
+                        app:hintTextColor="@color/on_surface_variant">
 
                         <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/editphone"
+                            android:id="@+id/editPhone"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
+                            android:layout_height="56dp"
+                            android:minHeight="56dp"
                             android:inputType="phone"
-                            android:paddingStart="8dp"
-                            android:textColor="@color/gray_700"
-                            android:textColorHint="@color/gray_900"
-                            tools:ignore="RtlSymmetry" />
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                            android:textColor="@color/on_surface"
+                            android:maxLines="1"
+                            android:digits="0123456789" />
                     </com.google.android.material.textfield.TextInputLayout>
-
                 </LinearLayout>
 
-
-                <!-- Location -->
+                <!-- Location with Map Integration -->
                 <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.Material3.TextInputLayout.FilledBox"
+                    android:id="@+id/locationContainer"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:hint="@string/location"
-                    app:boxBackgroundColor="@color/gray_200"
-                    app:boxCornerRadiusBottomEnd="12dp"
-                    android:textColorHint="@color/gray_600"
-                    app:boxCornerRadiusBottomStart="12dp"
-                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxBackgroundMode="outline"
+                    app:boxBackgroundColor="@android:color/transparent"
+                    app:boxStrokeColor="@color/surface_variant"
+                    app:boxStrokeWidth="1dp"
                     app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
                     app:startIconDrawable="@drawable/ic_location"
-                    app:startIconTint="@color/gray_600">
+                    app:startIconTint="@color/primary_500"
+                    app:endIconMode="clear_text"
+                    app:endIconDrawable="@drawable/ic_map_pin"
+                    app:endIconTint="@color/primary_500"
+                    app:placeholderText="@string/location"
+                    app:hintTextColor="@color/on_surface_variant">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editLocation"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:minHeight="56dp"
                         android:inputType="textCapWords"
-                        android:minHeight="52dp"
-                        android:textColor="@color/gray_700"
-                        android:textColorHint="@color/gray_900"
-                        android:paddingStart="40dp"
-                        tools:ignore="RtlSymmetry" />
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                        android:textColor="@color/on_surface"
+                        android:maxLines="1"
+                        android:imeOptions="actionDone" />
                 </com.google.android.material.textfield.TextInputLayout>
 
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
 
-        <!-- Save / Cancel Buttons -->
-        <com.google.android.material.card.MaterialCardView
+        <!-- Buttons -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardBackgroundColor="@color/card_background"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="2dp"
-            app:strokeColor="@color/colorAccent"
-            app:strokeWidth="1dp">
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp">
 
-            <LinearLayout
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSave"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
+                android:layout_height="56dp"
+                android:text="@string/save_profile"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                android:textColor="@color/white"
+                app:backgroundTint="@color/colorAccent"
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_check"
+                app:iconGravity="end"
+                app:iconPadding="4dp"
+                app:iconTint="@color/white" />
 
-                <!-- Save Button -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnSave"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:text="@string/save_profile"
-                    android:textAllCaps="false"
-                    android:textSize="16sp"
-                    android:textColor="@color/colorAccent"
-                    app:strokeColor="@color/colorAccent"
-                    app:backgroundTint="@color/background_light"
-                    app:cornerRadius="12dp"
-                    app:icon="@drawable/ic_check"
-                    app:iconGravity="end"
-                    app:iconPadding="4dp"
-                    app:iconTint="@color/white" />
-
-                <!-- Cancel Button -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnCancel"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:layout_marginTop="12dp"
-                    android:text="@string/cancel"
-                    android:textAllCaps="false"
-                    android:textColor="@color/colorAccent"
-                    app:backgroundTint="@color/background_light"
-                    app:cornerRadius="12dp"
-                    app:strokeColor="@color/colorAccent"
-                    app:strokeWidth="1dp" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCancel"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:text="@string/cancel"
+                android:textAllCaps="false"
+                android:textColor="@color/colorAccent"
+                app:backgroundTint="@color/gray_200"
+                app:cornerRadius="12dp" />
+        </LinearLayout>
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

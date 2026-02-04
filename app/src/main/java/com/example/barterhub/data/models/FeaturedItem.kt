@@ -1,18 +1,26 @@
 package com.example.barterhub.data.models
 
+import com.google.firebase.database.IgnoreExtraProperties
+
+
 data class FeaturedItem(
-    val title: String = "",
-    val description: String = "",
-    val imageUrls: String = "",
-    val price: Any? = null,
-    val originalPrice: String = "",
-    val itemId: String = "",
-    val ownerId: String = "",
+    var itemId: String = "",
+    var title: String = "",
+    var description: String = "",
+    var category: String = "",
+    var condition: String = "",
+    var price: Double = 0.0,
+    var displayPrice: String = "",
+    var imageUrls: String = "",
+    var location: String = "",
+    val isActive: Boolean = true,
+    val isArchived: Boolean = false,
+    var latitude: Double = 0.0,
+    var longitude: Double = 0.0,
+    var ownerId: String = "",
     var ownerName: String = "",
     var ownerProfileImage: String = "",
-    val location: String = "",
-    val category: String = "",
-    val condition: String = "",
-    val latitude: Double = 0.0,
-    val longitude: Double = 0.0
+    var timestamp: Long = 0,
+    var likeCount: Int = 0,
+    var likedBy: Map<String, Boolean> = emptyMap()
 )

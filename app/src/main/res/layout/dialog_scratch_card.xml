@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="28dp"
+    android:background="@drawable/popup_rounded_bg"
+    android:gravity="center_horizontal">
+
+    <!-- Close Button -->
+    <ImageView
+        android:id="@+id/btnCloseScratchCard"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:contentDescription="@string/todo"
+        android:src="@drawable/ic_close"
+        android:layout_gravity="end"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="6dp"
+        app:tint="@color/gray_600" />
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Scratch Card"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:layout_marginTop="8dp"
+        android:gravity="center" />
+
+    <!-- Subtitle -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Scratch the gray area to reveal prize!"
+        android:textSize="14sp"
+        android:textColor="@color/gray_600"
+        android:layout_marginTop="4dp"
+        android:gravity="center" />
+
+    <!-- Scratch Card Area -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_marginTop="24dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp"
+        android:background="@color/premium_gold">
+
+        <!-- PRIZE - NASA ILALIM -->
+        <LinearLayout
+            android:id="@+id/prizeLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@color/premium_gold"
+            android:padding="20dp">
+
+            <!-- Coin Icon and Amount -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginBottom="8dp">
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/ic_barter_coins"
+                    android:layout_marginEnd="12dp" />
+
+                <TextView
+                    android:id="@+id/tvPrizeAmount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="?"
+                    android:textSize="36sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black" />
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="coins"
+                android:textSize="18sp"
+                android:textColor="@color/black"
+                android:textStyle="bold" />
+
+            <!-- Prize Description -->
+            <TextView
+                android:id="@+id/tvPrizeDescription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Scratch above to reveal!"
+                android:textSize="16sp"
+                android:textColor="@color/gray_700"
+                android:layout_marginTop="12dp"
+                android:gravity="center"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <com.example.barterhub.views.ScratchView
+            android:id="@+id/scratchView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent" />
+
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Progress Text -->
+    <TextView
+        android:id="@+id/tvScratchProgress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Scratch 0% to reveal prize"
+        android:textSize="14sp"
+        android:textColor="@color/gray_600"
+        android:layout_marginTop="12dp"
+        android:textStyle="bold" />
+
+    <!-- Instructions -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="👆 Swipe finger on gray area to scratch"
+        android:textSize="12sp"
+        android:textColor="@color/gray_500"
+        android:layout_marginTop="8dp"
+        android:gravity="center" />
+
+    <!-- Result Text -->
+    <TextView
+        android:id="@+id/tvScratchResult"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Buy scratch card to start!"
+        android:textSize="16sp"
+        android:textColor="@color/premium_gold"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginTop="16dp"
+        android:padding="12dp"
+        android:background="@drawable/result_bg" />
+
+    <!-- Scratch Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnScratch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Buy Scratch Card - 15 coins"
+        android:textStyle="bold"
+        android:textSize="15sp"
+        android:letterSpacing="0.02"
+        android:paddingVertical="16dp"
+        app:cornerRadius="14dp"
+        android:backgroundTint="@color/premium_gold"
+        android:textColor="@color/black"
+        android:layout_marginTop="16dp"
+        app:icon="@drawable/ic_magic_wand"
+        app:iconGravity="textStart"
+        app:iconPadding="8dp" />
+
+</LinearLayout>

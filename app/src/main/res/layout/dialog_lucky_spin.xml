@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp"
+    android:background="@drawable/popup_rounded_bg"
+    android:elevation="8dp">
+
+    <!-- Premium Header -->
+    <LinearLayout
+        android:id="@+id/headerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="24dp">
+
+        <!-- Title with Icon -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/ic_crown"
+                android:layout_marginEnd="12dp"/>
+
+            <TextView
+                android:id="@+id/tvLuckySpinTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/rolita_lucky_spin"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:letterSpacing="0.02" />
+
+        </LinearLayout>
+
+        <!-- Close Button -->
+        <ImageView
+            android:id="@+id/btnCloseLuckySpin"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/ic_close"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="10dp"
+            app:tint="@color/gray_600" />
+
+    </LinearLayout>
+
+    <!-- Coin Balance Display (Top Right) -->
+    <LinearLayout
+        android:id="@+id/coinBalanceLayout"
+        android:background="@color/background"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="60dp"
+        android:layout_marginEnd="10dp">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_barter_coins"
+            android:layout_marginEnd="6dp"/>
+
+        <TextView
+            android:id="@+id/tvCoinBalance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"/>
+    </LinearLayout>
+
+    <!-- Main Wheel Frame Container -->
+    <FrameLayout
+        android:layout_width="320dp"
+        android:layout_height="330dp"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/headerLayout"
+        android:layout_marginTop="1dp"
+        android:layout_marginBottom="28dp">
+
+        <ImageView
+            android:id="@+id/imgWheelFrame"
+            android:layout_width="496dp"
+            android:layout_marginTop="15dp"
+            android:layout_height="497dp"
+            android:layout_gravity="center"
+            android:scaleType="fitXY"
+            android:src="@drawable/wheel_background_glow"
+            android:elevation="1dp"/>
+
+        <!-- Wheel Container (Nasa loob ng frame) -->
+        <RelativeLayout
+            android:id="@+id/wheelContainer"
+            android:layout_width="220dp"
+            android:layout_height="220dp"
+            android:layout_gravity="center"
+            android:padding="8dp"
+            android:elevation="4dp">
+
+            <!-- Spin Wheel -->
+            <ImageView
+                android:id="@+id/imgSpinWheel"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerInside"
+                android:src="@drawable/spin_wheel_casino" />
+
+            <!-- Wheel Slices Text -->
+            <FrameLayout
+                android:id="@+id/slice1Container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="45dp"
+                android:layout_marginEnd="95dp"
+                android:rotation="245">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/_10_coins"
+                    android:textSize="11sp"
+                    android:textColor="@color/white"
+                    android:layout_gravity="center"
+                    android:textStyle="bold" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/slice2Container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginEnd="55dp"
+                android:layout_marginBottom="140dp"
+                android:rotation="-65">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="15 Coins"
+                    android:textSize="11sp"
+                    android:textColor="@color/white"
+                    android:layout_gravity="center"
+                    android:textStyle="bold" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/slice3Container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginEnd="25dp"
+                android:layout_marginBottom="115dp"
+                android:rotation="-30">
+
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/giftbox"
+                    android:layout_gravity="center"
+                    android:contentDescription="Mystery Gift" />
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/slice4Container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="70dp"
+                android:rotation="30">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/_free_spin"
+                    android:textSize="11sp"
+                    android:textColor="@color/white"
+                    android:layout_gravity="center"
+                    android:textStyle="bold" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/slice5Container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginStart="103dp"
+                android:layout_marginBottom="50dp"
+                android:rotation="65">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1 Coins"
+                    android:textSize="11sp"
+                    android:textColor="@color/white"
+                    android:layout_gravity="center"
+                    android:textStyle="bold" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/slice6Container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginStart="55dp"
+                android:layout_marginBottom="40dp"
+                android:rotation="115">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/_25_coins"
+                    android:textSize="11sp"
+                    android:textColor="@color/white"
+                    android:layout_gravity="center"
+                    android:textStyle="bold" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/slice7Container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginStart="30dp"
+                android:layout_marginTop="115dp"
+                android:rotation="156">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/_5_coins"
+                    android:textSize="11sp"
+                    android:textColor="@color/white"
+                    android:layout_gravity="center"
+                    android:textStyle="bold" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/slice8Container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginStart="25dp"
+                android:layout_marginTop="75dp"
+                android:rotation="200">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/_.2_coins"
+                    android:textSize="11sp"
+                    android:textColor="@color/white"
+                    android:layout_gravity="center"
+                    android:textStyle="bold" />
+            </FrameLayout>
+
+        </RelativeLayout>
+
+        <!-- Pointer (nasa labas ng wheel pero inside ng frame) -->
+        <ImageView
+            android:id="@+id/imgPointer"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="top|center_horizontal"
+            android:layout_marginTop="55dp"
+            android:contentDescription="@string/todo"
+            android:src="@drawable/ic_spin_pointer"
+            android:elevation="8dp" />
+
+    </FrameLayout>
+
+    <!-- Spin Indicator -->
+    <LinearLayout
+        android:id="@+id/indicatorLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/wheelContainer"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/spin_indicator_bg"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp"
+        android:layout_marginTop="430dp"
+        android:layout_marginBottom="30dp"
+        tools:ignore="NotSibling">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:contentDescription="@string/todo"
+            android:src="@drawable/ic_barter_coins"
+            android:layout_marginEnd="8dp" />
+
+        <TextView
+            android:id="@+id/tvSpinCost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/_1_coins_per_spin"
+            android:textSize="14sp"
+            android:textColor="@color/gray_700"/>
+
+    </LinearLayout>
+
+    <!-- Action Buttons -->
+    <LinearLayout
+        android:id="@+id/actionButtonsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/indicatorLayout"
+        android:orientation="horizontal"
+        android:layout_marginTop="20dp">
+
+        <!-- Spin Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSpinNow"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.2"
+            android:layout_marginStart="8dp"
+            android:text="SPIN NOW"
+            style="@style/Widget.MaterialComponents.Button"
+            android:backgroundTint="@color/premium_gold"
+            android:textColor="@color/black"
+            android:paddingVertical="16dp"
+            app:cornerRadius="14dp"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.03"
+            app:icon="@drawable/ic_rocket"
+            app:iconGravity="textStart"
+            app:iconPadding="6dp" />
+
+    </LinearLayout>
+
+    <!-- Footer Note -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Spin daily for exclusive rewards!"
+        android:textSize="12sp"
+        android:textColor="@color/gray_500"
+        android:gravity="center"
+        android:layout_above="@id/actionButtonsLayout"
+        android:layout_marginBottom="12dp" />
+
+</RelativeLayout>

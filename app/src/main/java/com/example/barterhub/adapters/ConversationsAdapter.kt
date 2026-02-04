@@ -10,6 +10,7 @@ import com.bumptech.glide.Glide
 import com.example.barterhub.R
 import com.example.barterhub.data.models.Conversation
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -19,6 +20,12 @@ class ConversationsAdapter(
 ) : RecyclerView.Adapter<ConversationsAdapter.ConversationViewHolder>() {
 
     private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+
+    // Long click listener
+    private var onConversationLongClickListener: ((Conversation, Int) -> Unit)? = null
+    fun setOnConversationLongClickListener(listener: (Conversation, Int) -> Unit) {
+        onConversationLongClickListener = listener
+    }
 
     inner class ConversationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val profileImage: ImageView = itemView.findViewById(R.id.profileImage)
@@ -33,6 +40,16 @@ class ConversationsAdapter(
                     onConversationClick(conversations[adapterPosition])
                 }
             }
+
+            itemView.setOnLongClickListener {
+                val position = adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    onConversationLongClickListener?.invoke(conversations[position], position)
+                    true
+                } else {
+                    false
+                }
+            }
         }
     }
 
@@ -44,35 +61,47 @@ class ConversationsAdapter(
 
     override fun onBindViewHolder(holder: ConversationViewHolder, position: Int) {
         val conversation = conversations[position]
-        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
 
-        // Find partner user
+        // Partner info
         val partnerId = conversation.participants.keys.firstOrNull { it != currentUserId }
         val partnerName = conversation.participantNames[partnerId] ?: "Unknown User"
-
-        // 🔥 ADDED: Load profile picture
         val partnerProfilePic = partnerId?.let { conversation.participantProfilePics[it] }
-        loadProfileImage(holder.profileImage, partnerProfilePic)
 
-        // Set participant name
         holder.participantName.text = partnerName
-
-        // Set last message
+        loadProfileImage(holder.profileImage, partnerProfilePic)
         holder.lastMessage.text = conversation.lastMessage ?: "Start a conversation"
-
-        // Set timestamp
         holder.timestamp.text = formatTimestamp(conversation.lastMessageTime)
 
-        // Set unread count
-        if (conversation.unreadCount > 0) {
-            holder.unreadBadge.visibility = View.VISIBLE
-            holder.unreadBadge.text = if (conversation.unreadCount > 9) "9+" else conversation.unreadCount.toString()
-        } else {
-            holder.unreadBadge.visibility = View.GONE
+        // -----------------------
+        // REAL-TIME UNREAD BADGE
+        // -----------------------
+        partnerId?.let { pid ->
+            val messagesRef = FirebaseDatabase.getInstance()
+                .getReference("chats/${conversation.chatId}/messages")
+
+            messagesRef.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val unreadCount = snapshot.children.count {
+                        val read = it.child("read").getValue(Boolean::class.java) ?: true
+                        val receiverId = it.child("receiverId").getValue(String::class.java)
+                        !read && receiverId == currentUserId
+                    }
+
+                    if (unreadCount > 0) {
+                        holder.unreadBadge.visibility = View.VISIBLE
+                        holder.unreadBadge.text = if (unreadCount > 9) "9+" else unreadCount.toString()
+                    } else {
+                        holder.unreadBadge.visibility = View.GONE
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    holder.unreadBadge.visibility = View.GONE
+                }
+            })
         }
     }
 
-    // 🔥 ADDED: Function to load profile image
     private fun loadProfileImage(imageView: ImageView, profilePicUrl: String?) {
         if (!profilePicUrl.isNullOrEmpty()) {
             Glide.with(imageView.context)
@@ -90,18 +119,12 @@ class ConversationsAdapter(
 
     private fun formatTimestamp(timestamp: Long): String {
         if (timestamp == 0L) return ""
-
-        val currentTime = System.currentTimeMillis()
-        val diff = currentTime - timestamp
-
+        val diff = System.currentTimeMillis() - timestamp
         return when {
-            diff < 60000 -> "just now" // less than 1 minute
-            diff < 3600000 -> "${diff / 60000}m ago" // less than 1 hour
-            diff < 86400000 -> "${diff / 3600000}h ago" // less than 1 day
-            else -> {
-                val sdf = SimpleDateFormat("MMM dd", Locale.getDefault())
-                sdf.format(Date(timestamp))
-            }
+            diff < 60000 -> "just now"
+            diff < 3600000 -> "${diff / 60000}m ago"
+            diff < 86400000 -> "${diff / 3600000}h ago"
+            else -> SimpleDateFormat("MMM dd", Locale.getDefault()).format(Date(timestamp))
         }
     }
 }

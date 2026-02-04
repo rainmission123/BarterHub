@@ -5,29 +5,16 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/nav_home">
 
+    <!-- Global actions -->
     <action
         android:id="@+id/action_global_myListings"
         app:destination="@id/nav_my_listings" />
 
     <action
         android:id="@+id/action_global_login"
-        app:destination="@id/nav_login"
+        app:destination="@id/navigation2"
         app:popUpTo="@id/nav_home"
         app:popUpToInclusive="true" />
-
-
-    <!-- Login -->
-    <fragment
-        android:id="@+id/nav_login"
-        android:name="com.example.barterhub.ui.LoginFragment"
-        android:label="Login"
-        tools:layout="@layout/fragment_login">
-        <action
-            android:id="@+id/action_loginFragment_to_homeFragment"
-            app:destination="@id/nav_home"
-            app:popUpTo="@id/nav_login"
-            app:popUpToInclusive="true" />
-    </fragment>
 
     <!-- Home -->
     <fragment
@@ -39,8 +26,8 @@
             android:id="@+id/action_homeFragment_to_searchFragment"
             app:destination="@id/nav_search" />
         <action
-            android:id="@+id/action_homeFragment_to_addFragment"
-            app:destination="@id/nav_add" />
+            android:id="@+id/action_homeFragment_to_addPhotosFragment"
+            app:destination="@id/addPhotosFragment" />
         <action
             android:id="@+id/action_homeFragment_to_profileFragment"
             app:destination="@id/nav_profile" />
@@ -59,6 +46,12 @@
         <action
             android:id="@+id/action_homeFragment_to_tradeRequestsFragment"
             app:destination="@id/tradeRequestsFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_favoritesFragment"
+            app:destination="@id/nav_favorites" />
+        <action
+            android:id="@+id/action_home_to_howToEarn"
+            app:destination="@id/howToEarnFragment" />
     </fragment>
 
     <!-- Menu -->
@@ -67,36 +60,29 @@
         android:name="com.example.barterhub.ui.MenuFragment"
         android:label="Menu"
         tools:layout="@layout/fragment_menu">
-
         <action
             android:id="@+id/action_menu_to_homeFragment"
             app:destination="@id/nav_home"
             app:popUpTo="@id/nav_home"
             app:popUpToInclusive="true" />
-
         <action
             android:id="@+id/action_menu_to_myListings"
             app:destination="@id/nav_my_listings" />
-
         <action
             android:id="@+id/action_nav_menu_to_tradeRequestsFragment"
             app:destination="@id/tradeRequestsFragment" />
-
         <action
             android:id="@+id/action_menu_to_messages"
             app:destination="@id/nav_messages" />
-
         <action
             android:id="@+id/action_menu_to_settings"
             app:destination="@id/nav_settings" />
-
         <action
             android:id="@+id/action_menu_to_profile"
             app:destination="@id/nav_profile" />
-
         <action
             android:id="@+id/action_menu_to_login"
-            app:destination="@id/nav_login"
+            app:destination="@id/navigation2"
             app:popUpTo="@id/nav_home"
             app:popUpToInclusive="true" />
     </fragment>
@@ -110,18 +96,72 @@
         <action
             android:id="@+id/action_searchFragment_to_homeFragment"
             app:destination="@id/nav_home" />
+        <action
+            android:id="@+id/action_searchFragment_to_itemDetailFragment"
+            app:destination="@id/nav_item_detail" />
+        <action
+            android:id="@+id/action_searchFragment_to_searchResultsFragment"
+            app:destination="@id/searchResultsFragment" />
+        <action
+            android:id="@+id/action_searchFragment_to_allItemsFragment"
+            app:destination="@id/allItemsFragment" />
     </fragment>
 
-    <!-- Add -->
+    <!-- All Items Fragment -->
     <fragment
-        android:id="@+id/nav_add"
-        android:name="com.example.barterhub.ui.AddFragment"
-        android:label="Add"
-        tools:layout="@layout/fragment_add">
+        android:id="@+id/allItemsFragment"
+        android:name="com.example.barterhub.ui.AllItemsFragment"
+        android:label="All Items"
+        tools:layout="@layout/fragment_all_items">
+
+        <argument
+            android:name="category"
+            app:argType="string"
+            android:defaultValue="" />
+
         <action
-            android:id="@+id/action_addFragment_to_homeFragment"
-            app:destination="@id/nav_home" />
+            android:id="@+id/action_allItemsFragment_to_itemDetailFragment"
+            app:destination="@id/nav_item_detail" />
     </fragment>
+
+
+    <fragment
+        android:id="@+id/previewFragment"
+        android:name="com.example.barterhub.ui.AddPreviewFragment"
+        android:label="Preview &amp; Confirm"
+        tools:layout="@layout/fragment_add_preview" />
+
+    <!-- Multi-step Add Item Flow -->
+    <fragment
+        android:id="@+id/addPhotosFragment"
+        android:name="com.example.barterhub.ui.AddPhotosFragment"
+        android:label="Add Photos"
+        tools:layout="@layout/fragment_add_photos">
+        <action
+            android:id="@+id/action_addPhotos_to_addDetails"
+            app:destination="@id/addDetailsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/addDetailsFragment"
+        android:name="com.example.barterhub.ui.AddDetailsFragment"
+        android:label="Add Details"
+        tools:layout="@layout/fragment_add_details">
+        <action
+            android:id="@+id/action_addDetails_to_addLocation"
+            app:destination="@id/addLocationFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/addLocationFragment"
+        android:name="com.example.barterhub.ui.AddLocationFragment"
+        android:label="Add Location"
+        tools:layout="@layout/fragment_add_location">
+        <action
+            android:id="@+id/action_addLocation_to_preview"
+            app:destination="@id/previewFragment" />
+    </fragment>
+
 
     <!-- Profile -->
     <fragment
@@ -129,25 +169,33 @@
         android:name="com.example.barterhub.ui.ProfileFragment"
         android:label="Profile"
         tools:layout="@layout/fragment_profile">
-
         <action
             android:id="@+id/action_profileFragment_to_tradeHistoryFragment"
             app:destination="@id/nav_trade_history" />
-
         <action
             android:id="@+id/action_profileFragment_to_favoritesFragment"
             app:destination="@id/nav_favorites" />
-
         <action
             android:id="@+id/action_profileFragment_to_myListingsFragment"
             app:destination="@id/nav_my_listings" />
-
         <action
             android:id="@+id/action_profileFragment_to_homeFragment"
             app:destination="@id/nav_home" />
         <action
             android:id="@+id/action_profileFragment_to_uploadIdFragment"
             app:destination="@id/uploadIdFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_walletFragment"
+            app:destination="@id/walletFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_notificationsFragment"
+            app:destination="@id/notificationsFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_topTradersFragment"
+            app:destination="@id/topTradersFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_findFriendsFragment"
+            app:destination="@id/findFriendsFragment" />
     </fragment>
 
     <!-- Settings -->
@@ -159,21 +207,30 @@
         <action
             android:id="@+id/action_settingsFragment_to_homeFragment"
             app:destination="@id/nav_home" />
+        <action
+            android:id="@+id/action_nav_settings_to_nav_help_support"
+            app:destination="@id/nav_help_support" />
+        <action
+            android:id="@+id/action_nav_settings_to_nav_about"
+            app:destination="@id/nav_about" />
     </fragment>
 
-
-    <!-- Messages -->
     <fragment
         android:id="@+id/nav_messages"
         android:name="com.example.barterhub.ui.MessagesFragment"
         android:label="Messages"
         tools:layout="@layout/fragment_messages">
+
         <action
             android:id="@+id/action_messages_to_chatFragment"
             app:destination="@id/nav_chat" />
         <action
             android:id="@+id/action_messages_to_homeFragment"
             app:destination="@id/nav_home" />
+
+        <action
+            android:id="@+id/action_messages_to_botChatFragment"
+            app:destination="@id/nav_bot_chat" />
     </fragment>
 
     <!-- Chat -->
@@ -182,12 +239,49 @@
         android:name="com.example.barterhub.ui.ChatFragment"
         android:label="Chat"
         tools:layout="@layout/fragment_chat">
+
+        <!-- Chat Identification -->
         <argument
             android:name="chatId"
-            app:argType="string" />
+            app:argType="string"
+            android:defaultValue="" />  <!-- ✅ MADE OPTIONAL -->
+
+        <!-- User Info -->
         <argument
             android:name="partnerId"
-            app:argType="string" />
+            app:argType="string" />  <!-- ⚠️ REQUIRED -->
+
+        <argument
+            android:name="partnerName"
+            app:argType="string"
+            android:defaultValue="User" />  <!-- ✅ MADE OPTIONAL -->
+
+        <!-- Trade Info - ALL MADE OPTIONAL -->
+        <argument
+            android:name="itemId"
+            app:argType="string"
+            android:defaultValue="" />
+
+        <argument
+            android:name="itemTitle"
+            app:argType="string"
+            android:defaultValue="" />
+
+        <argument
+            android:name="targetItemTitle"
+            app:argType="string"
+            android:defaultValue="" />
+
+        <argument
+            android:name="offeredItemTitle"
+            app:argType="string"
+            android:defaultValue="" />
+
+        <argument
+            android:name="isTradeAccepted"
+            app:argType="boolean"
+            android:defaultValue="false" />
+
         <action
             android:id="@+id/action_chatFragment_to_messagesFragment"
             app:destination="@id/nav_messages"
@@ -200,7 +294,7 @@
         android:id="@+id/nav_item_detail"
         android:name="com.example.barterhub.ui.ItemDetailFragment"
         android:label="Item Details"
-        tools:layout="@layout/activity_item_detail">
+        tools:layout="@layout/fragment_item_detail">
         <argument
             android:name="itemId"
             app:argType="string" />
@@ -210,6 +304,9 @@
         <action
             android:id="@+id/action_itemDetailFragment_to_chatFragment"
             app:destination="@id/nav_chat" />
+        <action
+            android:id="@+id/action_itemDetailFragment_to_ownerProfileFragment"
+            app:destination="@id/ownerProfileFragment" />
     </fragment>
 
     <!-- Trade History -->
@@ -235,7 +332,44 @@
         android:id="@+id/nav_my_listings"
         android:name="com.example.barterhub.ui.MyListingsFragment"
         android:label="My Listings"
-        tools:layout="@layout/fragment_my_listings" />
+        tools:layout="@layout/fragment_my_listings">
+
+        <!-- Add action here -->
+        <action
+            android:id="@+id/action_nav_my_listings_to_editItemFragment"
+            app:destination="@id/nav_edit_item" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_edit_item"
+        android:name="com.example.barterhub.ui.EditItemFragment"
+        android:label="Edit Item" >
+        <argument
+            android:name="itemId"
+            app:argType="string" />
+        <argument
+            android:name="title"
+            app:argType="string" />
+        <argument
+            android:name="description"
+            app:argType="string" />
+        <argument
+            android:name="price"
+            app:argType="float" /> <!-- NOT double -->
+        <argument
+            android:name="category"
+            app:argType="string" />
+        <argument
+            android:name="condition"
+            app:argType="string" />
+        <argument
+            android:name="location"
+            app:argType="string" />
+        <argument
+            android:name="imageUrls"
+            app:argType="string" />
+    </fragment>
+
 
     <!-- Trade Requests -->
     <fragment
@@ -243,13 +377,194 @@
         android:name="com.example.barterhub.ui.TradeRequestsFragment"
         android:label="Trade Requests"
         tools:layout="@layout/fragment_trade_requests">
-
         <action
             android:id="@+id/action_tradeRequestsFragment_to_itemDetailFragment"
             app:destination="@id/nav_item_detail" />
         <action
             android:id="@+id/action_tradeRequestsFragment_to_nav_trade_history"
             app:destination="@id/nav_trade_history" />
+
+        <action
+            android:id="@+id/action_tradeRequestsFragment_to_chatFragment"
+            app:destination="@id/nav_chat" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_help_support"
+        android:name="com.example.barterhub.ui.HelpSupportFragment"
+        android:label="Help &amp; Support"
+        tools:layout="@layout/fragment_help_support" />
+
+    <fragment
+        android:id="@+id/nav_about"
+        android:name="com.example.barterhub.ui.AboutFragment"
+        android:label="About"
+        tools:layout="@layout/fragment_about" >
+        <action
+            android:id="@+id/action_nav_about_to_privacyPolicyFragment"
+            app:destination="@id/privacyPolicyFragment" />
+        <action
+            android:id="@+id/action_nav_about_to_termsFragment"
+            app:destination="@id/termsFragment" />
+    </fragment>
+
+    <!-- Privacy Policy -->
+    <fragment
+        android:id="@+id/privacyPolicyFragment"
+        android:name="com.example.barterhub.ui.PrivacyPolicyFragment"
+        android:label="Privacy Policy"
+        tools:layout="@layout/fragment_privacy_policy" />
+
+    <!-- Terms of Service -->
+    <fragment
+        android:id="@+id/termsFragment"
+        android:name="com.example.barterhub.ui.TermsFragment"
+        android:label="Terms of Service"
+        tools:layout="@layout/fragment_terms" />
+
+    <fragment
+        android:id="@+id/walletFragment"
+        android:name="com.example.barterhub.ui.WalletFragment"
+        android:label="My Wallet"
+        tools:layout="@layout/fragment_wallet" >
+        <action
+            android:id="@+id/action_walletFragment_to_howToEarnFragment"
+            app:destination="@id/howToEarnFragment" />
+        <action
+            android:id="@+id/action_walletFragment_to_sendCoinsFragment"
+            app:destination="@id/sendCoinsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/howToEarnFragment"
+        android:name="com.example.barterhub.ui.HowToEarnFragment"
+        android:label="How to Earn"
+        tools:layout="@layout/fragment_how_to_earn">
+
+        <action
+            android:id="@+id/action_howToEarnFragment_to_addPhotosFragment"
+            app:destination="@id/addPhotosFragment"/>
+        <action
+            android:id="@+id/action_howToEarnFragment_to_gamesListFragment"
+            app:destination="@id/gamesListFragment" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/notificationsFragment"
+        android:name="com.example.barterhub.ui.NotificationsFragment"
+        android:label="Notifications"
+        tools:layout="@layout/fragment_notifications" />
+
+
+    <!-- Add this to your nav_graph.xml -->
+    <fragment
+        android:id="@+id/gamesListFragment"
+        android:name="com.example.barterhub.ui.GamesListFragment"
+        android:label="Games"
+        tools:layout="@layout/fragment_games_list" >
+        <action
+            android:id="@+id/action_gamesListFragment_to_walletFragment"
+            app:destination="@id/walletFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/ownerProfileFragment"
+        android:name="com.example.barterhub.ui.OwnerProfileFragment"
+        android:label="Owner Profile"
+        tools:layout="@layout/fragment_owner_profile">
+
+        <argument
+            android:name="ownerId"
+            app:argType="string" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/sendCoinsFragment"
+        android:name="com.example.barterhub.ui.SendCoinsFragment"
+        android:label="Send Coins"
+        tools:layout="@layout/fragment_send_coins">
+
+        <!-- Optionally add action to go back -->
+        <action
+            android:id="@+id/action_sendCoinsFragment_to_walletFragment"
+            app:destination="@id/walletFragment"
+            app:popUpTo="@id/walletFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/searchResultsFragment"
+        android:name="com.example.barterhub.ui.SearchResultsFragment"
+        android:label="Search Results"
+        tools:layout="@layout/fragment_search_results">
+
+        <argument
+            android:name="query"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/topTradersFragment"
+        android:name="com.example.barterhub.ui.TopTradersFragment"
+        android:label="Top Traders"
+        tools:layout="@layout/fragment_top_traders" />
+
+    <!-- Inside nav_bot_chat fragment -->
+    <fragment
+        android:id="@+id/nav_bot_chat"
+        android:name="com.example.barterhub.ui.BotChatFragment"
+        android:label="Bot Chat"
+        tools:layout="@layout/fragment_bot_chat">
+
+        <!-- ADD THESE ACTIONS -->
+        <action
+            android:id="@+id/action_bot_to_add_item"
+            app:destination="@id/addPhotosFragment" />
+
+        <action
+            android:id="@+id/action_bot_to_wallet"
+            app:destination="@id/walletFragment" />
+
+        <action
+            android:id="@+id/action_bot_to_profile"
+            app:destination="@id/nav_profile" />
+
+        <action
+            android:id="@+id/action_bot_to_support"
+            app:destination="@id/nav_help_support" />
+
+        <action
+            android:id="@+id/action_bot_to_search"
+            app:destination="@id/nav_search" />
+
+        <action
+            android:id="@+id/action_bot_to_categories"
+            app:destination="@id/nav_search" />
+
+        <action
+            android:id="@+id/action_bot_to_safety"
+            app:destination="@id/nav_help_support" />
+
+        <action
+            android:id="@+id/action_bot_to_live_support"
+            app:destination="@id/nav_help_support" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/findFriendsFragment"
+        android:name="com.example.barterhub.ui.FindFriendsFragment"
+        android:label="Find Friends"
+        tools:layout="@layout/fragment_find_friends">
+
+        <!-- ADD THIS ACTION -->
+        <action
+            android:id="@+id/action_findFriendsFragment_to_chatFragment"
+            app:destination="@id/nav_chat" />
+
     </fragment>
 
     <!-- Upload ID -->
@@ -258,6 +573,26 @@
         android:name="com.example.barterhub.ui.UploadIdFragment"
         android:label="Verify ID"
         tools:layout="@layout/fragment_upload_id" />
-
+    <navigation android:id="@+id/navigation2"
+        app:startDestination="@id/navigation">
+        <navigation android:id="@+id/navigation3"
+            app:startDestination="@id/navigation">
+            <navigation
+                android:id="@+id/navigation"
+                app:startDestination="@id/nav_login">
+                <fragment
+                    android:id="@+id/nav_login"
+                    android:name="com.example.barterhub.ui.LoginFragment"
+                    android:label="Login"
+                    tools:layout="@layout/fragment_login">
+                    <action
+                        android:id="@+id/action_loginFragment_to_homeFragment"
+                        app:destination="@id/nav_home"
+                        app:popUpTo="@id/nav_login"
+                        app:popUpToInclusive="true" />
+                </fragment>
+            </navigation>
+        </navigation>
+    </navigation>
 
 </navigation>

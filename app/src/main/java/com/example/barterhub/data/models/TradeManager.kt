@@ -33,7 +33,6 @@ object TradeManager {
             }
     }
 
-    // 📌 Step 2: Accept request (by Owner)
     fun acceptTradeRequest(requestId: String) {
         db.child("trade_requests").child(requestId).child("status").setValue("Accepted")
     }

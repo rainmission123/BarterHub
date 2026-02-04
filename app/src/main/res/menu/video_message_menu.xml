@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_download_video"
+        android:title="Save"
+        android:icon="@drawable/ic_download"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_react_video"
+        android:title="React"
+        android:icon="@drawable/ic_emoji"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_view_sender_profile"
+        android:title="View Profile"
+        android:icon="@drawable/ic_profile"
+        app:showAsAction="never" />
+
+</menu>

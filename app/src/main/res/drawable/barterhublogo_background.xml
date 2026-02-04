@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Gradient-like effect using multiple paths -->
+    <path
+        android:fillColor="#FAFAFA"
+        android:pathData="M0,0h108v108h-108z" />
+
+    <!-- Gradient Overlay -->
+    <path
+        android:fillColor="@color/premium_gold"
+        android:fillAlpha="0.03"
+        android:pathData="M0,0h108v108h-108z" />
+
+    <!-- Modern Grid -->
+    <group>
+        <!-- Vertical lines -->
+        <path android:fillColor="#00000000" android:pathData="M27,0L27,108"
+            android:strokeColor="@color/premium_gold" android:strokeAlpha="0.08" android:strokeWidth="0.5"/>
+        <path android:fillColor="#00000000" android:pathData="M54,0L54,108"
+            android:strokeColor="@color/premium_gold" android:strokeAlpha="0.08" android:strokeWidth="0.5"/>
+        <path android:fillColor="#00000000" android:pathData="M81,0L81,108"
+            android:strokeColor="@color/premium_gold" android:strokeAlpha="0.08" android:strokeWidth="0.5"/>
+
+        <!-- Horizontal lines -->
+        <path android:fillColor="#00000000" android:pathData="M0,27L108,27"
+            android:strokeColor="@color/premium_gold" android:strokeAlpha="0.08" android:strokeWidth="0.5"/>
+        <path android:fillColor="#00000000" android:pathData="M0,54L108,54"
+            android:strokeColor="@color/premium_gold" android:strokeAlpha="0.08" android:strokeWidth="0.5"/>
+        <path android:fillColor="#00000000" android:pathData="M0,81L108,81"
+            android:strokeColor="@color/premium_gold" android:strokeAlpha="0.08" android:strokeWidth="0.5"/>
+    </group>
+
+    <!-- Central Focus Element -->
+    <path
+        android:strokeColor="@color/premium_gold"
+        android:strokeAlpha="0.2"
+        android:strokeWidth="1"
+        android:pathData="M44,44 L64,44 L64,64 L44,64 Z"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+</vector>

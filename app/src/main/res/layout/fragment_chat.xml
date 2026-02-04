@@ -4,26 +4,24 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/surface"
+    android:background="?attr/colorSurface"
     android:fitsSystemWindows="true">
 
     <!-- App Bar with Custom Chat Header -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
+        android:background="?attr/colorSurface"
         android:layout_height="wrap_content"
-        android:background="@color/surface"
-        android:elevation="4dp">
+        android:elevation="16dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@android:color/transparent"
             app:menu="@menu/chat_menu"
             app:navigationIcon="@drawable/ic_arrow_back">
 
-            <!-- CUSTOM CHAT HEADER - This matches the Kotlin code -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
@@ -32,15 +30,13 @@
                 android:paddingStart="8dp"
                 tools:ignore="RtlSymmetry">
 
-                <!-- Partner profile image -->
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/partnerProfileImage"
                     android:layout_width="36dp"
                     android:layout_height="36dp"
-                    android:src="@drawable/ic_profile_placeholder"
+                    android:src="@drawable/ic_person"
                     android:layout_marginEnd="12dp" />
 
-                <!-- Partner name + status -->
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -51,7 +47,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Chat Partner"
-                        android:textColor="@color/black"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="16sp"
                         android:textStyle="bold"
                         tools:ignore="HardcodedText" />
@@ -61,103 +57,171 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Online"
-                        android:textColor="@color/gray_500"
-                        android:textSize="12sp" />
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="12sp"
+                        tools:ignore="HardcodedText" />
                 </LinearLayout>
+
             </LinearLayout>
 
         </com.google.android.material.appbar.MaterialToolbar>
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Rest of your existing layout remains the same -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_margin="2dp"
         android:layout_marginTop="?attr/actionBarSize"
         android:layout_marginBottom="0dp"
-        android:background="@color/surface"
+        android:background="?attr/colorSurface"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!-- Messages RecyclerView - Takes full space -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/messagesRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
             android:padding="16dp"
-            android:paddingBottom="100dp"
+            android:paddingBottom="120dp"
             android:scrollbars="vertical"
             tools:listitem="@layout/message_item" />
 
-        <!-- Input Container - FIXED at bottom -->
+        <!-- MESSENGER-STYLE INPUT CONTAINER - FIXED -->
         <LinearLayout
             android:id="@+id/inputContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            android:background="@drawable/input_top_border"
-            android:orientation="horizontal"
-            android:padding="8dp"
-            android:layout_marginBottom="0dp">
+            android:background="@drawable/messenger_input_top_bg"
+            android:orientation="vertical"
+            android:paddingTop="8dp"
+            android:paddingBottom="0dp">
 
-            <!-- Attach Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/attachButton"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="48dp"
-                android:layout_marginBottom="10dp"
-                android:layout_height="48dp"
-                android:contentDescription="@string/attach_file"
-                app:backgroundTint="@color/White"
-                app:icon="@drawable/ic_attach_file"
-                app:iconGravity="textEnd"
-                app:iconSize="24dp"
-                app:iconTint="@color/gray_800" />
-
-            <!-- Message Input -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/messageInputLayout"
-                style="@style/Widget.Material3.TextInputLayout.FilledBox"
-                android:layout_width="0dp"
+            <!-- Quick Action Row (optional, can be hidden) -->
+            <HorizontalScrollView
+                android:id="@+id/quickActionsScroll"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="8dp"
-                android:layout_weight="1"
-                app:boxBackgroundColor="@color/White"
-                app:boxBackgroundMode="filled"
-                app:boxCornerRadiusBottomEnd="20dp"
-                app:boxCornerRadiusBottomStart="20dp"
-                app:boxCornerRadiusTopEnd="20dp"
-                app:boxCornerRadiusTopStart="20dp"
-                app:endIconMode="clear_text"
-                app:endIconTint="@color/primaryDarkColor"
-                app:hintEnabled="false">
+                android:layout_marginBottom="8dp"
+                android:paddingHorizontal="8dp"
+                android:visibility="gone">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/messageEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:hint="Type a message..."
-                    android:maxLines="3"
-                    android:paddingHorizontal="16dp"
-                    android:textColor="@color/black"
-                    android:textColorHint="@color/colorAccent"
-                    android:textSize="14sp"
-                    tools:ignore="HardcodedText" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
 
-            </com.google.android.material.textfield.TextInputLayout>
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/likeChip"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:text="👍 Like"
+                        app:chipIconSize="16dp" />
 
-            <!-- Send Button - CHANGED to MaterialButton to match Kotlin -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/sendButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:contentDescription="@string/send_message"
-                app:backgroundTint="@color/colorAccent"
-                app:icon="@drawable/ic_send"
-                app:iconTint="@color/white"
-                tools:ignore="TouchTargetSizeCheck" />
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/gifChip"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:text="GIF"
+                        app:chipIconSize="16dp" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/stickerChip"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="😊 Sticker"
+                        app:chipIconSize="16dp" />
+
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <!-- Main Input Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="12dp"
+                android:gravity="center_vertical">
+
+                <!-- Message Input Field -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/messenger_input_bg"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="8dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:minHeight="44dp">
+
+                    <!-- Attach Button -->
+                    <ImageButton
+                        android:id="@+id/attachButton"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/attach_file"
+                        android:padding="6dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_attach_file"
+                        app:tint="@color/gray_600"
+                        tools:ignore="TouchTargetSizeCheck" />
+
+                    <!-- Message EditText -->
+                    <EditText
+                        android:id="@+id/messageEditText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@android:color/transparent"
+                        android:hint="Message..."
+                        android:imeOptions="actionSend"
+                        android:inputType="textMultiLine|textCapSentences"
+                        android:maxLines="5"
+                        android:minHeight="36dp"
+                        android:paddingHorizontal="12dp"
+                        android:textColor="@color/gray_800"
+                        android:textColorHint="@color/gray_500"
+                        android:textSize="16sp"
+                        tools:ignore="HardcodedText,TouchTargetSizeCheck" />
+
+                    <!-- Camera Button -->
+                    <ImageButton
+                        android:id="@+id/cameraButton"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Camera"
+                        android:padding="6dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_camera"
+                        app:tint="@color/gray_600"
+                        tools:ignore="TouchTargetSizeCheck" />
+
+                </LinearLayout>
+
+                <!-- Send/Mic Button -->
+                <ImageButton
+                    android:id="@+id/sendButton"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="@drawable/circle_accent_bg"
+                    android:contentDescription="@string/send_message"
+                    android:padding="10dp"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_send"
+                    app:tint="@color/white"
+                    tools:ignore="TouchTargetSizeCheck" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
@@ -170,8 +234,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|start"
         android:layout_marginStart="24dp"
-        android:layout_marginBottom="120dp"
-        android:background="@color/surface_container"
+        android:layout_marginBottom="140dp"
+        android:background="@drawable/messenger_bubble_received"
         android:orientation="horizontal"
         android:padding="12dp"
         android:visibility="gone">
@@ -195,7 +259,5 @@
             tools:ignore="HardcodedText" />
 
     </LinearLayout>
-
-    <!-- REMOVED Duplicate Online Status Badge -->
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

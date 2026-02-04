@@ -2,10 +2,10 @@ package com.example.barterhub.ui
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -14,8 +14,6 @@ import com.example.barterhub.R
 import com.example.barterhub.adapters.ConversationsAdapter
 import com.example.barterhub.databinding.FragmentMessagesBinding
 import com.example.barterhub.data.models.Conversation
-import com.example.barterhub.data.models.Message
-import com.example.barterhub.data.models.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -25,7 +23,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MessagesFragment : Fragment() {
-
     private var _binding: FragmentMessagesBinding? = null
     private val binding get() = _binding!!
 
@@ -47,9 +44,19 @@ class MessagesFragment : Fragment() {
         setupRecyclerView()
         fetchConversations()
 
-        // Auto-create test conversation if empty after 3s
+        binding.fabLottie.setOnClickListener {
+            val bundle = Bundle().apply {
+                putString(
+                    "BOT_INITIAL_MESSAGE",
+                    "Hi! I'm your BarterHub bot. How can I help you?"
+                )
+            }
+            findNavController()
+                .navigate(R.id.action_messages_to_botChatFragment, bundle)
+        }
+
         viewLifecycleOwner.lifecycleScope.launch {
-            delay(3000)
+            delay(5000)
         }
     }
 
@@ -59,15 +66,20 @@ class MessagesFragment : Fragment() {
             val partnerId = convo.participants.keys.firstOrNull { it != currentUserId }
                 ?: return@ConversationsAdapter
             val partnerName = convo.participantNames[partnerId] ?: "Chat Partner"
-            val partnerProfilePic = convo.participantProfilePics[partnerId] // 🔥 GET PROFILE PIC
+            val partnerProfilePic = convo.participantProfilePics[partnerId]
 
             val bundle = Bundle().apply {
                 putString("chatId", convo.chatId)
                 putString("partnerId", partnerId)
                 putString("partnerName", partnerName)
-                putString("partnerProfilePic", partnerProfilePic) // 🔥 PASS PROFILE PIC
+                putString("partnerProfilePic", partnerProfilePic)
             }
             findNavController().navigate(R.id.action_messages_to_chatFragment, bundle)
+        }
+
+        adapter.setOnConversationLongClickListener { conversation, position ->
+            showDeleteConversationDialog(conversation, position)
+            true
         }
 
         binding.messagesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -75,115 +87,250 @@ class MessagesFragment : Fragment() {
         updateEmptyState()
     }
 
-    @SuppressLint("NotifyDataSetChanged")
-    private fun fetchConversations() {
+    private fun showDeleteConversationDialog(conversation: Conversation, position: Int) {
+        val currentUserId = auth.currentUser?.uid ?: return
+        val partnerId = conversation.participants.keys.firstOrNull { it != currentUserId }
+        val partnerName = conversation.participantNames[partnerId] ?: "this conversation"
+
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Delete Conversation")
+            .setMessage("Are you sure you want to delete your conversation with $partnerName?")
+            .setPositiveButton("Delete") { dialog, which ->
+                deleteConversation(conversation.chatId, position)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun deleteConversation(chatId: String, position: Int) {
         val userId = auth.currentUser?.uid ?: return
-        binding.progressBar.visibility = View.VISIBLE
 
-        conversationsListener?.let { database.child("chats").removeEventListener(it) }
+        val chatRef = FirebaseDatabase.getInstance().getReference("chats").child(chatId)
 
-        conversationsListener = database.child("chats").addValueEventListener(object :
-            ValueEventListener {
+        chatRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                conversationList.clear()
                 if (!snapshot.exists()) {
-                    binding.progressBar.visibility = View.GONE
-                    updateEmptyState()
+                    showSnackbar("Chat not found.")
                     return
                 }
 
-                for (chatSnap in snapshot.children) {
-                    val chatId = chatSnap.key ?: continue
-                    val participantsSnap = chatSnap.child("participants")
-                    if (!participantsSnap.hasChild(userId)) continue
+                val participants = snapshot.child("participants").children.mapNotNull { it.key }
 
-                    val participants = mutableMapOf<String, Boolean>()
-                    participantsSnap.children.forEach { p ->
-                        participants[p.key ?: ""] = p.getValue(Boolean::class.java) ?: true
-                    }
+                val updates = hashMapOf<String, Any?>()
+                updates["/chats/$chatId"] = null // delete full chat
 
-                    val lastMessage = chatSnap.child("lastMessage").getValue(String::class.java) ?: "Start a conversation"
-                    val lastMessageTime = chatSnap.child("lastMessageTime").getValue(Long::class.java) ?: System.currentTimeMillis()
-
-                    val messages = mutableMapOf<String, Message>()
-                    chatSnap.child("messages").children.forEach { msgSnap ->
-                        msgSnap.getValue(Message::class.java)?.let { messages[msgSnap.key!!] = it }
-                    }
-
-                    // 🔥 UPDATED: Fetch both names AND profile pictures
-                    fetchParticipantDetails(participants) { namesMap, profilePicsMap ->
-                        val convo = Conversation(
-                            chatId = chatId,
-                            participants = participants,
-                            participantNames = namesMap,
-                            participantProfilePics = profilePicsMap, // 🔥 ADD PROFILE PICS
-                            messages = messages,
-                            lastMessage = lastMessage,
-                            lastMessageTime = lastMessageTime,
-                            unreadCount = calculateUnreadCount(messages, userId)
-                        )
-
-                        conversationList.removeAll { it.chatId == chatId }
-                        conversationList.add(convo)
-                        conversationList.sortByDescending { it.lastMessageTime }
-                        adapter.notifyDataSetChanged()
-                        updateEmptyState()
-                    }
+                participants.forEach { pid ->
+                    updates["/user_chats/$pid/$chatId"] = null
                 }
 
-                binding.progressBar.visibility = View.GONE
+                database.updateChildren(updates)
+                    .addOnSuccessListener {
+                        if (position in conversationList.indices) {
+                            conversationList.removeAt(position)
+                            adapter.notifyItemRemoved(position)
+                        } else {
+                            adapter.notifyDataSetChanged()
+                        }
+                        updateEmptyState()
+                        showSnackbar("Conversation permanently deleted")
+                    }
+
+                    .addOnFailureListener { e ->
+                        showSnackbar("Failed to delete: ${e.message}")
+                    }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                binding.progressBar.visibility = View.GONE
-                Toast.makeText(requireContext(), "Failed to load conversations", Toast.LENGTH_SHORT).show()
+                showSnackbar("Failed: ${error.message}")
             }
         })
     }
 
-    // 🔥 UPDATED: Fetch both names and profile pictures
-    private fun fetchParticipantDetails(participants: Map<String, Boolean>, onComplete: (Map<String, String>, Map<String, String?>) -> Unit) {
-        val namesMap = mutableMapOf<String, String>()
-        val profilePicsMap = mutableMapOf<String, String?>() // 🔥 ADD PROFILE PICS MAP
-        var completed = 0
-        val total = participants.size
-        if (total == 0) { onComplete(emptyMap(), emptyMap()); return }
+    private fun showSnackbar(message: String) {
+        com.google.android.material.snackbar.Snackbar.make(binding.root, message,
+            com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show()
+    }
 
-        participants.keys.forEach { uid ->
-            database.child("users").child(uid).addListenerForSingleValueEvent(object :
-                ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val user = snapshot.getValue(User::class.java)
+    @SuppressLint("NotifyDataSetChanged")
+    private fun fetchConversations() {
+        try {
+            val userId = auth.currentUser?.uid ?: return
+            if (_binding == null) return
 
-                    // Get name
-                    val name = user?.username
-                        ?: snapshot.child("username").getValue(String::class.java)
-                        ?: user?.email?.substringBefore("@")
-                        ?: snapshot.child("email").getValue(String::class.java)?.substringBefore("@")
-                        ?: "Unknown User"
-                    namesMap[uid] = name
+            binding.progressBar.visibility = View.VISIBLE
+            conversationList.clear()
 
-                    // 🔥 GET PROFILE PICTURE
-                    val profilePic = snapshot.child("profileImageUrl").getValue(String::class.java)
-                        ?: snapshot.child("profilePicture").getValue(String::class.java)
-                        ?: snapshot.child("profilePic").getValue(String::class.java)
-                    profilePicsMap[uid] = profilePic
+            // Remove old listener
+            conversationsListener?.let { database.child("chats").removeEventListener(it) }
 
-                    completed++
-                    if (completed == total) onComplete(namesMap, profilePicsMap)
-                }
-                override fun onCancelled(error: DatabaseError) {
-                    namesMap[uid] = "Unknown User"
-                    profilePicsMap[uid] = null // 🔥 NULL IF ERROR
-                    completed++
-                    if (completed == total) onComplete(namesMap, profilePicsMap)
-                }
-            })
+            conversationsListener = database.child("chats")
+                .addValueEventListener(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        try {
+                            if (_binding == null) return
+                            conversationList.clear()
+
+                            if (!snapshot.exists()) {
+                                binding.progressBar.visibility = View.GONE
+                                updateEmptyState()
+                                return
+                            }
+
+                            Log.d("DEBUG_MESSAGES", "Found ${snapshot.childrenCount} chats")
+                            var chatsProcessed = 0
+
+                            for (chatSnap in snapshot.children) {
+                                if (_binding == null) break
+
+                                val chatId = chatSnap.key ?: continue
+
+                                // ✅ Check if userId is part of the chatId
+                                if (!chatId.contains(userId)) continue
+
+                                val partnerId = extractPartnerIdFromChatId(chatId, userId)
+                                if (partnerId != null) {
+                                    val lastMessage = chatSnap.child("lastMessage").getValue(String::class.java)
+                                        ?: getLastMessageFromMessages(chatSnap)
+                                        ?: "New message"
+
+                                    val lastMessageTime = chatSnap.child("lastMessageTime").getValue(Long::class.java)
+                                        ?: getLastMessageTimeFromMessages(chatSnap)
+                                        ?: System.currentTimeMillis()
+
+                                    loadPartnerDetails(chatId, partnerId, lastMessage, lastMessageTime)
+                                    chatsProcessed++
+                                }
+                            }
+
+                            binding.progressBar.visibility = View.GONE
+                            if (chatsProcessed == 0) updateEmptyState()
+
+                        } catch (e: Exception) {
+                            Log.e("DEBUG_MESSAGES", "Error in onDataChange: ${e.message}")
+                            if (_binding != null) binding.progressBar.visibility = View.GONE
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        if (_binding != null) {
+                            binding.progressBar.visibility = View.GONE
+                            Log.e("MESSAGES_FRAGMENT", "Error: ${error.message}")
+                        }
+                    }
+                })
+
+
+
+        } catch (e: Exception) {
+            Log.e("DEBUG_MESSAGES", "Error in fetch: ${e.message}")
+            if (_binding != null) {
+                binding.progressBar.visibility = View.GONE
+            }
         }
     }
 
-    private fun calculateUnreadCount(messages: Map<String, Message>, currentUserId: String): Int {
-        return messages.values.count { it.senderId != currentUserId && !it.isRead }
+    private fun extractPartnerIdFromChatId(chatId: String, currentUserId: String): String? {
+        Log.d("DEBUG_MESSAGES", "Extracting from chatId: $chatId")
+
+        val parts = chatId.split('_')
+
+
+        val potentialUserIds = parts.filter { part ->
+            part.length >= 20 &&
+                    part.length <= 35 &&
+                    part != currentUserId &&
+                    !part.startsWith("-O") &&
+                    !part.startsWith("chat")
+        }
+
+        Log.d("DEBUG_MESSAGES", "Filtered partner IDs: $potentialUserIds")
+
+        // Return the first valid partner ID found
+        return potentialUserIds.firstOrNull()
+    }
+
+    private fun getLastMessageFromMessages(chatSnap: DataSnapshot): String? {
+        val messagesSnap = chatSnap.child("messages")
+        if (!messagesSnap.exists()) return null
+
+        val lastMessage = messagesSnap.children.lastOrNull()?.child("text")?.getValue(String::class.java)
+        Log.d("DEBUG_MESSAGES", "Got last message from messages: $lastMessage")
+        return lastMessage
+    }
+
+    private fun getLastMessageTimeFromMessages(chatSnap: DataSnapshot): Long? {
+        val messagesSnap = chatSnap.child("messages")
+        if (!messagesSnap.exists()) return null
+
+        val lastMessageTime = messagesSnap.children.lastOrNull()?.child("timestamp")?.getValue(Long::class.java)
+        return lastMessageTime
+    }
+
+
+    private fun loadPartnerDetails(chatId: String, partnerId: String, lastMessage: String, lastMessageTime: Long) {
+        val userId = auth.currentUser?.uid ?: return
+
+        database.child("users").child(partnerId).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (_binding == null) return
+
+                val partnerName = snapshot.child("username").getValue(String::class.java)
+                    ?: snapshot.child("fullName").getValue(String::class.java)
+                    ?: "Chat Partner"
+
+                val partnerProfilePic = snapshot.child("profileImageUrl").getValue(String::class.java)
+                    ?: snapshot.child("profilePicture").getValue(String::class.java)
+
+                Log.d("DEBUG_MESSAGES", "✅ Partner Details: $partnerName ($partnerId)")
+
+                val convo = Conversation(
+                    chatId = chatId,
+                    participants = mapOf(userId to true, partnerId to true),
+                    participantNames = mapOf(userId to "You", partnerId to partnerName),
+                    participantProfilePics = mapOf(partnerId to partnerProfilePic),
+                    messages = mapOf(),
+                    lastMessage = lastMessage,
+                    lastMessageTime = lastMessageTime,
+                    unreadCount = 0
+                )
+
+                // Remove if exists and add new
+                conversationList.removeAll { it.chatId == chatId }
+                conversationList.add(convo)
+                conversationList.sortByDescending { it.lastMessageTime }
+                adapter.notifyDataSetChanged()
+
+                binding.progressBar.visibility = View.GONE
+                updateEmptyState()
+
+                Log.d("DEBUG_MESSAGES", "🎉 LOADED CHAT: $partnerName - $lastMessage")
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                if (_binding == null) return
+
+                Log.e("DEBUG_MESSAGES", "Failed to load partner $partnerId: ${error.message}")
+
+                val convo = Conversation(
+                    chatId = chatId,
+                    participants = mapOf(userId to true, partnerId to true),
+                    participantNames = mapOf(userId to "You", partnerId to "Chat Partner"),
+                    participantProfilePics = mapOf(),
+                    messages = mapOf(),
+                    lastMessage = lastMessage,
+                    lastMessageTime = lastMessageTime,
+                    unreadCount = 0
+                )
+
+                conversationList.removeAll { it.chatId == chatId }
+                conversationList.add(convo)
+                conversationList.sortByDescending { it.lastMessageTime }
+                adapter.notifyDataSetChanged()
+
+                binding.progressBar.visibility = View.GONE
+                updateEmptyState()
+            }
+        })
     }
 
     private fun updateEmptyState() {
@@ -194,7 +341,11 @@ class MessagesFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        conversationsListener?.let { database.child("chats").removeEventListener(it) }
+        val userId = auth.currentUser?.uid
+        conversationsListener?.let {
+            userId?.let { uid ->
+            }
+        }
         _binding = null
     }
 }

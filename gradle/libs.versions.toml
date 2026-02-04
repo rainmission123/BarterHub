@@ -1,6 +1,7 @@
 [versions]
 android = "1.1.1"
 androidGradlePlugin = "8.13.0"
+androidVersion = "10.16.1"
 cloudinaryAndroid = "3.1.2"
 firebaseAnalytics = "23.0.0"
 firebaseDatabaseVersion = "22.0.1"
@@ -44,6 +45,7 @@ playServicesMaps = "19.2.0"
 navigationFragmentKtx = "2.9.5"
 navigationUiKtx = "2.9.5"
 simplebadgeview = "1.0.8"
+playServicesWallet = "19.5.0"
 
 [libraries]
 android = { module = "io.imagekit:android", version.ref = "android" }
@@ -65,6 +67,7 @@ firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore
 # Play Services
 firebase-storage-ktx = { module = "com.google.firebase:firebase-storage-ktx", version.ref = "firebaseStorageKtx" }
 logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okhttp" }
+maps-android = { module = "com.mapbox.maps:android", version.ref = "androidVersion" }
 notification-badge = { module = "com.github.nex3z:notification-badge", version.ref = "notificationBadge" }
 notificationbadge = { module = "com.github.nex3z:NotificationBadge", version.ref = "notificationbadgeVersion" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
@@ -111,6 +114,7 @@ play-services-maps = { group = "com.google.android.gms", name = "play-services-m
 navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
 navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigationUiKtx" }
 simplebadgeview = { module = "com.github.ome450901:SimpleBadgeView", version.ref = "simplebadgeview" }
+play-services-wallet = { group = "com.google.android.gms", name = "play-services-wallet", version.ref = "playServicesWallet" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "androidGradlePlugin" }

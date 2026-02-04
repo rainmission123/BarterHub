@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="120dp"
+    android:layout_height="120dp"
+    android:layout_margin="5dp">
+
+    <ImageView
+        android:id="@+id/ivSelectedPhoto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:contentDescription="@string/todo"
+        android:scaleType="centerCrop"
+        android:background="@drawable/rounded_corner"
+        android:src="@drawable/upload_photo" />
+
+    <ImageButton
+        android:id="@+id/btnRemovePhoto"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="top|end"
+        android:background="@drawable/circle_background_red"
+        android:contentDescription="@string/todo"
+        android:padding="4dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_close1"
+        tools:ignore="TouchTargetSizeCheck,DuplicateSpeakableTextCheck" />
+
+</FrameLayout>

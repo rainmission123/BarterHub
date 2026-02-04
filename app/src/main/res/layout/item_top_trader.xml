@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:padding="12dp"
+    android:clickable="true"
+    android:focusable="true">
+
+    <!-- Rank Badge -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/rankBadge"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="12dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/rankNumberText"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="#1"
+            android:textColor="@color/gold"
+            android:textSize="14sp"
+            android:textStyle="bold"/>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Profile Image (8dp radius) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/profileImageContainer"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_marginStart="12dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="0dp"
+        app:layout_constraintStart_toEndOf="@id/rankBadge"
+        app:layout_constraintTop_toTopOf="parent"
+        app:strokeColor="@color/gray_light"
+        app:strokeWidth="1dp">
+
+        <ImageView
+            android:id="@+id/profileImageView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_profile" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Verification Badge -->
+    <ImageView
+        android:id="@+id/verificationBadge"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:src="@drawable/ic_check_circle"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="@id/profileImageContainer"
+        app:layout_constraintEnd_toEndOf="@id/profileImageContainer"
+        android:translationX="4dp"
+        android:translationY="4dp"/>
+
+
+    <!-- Trader Info -->
+    <LinearLayout
+        android:id="@+id/traderInfoLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="8dp"
+        android:orientation="vertical"
+        app:layout_constraintStart_toEndOf="@id/profileImageContainer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- Trader Name with Premium Indicator -->
+        <LinearLayout
+            android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/traderNameText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Trader Name"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:lines="1"/>
+
+        <!-- Premium Text Badge -->
+        <TextView
+            android:id="@+id/premiumTextBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PREMIUM"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:textColor="@color/black_80"
+            android:background="@drawable/bg_premium_badge"
+            android:paddingHorizontal="6dp"
+            android:paddingVertical="2dp"
+            android:layout_marginStart="8dp"
+            android:visibility="gone"
+            tools:ignore="SmallSp" />
+    </LinearLayout>
+
+        <!-- Rating / Reviews / Trades -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal">
+
+            <!-- Rating -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_gravity="center_vertical"
+                    android:src="@drawable/ic_star"
+                    app:tint="@color/gold"/>
+
+                <TextView
+                    android:id="@+id/ratingText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="5.0"
+                    android:textColor="@color/gold"
+                    android:textSize="13sp"/>
+            </LinearLayout>
+
+            <!-- Reviews -->
+            <TextView
+                android:id="@+id/reviewsText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:text="10 reviews"
+                android:textColor="@color/gray"
+                android:textSize="13sp"/>
+
+            <!-- Trades -->
+            <TextView
+                android:id="@+id/tradesText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="15 trades"
+                android:textColor="@color/gray"
+                android:textSize="13sp"/>
+        </LinearLayout>
+
+        <!-- Achievement Badges (DYNAMIC) -->
+        <HorizontalScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/achievementsLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"/>
+        </HorizontalScrollView>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,7 @@
+<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/photoPreview"
+    android:layout_width="160dp"
+    android:layout_height="match_parent"
+    android:layout_marginEnd="8dp"
+    android:scaleType="centerCrop"
+    android:background="@drawable/rounded1_background" />

@@ -1,76 +1,39 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-
-    <!-- Base application theme -->
+    <!-- Base application theme - SIMPLIFIED -->
     <style name="Base.Theme.BarterHub" parent="Theme.Material3.DayNight.NoActionBar">
-
-        <item name="postTextColor">@color/gray_800</item>
-        <item name="postTextColorSecondary">@color/gray_600</item>
-        <item name="postPriceColor">#D32F2F</item>
+        <!-- Custom colors for posts -->
+        <item name="postTextColor">@color/text_primary_light</item>
+        <item name="postTextColorSecondary">@color/text_secondary_light</item>
+        <item name="postPriceColor">@color/error</item>
         <item name="postWishlistIconColor">@color/gray_400</item>
+        <item name="android:windowFullscreen">true</item>
 
 
-
-
-        <!-- Default dark nav bar icons (para safe sa API < 27) -->
-        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
-
-        <!-- Transparent status bar -->
+        <!-- Status bar -->
         <item name="android:statusBarColor">@android:color/transparent</item>
-
-        <!-- Light status bar icons (para gumanda sa light background) -->
         <item name="android:windowLightStatusBar">true</item>
 
-        <!-- Background (important, fixes colorBackground error) -->
-        <item name="android:colorBackground">@color/white</item>
-        <item name="colorSurface">@color/white</item>
-        <item name="colorOnSurface">@color/black</item>
+        <!-- Navigation bar -->
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
 
-        <!-- Primary color -->
-        <item name="colorPrimary">@color/primaryColor</item>
-        <item name="colorPrimaryVariant">@color/primaryDarkColor</item>
+        <!-- Material 3 Color Tokens - SIMPLIFIED -->
+        <item name="colorPrimary">@color/colorAccent</item>
         <item name="colorOnPrimary">@color/white</item>
 
-        <!-- Secondary color -->
-        <item name="colorSecondary">@color/secondaryColor</item>
-        <item name="colorSecondaryVariant">@color/secondaryDarkColor</item>
+        <item name="colorSecondary">@color/colorSecondary</item>
         <item name="colorOnSecondary">@color/white</item>
 
-        <!-- Enable Material 3 -->
-        <item name="materialButtonStyle">@style/Widget.Material3.Button</item>
+        <!-- Surface colors - SIMPLIFIED -->
+        <item name="colorSurface">@color/surface_light</item>
+        <item name="colorOnSurface">@color/text_primary_light</item>
+        <item name="colorSurfaceVariant">@color/gray_100</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary_light</item>
+
+        <!-- Error colors -->
+        <item name="colorError">@color/error</item>
+        <item name="colorOnError">@color/white</item>
     </style>
 
     <!-- App theme -->
     <style name="Theme.BarterHub" parent="Base.Theme.BarterHub" />
-
-    <!-- Custom Button Style -->
-    <style name="Widget.App.Button.Primary" parent="Widget.MaterialComponents.Button">
-        <item name="backgroundTint">@color/primaryColor</item>
-        <item name="android:textColor">@color/white</item>
-        <item name="cornerRadius">12dp</item>
-        <item name="android:elevation">2dp</item>
-        <item name="android:minHeight">54dp</item>
-    </style>
-
-    <!-- Login activity shapes -->
-    <style name="ShapeAppearance.App.MediumComponent" parent="">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">12dp</item>
-    </style>
-
-    <style name="ShapeAppearance.App.CustomRounded" parent="">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">12dp</item>
-    </style>
-
-    <!-- Offer dialog -->
-    <style name="Widget.App.IconButton" parent="Widget.MaterialComponents.Button.Icon">
-        <item name="iconSize">18dp</item>
-        <item name="iconPadding">0dp</item>
-        <item name="backgroundTint">@android:color/transparent</item>
-    </style>
-
-    <style name="ShapeAppearanceOverlay.MyTextInput" parent="">
-        <item name="cornerSize">12dp</item>
-    </style>
-
 </resources>
