@@ -85,7 +85,7 @@
                 android:max="100"
                 android:progress="0"
                 android:visibility="invisible"
-                android:progressTint="@color/colorAccent"
+                android:progressTint="@color/com_facebook_messenger_blue"
                 android:progressBackgroundTint="@color/gray_light" />
 
             <TextView
@@ -162,6 +162,7 @@
         android:gravity="end"
         android:orientation="vertical"
         android:paddingHorizontal="4dp"
+        android:layout_marginStart="@dimen/_60dp"
         android:paddingTop="4dp"
         app:layout_constraintStart_toStartOf="@id/imageContainer"
         app:layout_constraintTop_toBottomOf="@id/imageContainer"
@@ -172,7 +173,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="10:30 AM"
-            android:textColor="@color/text_hint"
+            android:textColor="@color/White"
             android:textSize="9sp" />
 
         <TextView
@@ -180,7 +181,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Sent"
-            android:textColor="@color/text_hint"
+            android:textColor="@color/White"
             android:textSize="9sp" />
     </LinearLayout>
 

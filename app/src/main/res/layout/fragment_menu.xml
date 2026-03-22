@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:fillViewport="true"
-    android:background="@drawable/bg_bottom_sheet"
+    android:background="@drawable/backgroundlogin"
     android:padding="0dp"
     tools:context=".ui.MenuLeftDialogFragment">
 
@@ -83,7 +83,7 @@
             android:textStyle="bold"
             android:letterSpacing="0.1"
             android:paddingBottom="8dp"
-            android:textColor="@color/gray_500"
+            android:textColor="@color/White"
             tools:ignore="HardcodedText" />
 
         <!-- My Listings -->
@@ -106,7 +106,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/gray_700"
+                android:textColor="@color/white"
                 android:paddingStart="12dp"
                 android:text="My Listings"
                 android:textSize="14sp"
@@ -134,7 +134,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingStart="12dp"
-                android:textColor="@color/gray_700"
+                android:textColor="@color/White"
                 android:text="Trade Requests"
                 android:textSize="14sp"
                 tools:ignore="HardcodedText,RtlSymmetry" />
@@ -161,7 +161,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingStart="12dp"
-                android:textColor="@color/gray_700"
+                android:textColor="@color/White"
                 android:text="Messages"
                 android:textSize="14sp"
                 tools:ignore="HardcodedText,RtlSymmetry" />
@@ -188,7 +188,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingStart="12dp"
-                android:textColor="@color/gray_700"
+                android:textColor="@color/White"
                 android:text="Notifications"
                 android:textSize="14sp"
                 tools:ignore="HardcodedText,RtlSymmetry" />
@@ -216,7 +216,7 @@
                 android:layout_height="wrap_content"
                 android:paddingStart="12dp"
                 android:text="Switch Account"
-                android:textColor="@color/gray_700"
+                android:textColor="@color/White"
                 android:textSize="14sp"
                 tools:ignore="HardcodedText,RtlSymmetry" />
         </LinearLayout>
@@ -239,7 +239,7 @@
             android:textStyle="bold"
             android:letterSpacing="0.1"
             android:paddingBottom="8dp"
-            android:textColor="@color/gray_500"
+            android:textColor="@color/White"
             android:layout_marginTop="8dp"/>
 
         <!-- Dark Mode -->
@@ -258,7 +258,7 @@
                 android:src="@drawable/ic_menu_daynight"
                 android:layout_marginEnd="16dp"
                 android:contentDescription="@string/dark_mode"
-                app:tint="@color/gray_600" />
+                app:tint="@color/black" />
 
             <TextView
                 android:layout_width="0dp"
@@ -266,7 +266,7 @@
                 android:layout_weight="1"
                 android:text="@string/dark_mode"
                 android:textSize="14sp"
-                android:textColor="@color/gray_700" />
+                android:textColor="@color/White" />
 
             <com.google.android.material.switchmaterial.SwitchMaterial
                 android:id="@+id/switchDarkMode"
@@ -298,7 +298,7 @@
                 android:layout_height="wrap_content"
                 android:paddingStart="12dp"
                 android:text="Settings"
-                android:textColor="@color/gray_700"
+                android:textColor="@color/White"
                 android:textSize="14sp"
                 tools:ignore="HardcodedText,RtlSymmetry" />
         </LinearLayout>

@@ -9,9 +9,8 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="?attr/colorSurface"
-        android:fitsSystemWindows="true"
-        android:paddingTop="?attr/actionBarSize">
+        android:background="@drawable/backgroundlogin"
+        android:fitsSystemWindows="true">
 
         <!-- Fragment Container - With bottom margin for navigation -->
         <androidx.fragment.app.FragmentContainerView
@@ -19,22 +18,32 @@
             android:name="androidx.navigation.fragment.NavHostFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginBottom="?attr/actionBarSize"
             app:defaultNavHost="true"
             app:navGraph="@navigation/nav_graph"/>
 
-        <!-- Bottom Navigation - Fixed at bottom -->
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/bottomNavigation"
+        <LinearLayout
+            android:id="@+id/bottomNavCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            android:background="?attr/colorSurfaceVariant"
-            android:elevation="8dp"
-            app:itemIconTint="@color/chip_selector"
-            app:itemTextColor="@color/chip_selector"
-            app:labelVisibilityMode="labeled"
-            app:menu="@menu/bottom_navigation_menu" />
+            android:orientation="vertical"
+            android:background="@color/background_dark">
+
+            <com.google.android.material.bottomnavigation.BottomNavigationView
+                android:id="@+id/bottomNavigation"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent"
+                app:menu="@menu/bottom_navigation_menu"
+                app:labelVisibilityMode="labeled"
+                app:itemIconSize="18dp"
+                app:itemRippleColor="@color/White"
+                app:itemTextAppearanceActive="@style/BottomNavTextActive"
+                app:itemTextAppearanceInactive="@style/BottomNavTextInactive"
+                app:itemIconTint="@color/bottom_nav_icon_selector"
+                app:itemTextColor="@color/bottom_nav_text_selector" />
+
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/swipe_indicator"
@@ -65,10 +74,7 @@
                 android:layout_height="25dp"
                 android:background="@color/card_background" />
 
-
         </LinearLayout>
-
-
 
     </FrameLayout>
 

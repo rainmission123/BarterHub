@@ -155,20 +155,50 @@ class OfferDialogFragment : DialogFragment() {
         _binding = OfferDialogBinding.inflate(LayoutInflater.from(context))
         setupRecyclerView()
         setupClickListeners()
+        setupConditionDropdown()
         return AlertDialog.Builder(requireContext())
             .setView(binding.root)
             .create()
     }
 
+    private fun setupConditionDropdown() {
+        val conditions = listOf("Brand New", "Like New", "Good", "Fair", "Needs Repair")
+
+        val adapter = android.widget.ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_list_item_1,
+            conditions
+        )
+
+        binding.editOfferCondition.setAdapter(adapter)
+    }
+
+
     @SuppressLint("SetTextI18n")
     private fun sendOffer() {
         val message = binding.messageEditText.text.toString().trim()
+        val offerTitle = binding.editOfferTitle.text?.toString()?.trim().orEmpty()
+        val offerCondition = binding.editOfferCondition.text?.toString()?.trim().orEmpty()
+
 
         if (message.isBlank()) {
             Toast.makeText(requireContext(), "Please enter a message for your offer", Toast.LENGTH_SHORT).show()
             binding.messageEditText.requestFocus()
             return
         }
+
+        if (offerTitle.isBlank()) {
+            Toast.makeText(requireContext(), "Please enter item title", Toast.LENGTH_SHORT).show()
+            binding.editOfferTitle.requestFocus()
+            return
+        }
+
+        if (offerCondition.isBlank()) {
+            Toast.makeText(requireContext(), "Please select condition", Toast.LENGTH_SHORT).show()
+            binding.editOfferCondition.requestFocus()
+            return
+        }
+
 
         if (selectedPhotos.isEmpty()) {
             Toast.makeText(requireContext(), "Please upload at least one photo of the item", Toast.LENGTH_SHORT).show()
@@ -193,7 +223,7 @@ class OfferDialogFragment : DialogFragment() {
             uploadImagesToCloudinary(selectedPhotos) { uploadedUrls ->
                 if (uploadedUrls.isNotEmpty()) {
                     Log.d("OfferDialog", "✅ ${uploadedUrls.size} images uploaded successfully")
-                    sendTradeRequestWithImages("Trade Item", message, uploadedUrls)
+                    sendTradeRequestWithImages(offerTitle, offerCondition, message, uploadedUrls)
                 } else {
                     Log.e("OfferDialog", "❌ No images were uploaded")
                     requireActivity().runOnUiThread {
@@ -218,7 +248,7 @@ class OfferDialogFragment : DialogFragment() {
         }
 
         uris.forEachIndexed { index, uri ->
-            uploadImage(uri, index) { imageUrl ->
+            uploadImage(uri) { imageUrl ->
                 if (imageUrl.isNotEmpty()) {
                     uploadedUrls.add(imageUrl)
                     Log.d("CloudinaryUpload", "✅ Image $index uploaded: $imageUrl")
@@ -242,7 +272,7 @@ class OfferDialogFragment : DialogFragment() {
         }
     }
 
-    private fun uploadImage(uri: Uri, index: Int, callback: (String) -> Unit) {
+    private fun uploadImage(uri: Uri, callback: (String) -> Unit) {
         try {
             val file = uriToFile(uri)
             if (file == null || !file.exists()) {
@@ -339,10 +369,11 @@ class OfferDialogFragment : DialogFragment() {
 
     @SuppressLint("SetTextI18n")
     private fun sendTradeRequestWithImages(
-        offeredItem: String,
+        offeredTitle: String,
+        offeredCondition: String,
         message: String,
         additionalImageUrls: List<String>
-    ) {
+    ){
         val itemId = arguments?.getString("itemId") ?: ""
         val ownerId = arguments?.getString("ownerId") ?: ""
         val itemTitle = arguments?.getString("itemTitle") ?: "Unknown Item"
@@ -358,20 +389,30 @@ class OfferDialogFragment : DialogFragment() {
         // Show final uploading status
         binding.sendOfferButton.text = "Sending request..."
 
-        sendTradeRequestWithOffer(itemId, ownerId, itemTitle, offeredItem, message, additionalImageUrls) {
+        sendTradeRequestWithOffer(
+            itemId = itemId,
+            ownerId = ownerId,
+            itemTitle = itemTitle,
+            offeredTitle = offeredTitle,
+            offeredCondition = offeredCondition,
+            message = message,
+            additionalPhotos = additionalImageUrls
+        ) {
             dismiss()
         }
+
     }
 
     private fun sendTradeRequestWithOffer(
         itemId: String,
         ownerId: String,
         itemTitle: String,
-        offeredItem: String,
+        offeredTitle: String,
+        offeredCondition: String,
         message: String,
         additionalPhotos: List<String> = emptyList(),
         onComplete: () -> Unit = {}
-    ) {
+    ){
         val requesterId = FirebaseAuth.getInstance().currentUser?.uid
         if (requesterId == null) {
             Toast.makeText(requireContext(), "Please login first", Toast.LENGTH_SHORT).show()
@@ -383,7 +424,7 @@ class OfferDialogFragment : DialogFragment() {
 
         loadUserData(requesterId, ownerId) { currentUserData, targetUserData ->
             loadActualItemImage(itemId) { targetItemImageUrl ->
-                loadOfferedItemImage(offeredItem) { offeredItemImageUrl ->
+                loadOfferedItemImage(offeredTitle) { offeredItemImageUrl ->
                     val finalOfferedImageUrl = offeredItemImageUrl.ifEmpty { "" }
                     val additionalPhotosString = additionalPhotos.joinToString(",")
 
@@ -401,10 +442,10 @@ class OfferDialogFragment : DialogFragment() {
                             "image" to targetItemImageUrl
                         ),
                         "offeredItem" to mapOf(
-                            "title" to offeredItem,
+                            "title" to offeredTitle,
                             "category" to "Unknown",
-                            "condition" to "Good",
-                            "description" to offeredItem,
+                            "condition" to offeredCondition,
+                            "description" to message,
                             "image" to finalOfferedImageUrl
                         ),
                         "fromUser" to mapOf(

@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -13,11 +14,12 @@ import com.example.barterhub.R
 import com.example.barterhub.adapters.NotificationsAdapter
 import com.example.barterhub.data.NotificationModel
 import com.example.barterhub.data.models.User
+import com.example.barterhub.ui.profile.AddFriendManager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 
 class NotificationsFragment : Fragment(R.layout.fragment_notifications) {
-
+    private lateinit var addFriendManager: AddFriendManager
     private lateinit var rvNotifications: RecyclerView
     private lateinit var swipeRefresh: SwipeRefreshLayout
     private lateinit var layoutEmpty: LinearLayout
@@ -29,7 +31,7 @@ class NotificationsFragment : Fragment(R.layout.fragment_notifications) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        addFriendManager = AddFriendManager(this)
         rvNotifications = view.findViewById(R.id.rvNotifications)
         swipeRefresh = view.findViewById(R.id.swipeRefreshNotifications)
         layoutEmpty = view.findViewById(R.id.layoutEmptyNotifications)
@@ -48,20 +50,68 @@ class NotificationsFragment : Fragment(R.layout.fragment_notifications) {
     private fun setupRecyclerView() {
         adapter = NotificationsAdapter(notificationsList)
 
-        // Set the listener for adapter callbacks
         adapter.setOnNotificationActionListener(object : NotificationsAdapter.OnNotificationActionListener {
             override fun onAcceptFriend(notificationId: String?, fromUserId: String?, position: Int) {
-                acceptFriendRequest(fromUserId, notificationId, position)
+                if (fromUserId == null) return
+                addFriendManager.acceptFriendRequest(fromUserId)
+                loadNotifications()
             }
 
             override fun onDeclineFriend(notificationId: String?, position: Int) {
-                declineFriendRequest(notificationId, position)
+                val notification = notificationsList.getOrNull(position) ?: return
+                val fromUserId = notification.fromUserId ?: return
+                addFriendManager.rejectFriendRequest(fromUserId)
+                loadNotifications()
             }
 
             override fun onDeleteNotification(notificationId: String?, position: Int) {
                 deleteNotification(notificationId, position)
             }
         })
+
+        adapter.setOnNotificationClickListener(object : NotificationsAdapter.OnNotificationClickListener {
+            override fun onNotificationClick(notification: NotificationModel) {
+
+                val type = notification.type.orEmpty()
+
+                if (type == "receipt_created" || type == "trade_receipt") {
+
+                    val receiptId = notification.receiptId.orEmpty()
+                    if (receiptId.isBlank()) {
+                        Toast.makeText(requireContext(), "Receipt info missing", Toast.LENGTH_SHORT).show()
+                        return
+                    }
+
+                    val bundle = Bundle().apply {
+                        putString("receiptId", receiptId)
+                    }
+
+                    findNavController().navigate(R.id.receiptFragment, bundle)
+                    return
+                }
+
+                val itemId = notification.itemId
+                val fromUserId = notification.fromUserId
+
+                when {
+                    !itemId.isNullOrBlank() -> {
+                        val bundle = Bundle().apply {
+                            putString("itemId", itemId)
+                            putString("ownerId", fromUserId ?: "")
+                        }
+                        findNavController().navigate(R.id.nav_item_detail, bundle)
+                    }
+                    !fromUserId.isNullOrBlank() -> {
+                        val bundle = Bundle().apply { putString("ownerId", fromUserId) }
+                        findNavController().navigate(R.id.ownerProfileFragment, bundle)
+                    }
+                    else -> {
+                        Toast.makeText(requireContext(), "No action for this notification", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        })
+
 
         rvNotifications.layoutManager = LinearLayoutManager(requireContext())
         rvNotifications.adapter = adapter
@@ -81,8 +131,6 @@ class NotificationsFragment : Fragment(R.layout.fragment_notifications) {
                         for (notifSnapshot in snapshot.children) {
                             val notifKey = notifSnapshot.key
                             Log.d("NotificationsDebug", "📦 Processing notification: $notifKey")
-
-                            // ✅ GET ALL FIELDS WITH PROPER NULL HANDLING
                             val type = notifSnapshot.child("type").getValue(String::class.java)
                             val fromUserId = notifSnapshot.child("fromUserId").getValue(String::class.java)
                             val fromUserName = notifSnapshot.child("fromUserName").getValue(String::class.java)
@@ -93,6 +141,12 @@ class NotificationsFragment : Fragment(R.layout.fragment_notifications) {
                             val coins = notifSnapshot.child("coins").getValue(Int::class.java) ?: 0
                             val status = notifSnapshot.child("status").getValue(String::class.java)
                             val message = notifSnapshot.child("message").getValue(String::class.java)
+                            val chatId = notifSnapshot.child("chatId").getValue(String::class.java)
+                            val partnerId = notifSnapshot.child("partnerId").getValue(String::class.java)
+                            val partnerName = notifSnapshot.child("partnerName").getValue(String::class.java)
+                            val requestId = notifSnapshot.child("requestId").getValue(String::class.java)
+                            val receiptId = notifSnapshot.child("receiptId").getValue(String::class.java)
+
 
                             // 🔍 DEBUG LOGS
                             Log.d("NotificationsDebug", "   Type: $type")
@@ -111,10 +165,14 @@ class NotificationsFragment : Fragment(R.layout.fragment_notifications) {
                                 timestamp = timestamp,
                                 coins = coins,
                                 status = status,
-                                message = message
+                                message = message,
+                                chatId = chatId,
+                                partnerId = partnerId,
+                                partnerName = partnerName,
+                                requestId = requestId,
+                                receiptId = receiptId
                             )
 
-                            // 🔹 IF USER DETAILS ARE MISSING, FETCH THEM
                             if (type == "friend_request" && fromUserId != null &&
                                 (fromUserName.isNullOrEmpty() || fromUserProfile.isNullOrEmpty())) {
 
@@ -146,11 +204,12 @@ class NotificationsFragment : Fragment(R.layout.fragment_notifications) {
                     notificationsList.sortByDescending { it.timestamp }
                     adapter.notifyDataSetChanged()
 
-                    // Update empty state
                     layoutEmpty.visibility = if (notificationsList.isEmpty()) View.VISIBLE else View.GONE
+
+                    markAllNotificationsAsRead()
+
                     swipeRefresh.isRefreshing = false
 
-                    Log.d("NotificationsDebug", "🎯 Final notifications count: ${notificationsList.size}")
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -198,79 +257,38 @@ class NotificationsFragment : Fragment(R.layout.fragment_notifications) {
             }
     }
 
-    // 🔹 ACCEPT FRIEND REQUEST
-    private fun acceptFriendRequest(fromUserId: String?, notificationId: String?, position: Int) {
-        val currentUserId = auth.currentUser?.uid ?: return
-        if (fromUserId == null || notificationId == null) return
-
-        Log.d("NotificationsFragment", "✅ Accepting friend request: $notificationId")
-
-        val updates = hashMapOf<String, Any>(
-            "friends/$currentUserId/$fromUserId" to true,
-            "friends/$fromUserId/$currentUserId" to true,
-            "notifications/$currentUserId/$notificationId/status" to "accepted",
-            "notifications/$currentUserId/$notificationId/read" to true
-        )
-
-        database.updateChildren(updates)
-            .addOnSuccessListener {
-                Log.d("NotificationsFragment", "✅ Friend accepted in Firebase")
-
-                // Update adapter locally
-                adapter.updateNotificationStatus(notificationId, "accepted", position)
-
-                Toast.makeText(
-                    requireContext(),
-                    "Friend request accepted!",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-            .addOnFailureListener { e ->
-                Log.e("NotificationsFragment", "❌ Error accepting friend: ${e.message}")
-                Toast.makeText(
-                    requireContext(),
-                    "Failed to accept request",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-    }
-
-    // 🔹 DECLINE FRIEND REQUEST
-    private fun declineFriendRequest(notificationId: String?, position: Int) {
+    private fun markAllNotificationsAsRead() {
         val uid = auth.currentUser?.uid ?: return
-        if (notificationId == null) return
 
-        Log.d("NotificationsFragment", "🗑️ Declining friend request: $notificationId")
+        database.child("notifications").child(uid)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (!snapshot.exists()) return
 
-        // Set status to "declined" instead of removing
-        database.child("notifications")
-            .child(uid)
-            .child(notificationId)
-            .child("status")
-            .setValue("declined")
-            .addOnSuccessListener {
-                Log.d("NotificationsFragment", "✅ Status set to declined")
+                    val updates = mutableMapOf<String, Any>()
 
-                // Update adapter locally
-                adapter.updateNotificationStatus(notificationId, "declined", position)
+                    for (child in snapshot.children) {
+                        val read = child.child("read").getValue(Boolean::class.java) ?: false
+                        if (!read) {
+                            updates["${child.key}/read"] = true
+                        }
+                    }
 
-                Toast.makeText(
-                    requireContext(),
-                    "Friend request declined",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-            .addOnFailureListener { e ->
-                Log.e("NotificationsFragment", "❌ Error declining: ${e.message}")
-                Toast.makeText(
-                    requireContext(),
-                    "Failed to decline request",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
+                    if (updates.isNotEmpty()) {
+                        database.child("notifications").child(uid)
+                            .updateChildren(updates)
+                            .addOnFailureListener { e ->
+                                Log.e("NotificationsFragment", "❌ markAllNotificationsAsRead failed: ${e.message}")
+                            }
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("NotificationsFragment", "❌ markAllNotificationsAsRead cancelled: ${error.message}")
+                }
+            })
     }
 
-    // 🔹 DELETE NOTIFICATION
     private fun deleteNotification(notificationId: String?, position: Int) {
         val uid = auth.currentUser?.uid ?: return
         if (notificationId == null) return

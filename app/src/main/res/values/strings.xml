@@ -4,7 +4,7 @@
     <string name="app_name">BarterHub Philippines</string>
     <string name="app_logo">BarterHub Logo</string>
     <string name="barterhub_ph">TradeHub PH</string>
-    <string name="welcome_to_barter_hub_ph">Welcome to BarterHub Philippines</string>
+    <string name="welcome_to_barter_hub_ph">Welcome to BarterHub</string>
 
     <!-- Navigation -->
     <string name="home">Home</string>
@@ -230,7 +230,6 @@
     <string name="uploaded_image">Uploaded image</string>
     <string name="remove_image">Remove image</string>
     <string name="upload_error">Upload error</string>
-    <string name="google_maps_key">AIzaSyAlG1AI2ZO1Xnj-cgG9ekguZOcXKelfZaA</string>
     <string name="map_preview">Map preview</string>
     <string name="your_favorites_wishlist">Your Favorites / Wishlist</string>
     <string name="remove_from_favorites">Remove from Favorites</string>
@@ -239,7 +238,7 @@
     <string name="item_name">Item Name</string>
     <string name="date_2025_10_03">Date: 2025-10-03</string>
     <string name="status_completed">Status: Completed</string>
-    <string name="your_trade_history">Your Trade History</string>
+    <string name="your_trade_history">Trade History</string>
     <string name="no_trades_yet">No trades yet</string>
     <string name="request_trade">Request Barter / Offer</string>
     <string name="my_trade_requests">My Trade Requests</string>
@@ -662,7 +661,7 @@
     <string name="next_image">Next image</string>
     <string name="notification_message">Notification message</string>
     <string name="no_notifications">No Notifications</string>
-    <string name="wala_pang_notifications">Wala pang notifications</string>
+    <string name="wala_pang_notifications">No Notification</string>
     <string name="likes">Likes</string>
     <string name="menu">Menu</string>
     <string name="days_ago">%1$d days ago</string>
@@ -764,5 +763,58 @@
     <string name="art">Art</string>
     <string name="views_count">%d views</string>
     <string name="placeholder_image">No image available</string>
-
+    <string name="view_more">View More</string>
+    <string name="view_on_map">View on map</string>
+    <string name="cd_owner_photo">Owner profile photo</string>
+    <string name="cd_rating">Rating</string>
+    <string name="cd_location_icon">Location icon</string>
+    <string name="cd_map_preview">Map preview</string>
+    <string name="image_count_sample">1/10</string>
+    <string name="cd_item_image">Item image</string>
+    <string name="_1_10">1/10</string>
+    <string name="delete_notification">Delete Notification</string>
+    <string name="someone_sent_you_a_friend_request">Someone sent you a friend request</string>
+    <string name="transaction_receipt">Transaction Receipt</string>
+    <string name="proof_of_transaction">Proof of transaction</string>
+    <string name="receipt_id">Receipt ID: -</string>
+    <string name="users">Users</string>
+    <string name="user_b">User B: -</string>
+    <string name="trade_items">Trade Items</string>
+    <string name="received">Received: -</string>
+    <string name="status">Status</string>
+    <string name="chat_id">Chat ID: -</string>
+    <string name="request_id">Request ID: -</string>
+    <string name="keep_this_receipt_as_proof_of_transaction">Keep this receipt as proof of transaction.</string>
+    <string name="mar_15_2024_14_30">Mar 15, 2024 - 14:30</string>
+    <string name="barterhub">BARTERHUB</string>
+    <string name="receipt_no">RECEIPT NO.</string>
+    <string name="rcpt_2024_001">RCPT-2024-001</string>
+    <string name="traders">TRADERS</string>
+    <string name="a">A:</string>
+    <string name="john_doe">john_doe</string>
+    <string name="b">B:</string>
+    <string name="jane_smith">jane_smith</string>
+    <string name="items_exchanged">ITEMS EXCHANGED</string>
+    <string name="item">ITEM</string>
+    <string name="from">FROM</string>
+    <string name="to">TO</string>
+    <string name="cond">COND.</string>
+    <string name="gaming_mouse">Gaming Mouse</string>
+    <string name="like_new">Like New</string>
+    <string name="mechanical_keyboard">Mechanical Keyboard</string>
+    <string name="good">Good</string>
+    <string name="no_reviews_yet_optional">No reviews yet</string>
+    <string name="notification_icon">Notification Icon</string>
+    <string name="capture">Capture</string>
+    <string name="no_ads">No Ads</string>
+    <string name="cleaner_app">Cleaner App</string>
+    <string name="top_barter">Top Barter</string>
+    <string name="user_badge">User Badge</string>
+    <string name="badge">Badge</string>
+    <string name="premium_active">Premium Active</string>
+    <string name="manage_premium">Manage Premium</string>
+    <string name="trader_name">Trader Name</string>
+    <string name="_15_trades">15 trades</string>
+    <string name="search_premium_trader">Search premium trader…</string>
+    <string name="more_options">More options</string>
 </resources>

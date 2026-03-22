@@ -30,7 +30,7 @@
                 android:id="@+id/tvMessageSent"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="?attr/colorOnSurface"
+                android:textColor="@color/White"
                 android:textSize="14sp"
                 tools:text="Your message here" />
 
@@ -68,7 +68,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:textColor="?attr/postTextColor"
+            android:textColor="@color/White"
             android:textSize="10sp"
             tools:text="10:30 AM" />
 

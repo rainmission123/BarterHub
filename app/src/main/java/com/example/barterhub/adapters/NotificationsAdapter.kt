@@ -24,11 +24,19 @@ class NotificationsAdapter(
         private const val TYPE_FRIEND_REQUEST = 1
         private const val TYPE_DEFAULT = 2
     }
-
     private val database = FirebaseDatabase.getInstance().reference
     private var onNotificationActionListener: OnNotificationActionListener? = null
 
-    // Interface for callbacks
+    interface OnNotificationClickListener {
+        fun onNotificationClick(notification: NotificationModel)
+    }
+
+    private var onNotificationClickListener: OnNotificationClickListener? = null
+
+    fun setOnNotificationClickListener(listener: OnNotificationClickListener) {
+        this.onNotificationClickListener = listener
+    }
+
     interface OnNotificationActionListener {
         fun onAcceptFriend(notificationId: String?, fromUserId: String?, position: Int)
         fun onDeclineFriend(notificationId: String?, position: Int)
@@ -113,7 +121,7 @@ class NotificationsAdapter(
     // 🔹 FRIEND REQUEST VIEW HOLDER
     inner class FriendRequestViewHolder(itemView: View) :
         RecyclerView.ViewHolder(itemView) {
-
+        private val ivDelete = itemView.findViewById<ImageView>(R.id.ivDeleteNotification)
         private val ivProfile = itemView.findViewById<CircleImageView>(R.id.ivProfile)
         private val tvMessage = itemView.findViewById<TextView>(R.id.tvMessage)
         private val tvTime = itemView.findViewById<TextView>(R.id.tvTime)
@@ -128,7 +136,6 @@ class NotificationsAdapter(
             // 🔹 Check status and update UI
             when (notification.status) {
                 "accepted" -> {
-                    // ✅ ACCEPTED STATE
                     tvMessage.text = "$senderName sent you a friend request ✓ Accepted"
                     llActionButtons.visibility = View.GONE  // Hide buttons
 
@@ -222,6 +229,13 @@ class NotificationsAdapter(
                 btnAccept.isEnabled = false
                 btnDecline.isEnabled = false
             }
+
+            ivDelete.setOnClickListener {
+                val pos = bindingAdapterPosition
+                if (pos != RecyclerView.NO_POSITION) {
+                    onNotificationActionListener?.onDeleteNotification(notification.id, pos)
+                }
+            }
         }
 
         private fun fetchAndUpdateProfile(userId: String, imageView: CircleImageView) {
@@ -240,18 +254,31 @@ class NotificationsAdapter(
         }
     }
 
-    // 🔹 DEFAULT NOTIFICATION VIEW HOLDER
     inner class DefaultNotificationViewHolder(itemView: View) :
         RecyclerView.ViewHolder(itemView) {
 
+        private val ivIcon = itemView.findViewById<ImageView>(R.id.ivNotificationIcon)
         private val tvMessage = itemView.findViewById<TextView>(R.id.tvNotificationMessage)
         private val tvTime = itemView.findViewById<TextView>(R.id.tvNotificationTime)
         private val ivDelete = itemView.findViewById<ImageView>(R.id.ivDeleteNotification)
 
         fun bind(notification: NotificationModel, position: Int) {
-            // Set message for default notification
             tvMessage.text = notification.message ?: ""
             tvTime.text = getTimeAgo(notification.timestamp)
+
+            val iconRes = when (notification.type) {
+                "like" -> R.drawable.ic_like
+                "message" -> R.drawable.ic_message
+                "trade_request" -> R.drawable.ic_trade
+                "trade_accepted" -> R.drawable.ic_check
+                "trade_rejected" -> R.drawable.ic_close
+                "coins" -> R.drawable.ic_barter_coins
+                else -> R.drawable.ic_notifications
+            }
+            ivIcon.setImageResource(iconRes)
+            itemView.setOnClickListener {
+                onNotificationClickListener?.onNotificationClick(notification)
+            }
 
             ivDelete.setOnClickListener {
                 onNotificationActionListener?.onDeleteNotification(notification.id, position)
@@ -259,7 +286,7 @@ class NotificationsAdapter(
         }
     }
 
-    // 🔹 TIME FORMATTER
+
     private fun getTimeAgo(time: Long): String {
         val diff = System.currentTimeMillis() - time
         val minutes = diff / 60000

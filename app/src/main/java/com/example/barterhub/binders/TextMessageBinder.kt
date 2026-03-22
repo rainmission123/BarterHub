@@ -7,8 +7,6 @@ import com.bumptech.glide.Glide
 import com.example.barterhub.R
 import com.example.barterhub.adapters.MessagesAdapter
 import com.example.barterhub.data.models.Message
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -20,13 +18,10 @@ class TextMessageBinder(
     private val onMessageDeleted: ((Message, Int) -> Unit)? = null
 ) : MessageBinder {
 
-    // ✅ INTERFACE IMPLEMENTATION - REQUIRED
     override fun bind(holder: RecyclerView.ViewHolder, message: Message, position: Int) {
-        // Default: show profile pic
         bind(holder, message, position, true)
     }
 
-    // ✅ OVERLOADED VERSION WITH showProfilePic
     fun bind(
         holder: RecyclerView.ViewHolder,
         message: Message,
@@ -49,14 +44,12 @@ class TextMessageBinder(
         position: Int
     ) {
         holder.messageText.text = message.text ?: ""
-
-        // ✅ TIMESTAMP
         holder.timestampText.text = formatTimestamp(message.timestamp)
 
-        // ✅ FIXED: Use message.read instead of message.isRead
+        // Read status
         holder.readStatus?.let { readStatusView ->
             when {
-                message.read -> {  // ✅ PALITAN: message.read (hindi message.isRead)
+                message.read -> {
                     readStatusView.text = holder.itemView.context.getString(R.string.seen)
                     readStatusView.setTextColor(
                         holder.itemView.context.getColor(R.color.colorAccent)
@@ -73,8 +66,14 @@ class TextMessageBinder(
             }
         }
 
-        // Set up long click for deletion
+        // 👇 IMPORTANT: Set long click listener
         holder.messageContainer.setOnLongClickListener {
+            showDeleteDialog(holder.itemView.context, message, position)
+            true
+        }
+
+        // 👇 Optional: Also set on the text view for better touch area
+        holder.messageText.setOnLongClickListener {
             showDeleteDialog(holder.itemView.context, message, position)
             true
         }
@@ -90,16 +89,14 @@ class TextMessageBinder(
         holder.timestampText.text = formatTimestamp(message.timestamp)
         holder.senderText.text = message.senderName ?: holder.itemView.context.getString(R.string.unknown)
 
-        // ✅ SHOW/HIDE PROFILE PIC BASED ON PARAMETER
+        // Profile picture
         if (showProfilePic && !partnerProfilePic.isNullOrEmpty()) {
             holder.profileImage.visibility = android.view.View.VISIBLE
-
             Glide.with(holder.itemView.context)
                 .load(partnerProfilePic)
                 .placeholder(R.drawable.ic_profile_placeholder)
                 .into(holder.profileImage)
 
-            // Profile image click
             holder.profileImage.setOnClickListener {
                 onProfilePictureClickListener?.invoke(partnerProfilePic)
             }
@@ -107,8 +104,14 @@ class TextMessageBinder(
             holder.profileImage.visibility = android.view.View.GONE
         }
 
-        // Set up long click for deletion
+        // 👇 IMPORTANT: Set long click listener
         holder.messageContainer.setOnLongClickListener {
+            showDeleteDialog(holder.itemView.context, message, position)
+            true
+        }
+
+        // 👇 Optional: Also set on the text view for better touch area
+        holder.messageText.setOnLongClickListener {
             showDeleteDialog(holder.itemView.context, message, position)
             true
         }
@@ -124,49 +127,20 @@ class TextMessageBinder(
             return
         }
 
+        val options = arrayOf("Delete for me", "Cancel")
+
         AlertDialog.Builder(context)
             .setTitle("Delete Message")
-            .setMessage("Delete this message for both users?")
-            .setPositiveButton("Delete") { _, _ ->
-                deleteMessageForBoth(message, position)
+            .setItems(options) { _, which ->
+                if (which == 0) {
+                    onMessageDeleted?.invoke(message, position)
+                }
             }
-            .setNegativeButton("Cancel", null)
             .show()
-    }
-
-    private fun deleteMessageForBoth(message: Message, position: Int) {
-        val db = FirebaseDatabase.getInstance().reference
-        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val messageId = message.messageId ?: return
-
-        // Determine chat IDs
-        val otherUserId = if (message.senderId == currentUserId) {
-            message.receiverId
-        } else {
-            message.senderId
-        }
-
-        val chatId1 = "${currentUserId}_$otherUserId"
-        val chatId2 = "${otherUserId}_$currentUserId"
-
-        val updates = hashMapOf<String, Any?>(
-            "/chats/$chatId1/messages/$messageId" to null,
-            "/chats/$chatId2/messages/$messageId" to null
-        )
-
-        db.updateChildren(updates)
-            .addOnSuccessListener {
-                onMessageDeleted?.invoke(message, position)
-            }
-            .addOnFailureListener { e ->
-                android.util.Log.e("TextMessageBinder", "Failed to delete message: ${e.message}")
-            }
     }
 
     private fun formatTimestamp(timestamp: Long): String {
         return SimpleDateFormat("hh:mm a", Locale.getDefault())
             .format(Date(timestamp))
     }
-
-
 }

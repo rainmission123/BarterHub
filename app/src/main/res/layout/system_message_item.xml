@@ -2,297 +2,288 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_gravity="center"
     android:orientation="vertical"
-    android:layout_margin="25dp"
-    android:background="?attr/colorSurface"
-    android:padding="16dp">
+    android:gravity="center_horizontal"
+    android:paddingVertical="10dp">
 
-    <!-- Trade Accepted Title -->
-    <TextView
-        android:id="@+id/tradeAcceptedTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="Barter Accepted!"
-        android:textColor="?attr/colorOnSurface"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        tools:ignore="HardcodedText" />
-
-    <!-- Who Accepted the Trade -->
-    <TextView
-        android:id="@+id/acceptedByText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="8dp"
-        android:gravity="center"
-        android:text="@string/juan_dela_cruz_accepted_your_trade_offer"
-        android:textColor="?attr/colorOnSurface"
-        android:textSize="11sp"
-        android:textStyle="bold" />
-
-    <!-- Trade Participants -->
     <LinearLayout
+        android:id="@+id/systemMessageCard"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="4dp"
-        android:orientation="horizontal"
-        android:gravity="center">
-
-        <TextView
-            android:id="@+id/offeredByText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/maria_santos"
-            android:textColor="?attr/colorOnSurface"
-            android:textSize="10sp"
-            android:textStyle="bold"
-            tools:ignore="SmallSp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text=" ↔ "
-            android:textColor="@color/gray_500"
-            android:textSize="10sp"
-            android:paddingHorizontal="4dp"
-            tools:ignore="HardcodedText,SmallSp" />
-
-        <TextView
-            android:id="@+id/acceptedByUserText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/juan_dela_cruz"
-            android:textColor="?attr/colorOnSurface"
-            android:textSize="10sp"
-            android:textStyle="bold"
-            tools:ignore="SmallSp" />
-
-    </LinearLayout>
-
-    <!-- Trade Items Section -->
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="12dp"
-        android:orientation="horizontal"
-        android:gravity="center">
-
-        <!-- Offered Item -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:paddingEnd="16dp"
-            tools:ignore="RtlSymmetry">
-
-            <TextView
-                android:id="@+id/offeredItemText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:gravity="center"
-                android:text="@string/vintage_coffee_maker"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                android:maxLines="2"
-                android:ellipsize="end" />
-
-        </LinearLayout>
-
-        <!-- Trade Arrow -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="⇄"
-            android:textColor="@color/colorAccent"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:paddingHorizontal="8dp"
-            tools:ignore="HardcodedText" />
-
-        <!-- Target Item -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:paddingStart="16dp"
-            tools:ignore="RtlSymmetry">
-
-            <TextView
-                android:id="@+id/targetItemText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:gravity="center"
-                android:text="@string/sony_wh_1000xm4"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                android:maxLines="2"
-                android:ellipsize="end" />
-
-        </LinearLayout>
-    </LinearLayout>
-
-    <!-- Reminder Text -->
-    <TextView
-        android:id="@+id/tradeReminderWarning"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="8dp"
-        android:padding="10dp"
-        android:text="⚠️ PAALALA\n\nHuwag pindutin ang **Completed** button hangga't hindi pa natitignan at nasusuri ang item.\n\nKapag na-mark na as Completed, FINAL na ang trade."
-        android:textColor="?attr/postTextColor"
-        android:textSize="16sp"
-        android:gravity="center"
-        app:autoSizeTextType="uniform"
-        tools:ignore="HardcodedText" />
-
-    <!-- ✅ ADD THIS: Waiting for Partner Text -->
-    <TextView
-        android:id="@+id/waitingText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="8dp"
-        android:gravity="center"
-        android:text="✅ You have rated\n⏳ Waiting for partner to rate..."
-        android:textColor="@color/green_700"
-        android:textSize="12sp"
-        android:visibility="gone"
-        tools:ignore="HardcodedText" />
-
-    <!-- Action Buttons -->
-    <LinearLayout
-        android:id="@+id/tradeActionButtons"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:orientation="horizontal"
-        android:gravity="center">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnCompleted"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/completed"
-            android:textStyle="bold"
-            android:textColor="@android:color/white"
-            app:cornerRadius="8dp"
-            app:backgroundTint="@color/green_700" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnReportIssue"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/incomplete"
-            android:textStyle="bold"
-            android:textColor="@color/white"
-            app:cornerRadius="8dp"
-            app:backgroundTint="@color/gray_600"
-            android:layout_marginStart="8dp" />
-
-    </LinearLayout>
-
-    <!-- Rating Container -->
-    <LinearLayout
-        android:id="@+id/ratingContainer"
-        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingTop="12dp"
-        android:paddingBottom="12dp"
-        android:visibility="gone"
-        android:clickable="true"
-        android:focusable="true"
-        android:descendantFocusability="afterDescendants">
+        android:padding="16dp"
+        android:layout_marginHorizontal="25dp"
+        android:layout_marginVertical="8dp">
 
-        <!-- TITLE -->
+        <!-- Trade Accepted Title -->
         <TextView
-            android:id="@+id/tvRateUserName"
-            android:layout_width="wrap_content"
+            android:id="@+id/tradeAcceptedTitle"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="Rate your trade partner"
-            android:textStyle="bold"
+            android:gravity="center"
+            android:text="Barter Accepted!"
+            android:textColor="@color/White"
             android:textSize="14sp"
-            android:paddingBottom="8dp" />
+            android:textStyle="bold"
+            tools:ignore="HardcodedText" />
 
-        <!-- RATING BAR -->
-        <RatingBar
-            android:id="@+id/ratingBar"
-            android:layout_width="wrap_content"
+        <!-- Who Accepted the Trade -->
+        <TextView
+            android:id="@+id/acceptedByText"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:numStars="5"
-            android:stepSize="1"
-            android:isIndicator="false"
-            android:clickable="true"
-            android:focusable="true" />
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="@string/juan_dela_cruz_accepted_your_trade_offer"
+            android:textColor="@color/White"
+            android:textSize="11sp"
+            android:textStyle="bold" />
 
-        <!-- BUTTON CONTAINER -->
+        <!-- Trade Participants -->
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/offeredByText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/maria_santos"
+                android:textColor="@color/White"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                tools:ignore="SmallSp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" ↔ "
+                android:textColor="@color/gray_500"
+                android:textSize="10sp"
+                android:paddingHorizontal="4dp"
+                tools:ignore="HardcodedText,SmallSp" />
+
+            <TextView
+                android:id="@+id/acceptedByUserText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/juan_dela_cruz"
+                android:textColor="@color/White"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                tools:ignore="SmallSp" />
+        </LinearLayout>
+
+        <!-- Trade Items Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:orientation="horizontal"
-            android:clickable="true"
-            android:focusable="true">
+            android:gravity="center">
 
-            <!-- SKIP BUTTON -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSkipRating"
-                android:layout_width="wrap_content"
-                android:layout_height="36dp"
-                android:text="Skip"
-                android:textSize="12sp"
-                app:cornerRadius="18dp"
-                app:backgroundTint="?attr/colorSurfaceVariant"
-                android:clickable="true"
-                android:focusable="true" />
+            <!-- Offered Item -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingEnd="8dp"
+                tools:ignore="RtlSymmetry">
 
-            <!-- SUBMIT BUTTON -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSubmitRating"
+                <TextView
+                    android:id="@+id/offeredItemText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/vintage_coffee_maker"
+                    android:textColor="@color/White"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:maxLines="2"
+                    android:ellipsize="end" />
+            </LinearLayout>
+
+            <!-- Trade Arrow -->
+            <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="36dp"
-                android:layout_marginStart="12dp"
-                android:text="Submit"
-                android:textSize="12sp"
+                android:layout_height="wrap_content"
+                android:text="⇄"
+                android:textColor="@color/colorAccent"
+                android:textSize="16sp"
                 android:textStyle="bold"
-                app:cornerRadius="18dp"
-                app:backgroundTint="?attr/colorPrimary"
+                android:paddingHorizontal="8dp"
+                tools:ignore="HardcodedText" />
+
+            <!-- Target Item -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingStart="8dp"
+                tools:ignore="RtlSymmetry">
+
+                <TextView
+                    android:id="@+id/targetItemText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/sony_wh_1000xm4"
+                    android:textColor="@color/White"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:maxLines="2"
+                    android:ellipsize="end" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Reminder Text -->
+        <TextView
+            android:id="@+id/tradeReminderWarning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:padding="10dp"
+            android:gravity="center"
+            android:text="⚠️ PAALALA\n\nHuwag pindutin ang Completed button hangga't hindi pa natitignan at nasusuri ang item.\n\nKapag na-mark na as Completed, FINAL na ang trade."
+            android:textColor="@color/White"
+            android:textSize="14sp"
+            app:autoSizeTextType="uniform"
+            tools:ignore="HardcodedText" />
+
+        <!-- Waiting for Partner Text -->
+        <TextView
+            android:id="@+id/waitingText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="✅ You have rated\n⏳ Waiting for partner to rate..."
+            android:textColor="@color/green_700"
+            android:textSize="12sp"
+            android:visibility="gone"
+            tools:ignore="HardcodedText" />
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:id="@+id/tradeActionButtons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCompleted"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/completed"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                app:cornerRadius="8dp"
+                app:backgroundTint="@color/com_facebook_messenger_blue" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnReportIssue"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="@string/incomplete"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                app:cornerRadius="8dp"
+                app:backgroundTint="@color/gray_600" />
+        </LinearLayout>
+
+        <!-- Rating Container -->
+        <LinearLayout
+            android:id="@+id/ratingContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:visibility="gone"
+            android:clickable="true"
+            android:focusable="true"
+            android:descendantFocusability="afterDescendants"
+            android:gravity="center_horizontal">
+
+            <TextView
+                android:id="@+id/tvRateUserName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rate your trade partner"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:paddingBottom="8dp"
+                tools:ignore="HardcodedText" />
+
+            <RatingBar
+                android:id="@+id/ratingBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:numStars="5"
+                android:stepSize="1"
+                android:isIndicator="false"
                 android:clickable="true"
                 android:focusable="true" />
-        </LinearLayout>
-    </LinearLayout>
 
-    <!-- Instruction Text -->
-    <TextView
-        android:id="@+id/instructionText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="12dp"
-        android:text="👇 Pag-usapan dito ang meet-up details o shipping arrangement. 👇"
-        android:textColor="?attr/colorOnSurface"
-        android:textSize="12sp"
-        android:gravity="center"
-        android:paddingHorizontal="8dp"
-        tools:ignore="HardcodedText,SmallSp" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSkipRating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="Skip"
+                    android:textSize="12sp"
+                    app:cornerRadius="18dp"
+                    app:backgroundTint="?attr/colorSurfaceVariant"
+                    tools:ignore="HardcodedText" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSubmitRating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="12dp"
+                    android:text="Submit"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="18dp"
+                    app:backgroundTint="?attr/colorPrimary"
+                    tools:ignore="HardcodedText" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Instruction Text -->
+        <TextView
+            android:id="@+id/instructionText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Pag-usapan dito ang meet-up details o shipping arrangement."
+            android:textColor="@color/White"
+            android:textSize="12sp"
+            android:gravity="center"
+            android:paddingHorizontal="8dp"
+            tools:ignore="HardcodedText,SmallSp" />
+
+    </LinearLayout>
 
 </LinearLayout>

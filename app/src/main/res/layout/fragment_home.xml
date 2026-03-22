@@ -2,31 +2,26 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:ads="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/rootLayout"
-    android:background="?attr/colorSurface">
+    android:id="@+id/rootLayout">
 
-    <!-- ✅ Loading Indicator -->
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- ✅ Main Content Container -->
     <LinearLayout
         android:id="@+id/mainContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_margin="5dp"
         android:visibility="visible"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -52,7 +47,7 @@
                     android:layout_width="30dp"
                     android:layout_height="40dp"
                     android:src="@drawable/ic_heart"
-                    app:tint="?attr/colorOnSurface"/>
+                    app:tint="@color/white"/>
             </FrameLayout>
 
             <!-- Search Bar -->
@@ -105,7 +100,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/handshake2"
-                    app:tint="?attr/colorOnSurface"/>
+                    app:tint="@color/white"/>
 
                 <TextView
                     android:id="@+id/tradeRequestBadge"
@@ -122,8 +117,6 @@
 
         </LinearLayout>
 
-
-        <!-- ✅ Scrollable Content (WALANG SwipeRefreshLayout) -->
         <androidx.core.widget.NestedScrollView
             android:id="@+id/scrollContent"
             android:layout_width="match_parent"
@@ -137,15 +130,74 @@
                 android:layout_marginBottom="@dimen/_90dp"
                 android:orientation="vertical">
 
-                <!-- Ad Banner -->
-                <com.google.android.gms.ads.AdView
-                    android:id="@+id/adViewTop"
+                <LinearLayout
+                    android:id="@+id/trendingSliderContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
+                    android:layout_marginHorizontal="5dp"
                     android:layout_marginTop="8dp"
-                    ads:adSize="BANNER"
-                    ads:adUnitId="ca-app-pub-3940256099942544/6300978111" />
+                    android:layout_marginBottom="4dp"
+                    android:orientation="vertical"
+                    android:padding="0dp"
+                    android:background="@android:color/transparent">
+
+                <!-- Header with Trending Icon -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="6dp"
+                    android:paddingHorizontal="4dp">
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_trending"
+                        app:tint="@color/trending_icon_color" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Trending Now"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/trending_text_color"
+                        android:layout_marginStart="6dp"
+                        android:layout_marginEnd="2dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🔥"
+                        android:textSize="16sp" />
+
+                    <Space
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:id="@+id/trendingViewAll"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="View All"
+                        android:textSize="10sp"
+                        android:textColor="@color/trending_view_all"
+                        android:padding="2dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackgroundBorderless" />
+                </LinearLayout>
+
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/trendingViewPager"
+                    android:layout_width="match_parent"
+                    android:layout_height="120dp"
+                    android:clipToPadding="false"
+                    android:layout_marginBottom="8dp"
+                    android:paddingHorizontal="0dp" />
+
+            </LinearLayout>
 
                 <!-- Categories Section -->
                 <HorizontalScrollView
@@ -191,7 +243,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="6dp"
                                 android:text="@string/electronics"
-                                android:textColor="?attr/colorOnSurface"
+                                android:textColor="@color/white"
                                 android:textSize="16sp"
                                 android:gravity="center"
                                 android:ellipsize="end"
@@ -227,7 +279,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="6dp"
                                 android:text="@string/clothing"
-                                android:textColor="?attr/colorOnSurface"
+                                android:textColor="@color/white"
                                 android:textSize="16sp"
                                 android:gravity="center"
                                 android:ellipsize="end"
@@ -263,7 +315,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="6dp"
                                 android:text="@string/home_kitchen"
-                                android:textColor="?attr/colorOnSurface"
+                                android:textColor="@color/white"
                                 android:textSize="16sp"
                                 android:gravity="center"
                                 android:ellipsize="end"
@@ -299,7 +351,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="6dp"
                                 android:text="@string/books_educational"
-                                android:textColor="?attr/colorOnSurface"
+                                android:textColor="@color/white"
                                 android:textSize="16sp"
                                 android:gravity="center"
                                 android:ellipsize="end"
@@ -335,7 +387,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="6dp"
                                 android:text="@string/sports_outdoors"
-                                android:textColor="?attr/colorOnSurface"
+                                android:textColor="@color/white"
                                 android:textSize="16sp"
                                 android:gravity="center"
                                 android:ellipsize="end"
@@ -372,7 +424,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="@string/view_all"
-                                    android:textColor="?attr/colorOnSurface"
+                                    android:textColor="@color/white"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
                                     android:layout_marginTop="8dp"
@@ -401,7 +453,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@drawable/filter"
-                        app:tint="?attr/colorOnSurface" />
+                        app:tint="@color/white" />
 
                     <TextView
                         android:id="@+id/filterButtonText"
@@ -433,7 +485,6 @@
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/featuredItems"
                     android:layout_width="match_parent"
-                    android:background="?attr/colorSurface"
                     android:layout_height="wrap_content"
                     android:nestedScrollingEnabled="false"
                     android:visibility="visible"

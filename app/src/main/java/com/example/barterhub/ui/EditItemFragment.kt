@@ -16,18 +16,12 @@ import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.database.FirebaseDatabase
 
 class EditItemFragment : Fragment(R.layout.fragment_edit_item) {
-
-    // Dropdowns
     private lateinit var categoryDropdown: AutoCompleteTextView
     private lateinit var categoryLayout: TextInputLayout
     private lateinit var conditionDropdown: AutoCompleteTextView
     private lateinit var conditionLayout: TextInputLayout
-
-    // Firebase
     private var itemId: String = ""
     private lateinit var database: com.google.firebase.database.DatabaseReference
-
-    // UI elements
     private lateinit var etTitle: TextInputEditText
     private lateinit var etDescription: TextInputEditText
     private lateinit var etPrice: TextInputEditText
@@ -53,8 +47,6 @@ class EditItemFragment : Fragment(R.layout.fragment_edit_item) {
             return
         }
 
-
-        // Runtime logic
         itemId = arguments?.getString("itemId") ?: ""
         Log.d("EditItemFragment", "Editing item ID: $itemId")
 

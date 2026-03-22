@@ -5,7 +5,7 @@
     android:id="@+id/scroll_how_to_earn"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
+    android:background="@drawable/backgroundlogin">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -38,7 +38,7 @@
                 android:text="@string/how_to_earn_on_barterhub"
                 android:textSize="24sp"
                 android:textStyle="bold"
-                android:textColor="?attr/colorOnSurface" />
+                android:textColor="@color/White" />
 
         </LinearLayout>
 
@@ -59,18 +59,16 @@
                 android:orientation="horizontal"
                 android:padding="16dp">
 
-                <!-- Number Badge -->
                 <TextView
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_marginEnd="16dp"
-                    android:background="@color/black_50_transparent"
+                    android:background="@drawable/playingcards"
                     android:gravity="center"
-                    android:padding="8dp"
-                    android:text="@string/_4"
+                    android:text="4"
                     android:textColor="@color/white"
                     android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"/>
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -106,9 +104,9 @@
                         android:layout_marginTop="12dp"
                         app:strokeColor="@color/white"
                         android:text="@string/play_games"
-                        android:textColor="?attr/colorOnSurface"
+                        android:textColor="@color/White"
                         android:textSize="12sp"
-                        app:backgroundTint="@color/colorAccent"
+                        app:backgroundTint="@color/com_facebook_messenger_blue"
                         app:cornerRadius="8dp" />
 
                 </LinearLayout>
@@ -132,19 +130,16 @@
                 android:orientation="horizontal"
                 android:padding="16dp">
 
-                <!-- Number Badge -->
                 <TextView
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_marginEnd="16dp"
-                    android:background="@color/black_50_transparent"
+                    android:background="@drawable/referral"
                     android:gravity="center"
-                    android:padding="8dp"
-                    android:text="2"
+                    android:text="4"
                     android:textColor="@color/white"
                     android:textSize="18sp"
-                    android:textStyle="bold"
-                    tools:ignore="HardcodedText" />
+                    android:textStyle="bold"/>
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -181,7 +176,7 @@
                         android:text="@string/invite_friends"
                         android:textColor="@android:color/white"
                         android:textSize="12sp"
-                        app:backgroundTint="@color/colorAccent"
+                        app:backgroundTint="@color/com_facebook_messenger_blue"
                         app:cornerRadius="8dp" />
 
                 </LinearLayout>
@@ -204,19 +199,16 @@
                 android:orientation="horizontal"
                 android:padding="16dp">
 
-                <!-- Number Badge -->
                 <TextView
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_marginEnd="16dp"
-                    android:background="@color/black_50_transparent"
+                    android:background="@drawable/deal"
                     android:gravity="center"
-                    android:padding="8dp"
-                    android:text="3"
+                    android:text="4"
                     android:textColor="@color/white"
                     android:textSize="18sp"
-                    android:textStyle="bold"
-                    tools:ignore="HardcodedText" />
+                    android:textStyle="bold"/>
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -253,7 +245,7 @@
                         android:text="@string/post_item"
                         android:textColor="@android:color/white"
                         android:textSize="12sp"
-                        app:backgroundTint="@color/colorAccent"
+                        app:backgroundTint="@color/com_facebook_messenger_blue"
                         app:cornerRadius="8dp" />
 
                 </LinearLayout>
@@ -276,19 +268,16 @@
                 android:orientation="horizontal"
                 android:padding="16dp">
 
-                <!-- Number Badge -->
                 <TextView
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_marginEnd="16dp"
-                    android:background="@color/black_50_transparent"
+                    android:background="@drawable/reach"
                     android:gravity="center"
-                    android:padding="8dp"
                     android:text="4"
                     android:textColor="@color/white"
                     android:textSize="18sp"
-                    android:textStyle="bold"
-                    tools:ignore="HardcodedText" />
+                    android:textStyle="bold"/>
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -359,7 +348,7 @@
                         android:text="@string/view_challenges"
                         android:textColor="@android:color/white"
                         android:textSize="12sp"
-                        app:backgroundTint="@color/colorAccent"
+                        app:backgroundTint="@color/com_facebook_messenger_blue"
                         app:cornerRadius="8dp" />
 
                 </LinearLayout>

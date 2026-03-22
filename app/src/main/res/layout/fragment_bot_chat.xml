@@ -4,6 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
+    android:background="@drawable/backgroundlogin"
     android:layout_height="match_parent"
     android:padding="8dp">
 
@@ -49,6 +50,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="Type a message"
+            android:textColorHint="@color/white"
             tools:ignore="TouchTargetSizeCheck" />
 
         <ImageButton
@@ -57,7 +59,7 @@
             android:layout_height="wrap_content"
             android:contentDescription="Send"
             android:src="@drawable/ic_send"
-            app:tint="?attr/colorOnSurface"
+            app:tint="@color/com_facebook_messenger_blue"
             tools:ignore="TouchTargetSizeCheck" />
     </LinearLayout>
 </LinearLayout>

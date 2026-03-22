@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
@@ -25,7 +26,6 @@ class SearchResultsFragment : Fragment(R.layout.fragment_search_results) {
     private lateinit var recyclerView: RecyclerView
     private lateinit var txtQuery: TextView
 
-    // ✅ full empty state views
     private lateinit var emptyState: LinearLayout
     private lateinit var btnBrowseAll: MaterialButton
 
@@ -43,15 +43,25 @@ class SearchResultsFragment : Fragment(R.layout.fragment_search_results) {
 
         txtQuery = view.findViewById(R.id.txtQuery)
         recyclerView = view.findViewById(R.id.searchResultsRecycler)
-
         emptyState = view.findViewById(R.id.emptyStateResults)
         btnBrowseAll = view.findViewById(R.id.btnBrowseAllResults)
 
-        txtQuery.text = if (queryArg.isBlank()) "Browse all items" else "Results for: $queryArg"
+        txtQuery.text =
+            if (queryArg.isBlank()) "Browse all items"
+            else "Results for: $queryArg"
 
         recyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
         recyclerView.setHasFixedSize(true)
-        adapter = FeaturedItemsAdapter(resultsList)
+
+        // ✅ CLICKABLE adapter
+        adapter = FeaturedItemsAdapter(resultsList) { item ->
+            if (item.itemId.isBlank() || item.ownerId.isBlank()) {
+                Toast.makeText(requireContext(), "Item unavailable", Toast.LENGTH_SHORT).show()
+                return@FeaturedItemsAdapter
+            }
+            openItemDetail(item.itemId, item.ownerId)
+        }
+
         recyclerView.adapter = adapter
 
         database = FirebaseDatabase.getInstance().reference.child(ITEMS_NODE)
@@ -61,56 +71,52 @@ class SearchResultsFragment : Fragment(R.layout.fragment_search_results) {
             fetchAndFilter("")
         }
 
-
         fetchAndFilter(queryArg)
     }
 
     private fun fetchAndFilter(queryArg: String) {
         val q = queryArg.lowercase()
 
-        val queryRef: Query =
-            database.orderByChild("timestamp").limitToLast(MAX_RESULTS)
+        database.orderByChild("timestamp")
+            .limitToLast(MAX_RESULTS)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
 
-        queryRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                resultsList.clear()
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    resultsList.clear()
 
-                for (itemSnap in snapshot.children) {
-                    val item = itemSnap.getValue(FeaturedItem::class.java) ?: continue
-                    if (!item.isActive || item.isArchived) continue
+                    for (itemSnap in snapshot.children) {
+                        val item = itemSnap.getValue(FeaturedItem::class.java) ?: continue
+                        if (!item.isActive || item.isArchived) continue
 
-                    if (q.isBlank()) {
-                        resultsList.add(item)
-                    } else {
-                        val title = item.title.lowercase()
-                        val category = item.category.lowercase()
-                        val desc = item.description.lowercase()
-
-                        if (title.contains(q) || category.contains(q) || desc.contains(q)) {
+                        if (q.isBlank()) {
                             resultsList.add(item)
+                        } else {
+                            val title = item.title.lowercase()
+                            val category = item.category.lowercase()
+                            val desc = item.description.lowercase()
+
+                            if (title.contains(q) || category.contains(q) || desc.contains(q)) {
+                                resultsList.add(item)
+                            }
                         }
                     }
+
+                    resultsList.sortByDescending { it.timestamp }
+                    adapter.notifyDataSetChanged()
+
+                    updateEmptyState(queryArg)
                 }
 
-                resultsList.sortByDescending { it.timestamp }
-                adapter.notifyDataSetChanged()
-
-                updateEmptyState(queryArg)
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                resultsList.clear()
-                adapter.notifyDataSetChanged()
-
-                // show empty state as error UI
-                showEmpty("Error", error.message)
-            }
-        })
+                override fun onCancelled(error: DatabaseError) {
+                    resultsList.clear()
+                    adapter.notifyDataSetChanged()
+                    showEmpty("Error", error.message)
+                }
+            })
     }
 
     private fun updateEmptyState(queryArg: String) {
         if (resultsList.isEmpty()) {
-            // show full empty UI
             if (queryArg.isBlank()) {
                 showEmpty("No items yet", "Try again later.")
             } else {
@@ -125,14 +131,21 @@ class SearchResultsFragment : Fragment(R.layout.fragment_search_results) {
         emptyState.visibility = View.VISIBLE
         recyclerView.visibility = View.GONE
 
-        val tvTitle = emptyState.findViewById<TextView>(R.id.tvEmptyTitle)
-        val tvSubtitle = emptyState.findViewById<TextView>(R.id.tvEmptySubtitle)
-        tvTitle.text = title
-        tvSubtitle.text = subtitle
+        emptyState.findViewById<TextView>(R.id.tvEmptyTitle).text = title
+        emptyState.findViewById<TextView>(R.id.tvEmptySubtitle).text = subtitle
     }
 
     private fun hideEmpty() {
         emptyState.visibility = View.GONE
         recyclerView.visibility = View.VISIBLE
     }
+
+    private fun openItemDetail(itemId: String, ownerId: String) {
+        val bundle = Bundle().apply {
+            putString("itemId", itemId)
+            putString("ownerId", ownerId)
+        }
+        findNavController().navigate(R.id.nav_item_detail, bundle)
+    }
+
 }

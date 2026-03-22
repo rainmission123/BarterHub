@@ -11,6 +11,13 @@ import com.example.barterhub.viewholders.SystemMessageViewHolder
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import android.util.Log
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import com.example.barterhub.data.models.TradeHistoryItem
 
 class SystemMessageBinder(
     private val currentUserId: String,
@@ -26,53 +33,86 @@ class SystemMessageBinder(
     override fun bind(holder: RecyclerView.ViewHolder, message: Message, position: Int) {
         if (holder !is SystemMessageViewHolder) return
 
+        holder.itemView.tag = message.messageId
+
         Log.d(TAG, "Binding system message: ${message.messageId}")
+
+        showLoadingState(holder)
 
         val tradeRequest = extractTradeRequestFromMessage(message)
         if (tradeRequest == null) {
             Log.e(TAG, "Trade request is null")
+            holder.acceptedByText.text = "Trade not available"
             return
         }
 
-        // ✅ Step 1: Check current status (BOTH ratings AND if user clicked completed)
-        checkUserActionStatus(tradeRequest.requestId, message.messageId) {
+        bindTradeDetails(holder, tradeRequest)
+
+        val statusFromDetails = (message.tradeDetails as? Map<*, *>)?.get("status") as? String
+        val isCompletedFast =
+            message.messageType == "system_trade_completed" ||
+                    tradeRequest.status.equals("Completed", true) ||
+                    (statusFromDetails?.equals("Completed", true) == true)
+
+
+        if (isCompletedFast) {
+            showCompletedUI(holder)
+            return
+        }
+
+        val currentMessageId = message.messageId
+        holder.itemView.tag = currentMessageId
+
+        checkUserActionStatus(tradeRequest.requestId) {
                 userClickedCompleted, currentUserRated, partnerRated ->
 
-            Log.d(TAG, "Status - Clicked: $userClickedCompleted, Current rated: $currentUserRated, Partner rated: $partnerRated")
-
-            val isCompleted = message.messageType == "system_trade_completed"
-                    || (tradeRequest.status == "Completed")
-
-            if (isCompleted) {
-                // ✅ ALREADY COMPLETED
-                showCompletedUI(holder)
-                holder.acceptedByText.text = "✅ Transaction Completed"
+            // ✅ IMPORTANT: stop if holder was recycled
+            if (holder.itemView.tag != currentMessageId) {
+                Log.d(TAG, "Holder reused, ignoring old callback")
                 return@checkUserActionStatus
             }
 
-            // ✅ Step 2: Bind trade details
-            bindTradeDetails(holder, tradeRequest)
+            Log.d(TAG, "Status - Clicked: $userClickedCompleted, Current rated: $currentUserRated, partner rated: $partnerRated")
 
-            // ✅ Step 3: Show appropriate UI
+            val statusNow = (message.tradeDetails as? Map<*, *>)?.get("status") as? String
+            val isCompletedNow =
+                message.messageType == "system_trade_completed" ||
+                        tradeRequest.status.equals("Completed", true) ||
+                        (statusNow?.equals("Completed", true) == true)
+
+            if (isCompletedNow) {
+                showCompletedUI(holder)
+                return@checkUserActionStatus
+            }
+
             if (currentUserRated && partnerRated) {
-                // ✅ BOTH HAVE RATED - Update to completed
                 updateTradeStatusToCompleted(tradeRequest.requestId, message.messageId, tradeRequest)
                 showCompletedUI(holder)
             } else if (userClickedCompleted || currentUserRated) {
-                // ✅ User already clicked completed OR already rated
                 if (currentUserRated) {
                     showWaitingForPartnerUI(holder, tradeRequest)
                 } else {
                     showRatingUI(holder, tradeRequest, message.messageId)
                 }
             } else {
-                // ✅ User hasn't done anything yet
                 showInitialUI(holder, tradeRequest, message.messageId)
             }
         }
+
     }
 
-    private fun checkUserActionStatus(tradeId: String, messageId: String,
+    private fun showLoadingState(holder: SystemMessageViewHolder) {
+        holder.tradeActionButtons.visibility = View.GONE
+        holder.btnCompleted.visibility = View.GONE
+        holder.btnReportIssue.visibility = View.GONE
+        holder.ratingContainer.visibility = View.GONE
+        holder.waitingText.visibility = View.GONE
+
+        holder.tradeReminderWarning.visibility = View.VISIBLE
+        holder.instructionText.visibility = View.VISIBLE
+    }
+
+    private fun checkUserActionStatus(tradeId: String,
                                       callback: (Boolean, Boolean, Boolean) -> Unit) {
         val db = FirebaseDatabase.getInstance().reference
 
@@ -83,8 +123,8 @@ class SystemMessageBinder(
 
                 // ✅ Check 2: Rating status
                 db.child("reviews").orderByChild("tradeId").equalTo(tradeId)
-                    .addListenerForSingleValueEvent(object : com.google.firebase.database.ValueEventListener {
-                        override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
+                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
                             var currentUserRated = false
                             var partnerRated = false
 
@@ -104,7 +144,7 @@ class SystemMessageBinder(
                             callback(userClickedCompleted, currentUserRated, partnerRated)
                         }
 
-                        override fun onCancelled(error: com.google.firebase.database.DatabaseError) {
+                        override fun onCancelled(error: DatabaseError) {
                             Log.e(TAG, "Error checking reviews: ${error.message}")
                             callback(false, false, false)
                         }
@@ -196,6 +236,7 @@ class SystemMessageBinder(
         holder.instructionText.visibility = View.GONE
     }
 
+
     private fun getPartnerName(request: TradeRequest): String {
         return if (request.fromUser.userId == currentUserId) {
             request.toUser.username
@@ -206,13 +247,11 @@ class SystemMessageBinder(
 
     private fun bindTradeDetails(holder: SystemMessageViewHolder, request: TradeRequest) {
         try {
-            // ✅ Use actual data from the trade request
             holder.acceptedByText.text = "${request.toUser.username} accepted the trade"
             holder.offeredByText.text = request.fromUser.username
             holder.acceptedByUserText.text = request.toUser.username
             holder.offeredItemText.text = request.offeredItem.title
             holder.targetItemText.text = request.targetItem.title
-
             Log.d(TAG, "Binding details - From: ${request.fromUser.username}, To: ${request.toUser.username}")
             Log.d(TAG, "Items - Offered: ${request.offeredItem.title}, Target: ${request.targetItem.title}")
         } catch (e: Exception) {
@@ -296,7 +335,7 @@ class SystemMessageBinder(
                 Log.d(TAG, "Rating saved successfully for ${currentUser.uid}")
 
                 // ✅ STEP 2: Check if BOTH have rated
-                checkUserActionStatus(request.requestId, messageId) { _, currentUserRated, partnerRated ->
+                checkUserActionStatus(request.requestId) { _, currentUserRated, partnerRated ->
                     Log.d(TAG, "After rating - Current rated: $currentUserRated, Partner rated: $partnerRated")
 
                     if (currentUserRated && partnerRated) {
@@ -327,19 +366,36 @@ class SystemMessageBinder(
     private fun updateTradeStatusToCompleted(tradeId: String, messageId: String, request: TradeRequest) {
         val db = FirebaseDatabase.getInstance().reference
 
-        Log.d(TAG, "Updating trade $tradeId to Completed")
+        // 🔴 CHECK MUNA KUNG COMPLETED NA
+        db.child("trade_requests").child(tradeId).child("status").get()
+            .addOnSuccessListener { snapshot ->
+                val currentStatus = snapshot.getValue(String::class.java)
+                if (currentStatus == "Completed") {
+                    Log.d(TAG, "⚠️ Trade $tradeId already completed, skipping status update...")
 
-        // ✅ STEP 1: Update trade status in trade_requests
+                    // ✅ Check na lang kung may receipt at notifications
+                    ensureReceiptExists(request)  // <-- Hindi na ito gagawa ng bagong receipt
+                    return@addOnSuccessListener
+                }
+
+                // Proceed with completion
+                proceedWithTradeCompletion(tradeId, messageId, request)
+            }
+    }
+
+    private fun proceedWithTradeCompletion(tradeId: String, messageId: String, request: TradeRequest) {
+        val db = FirebaseDatabase.getInstance().reference
+
         db.child("trade_requests").child(tradeId).child("status")
             .setValue("Completed")
             .addOnSuccessListener {
                 Log.d(TAG, "Trade status updated to Completed")
+                saveTradeHistory(request)
 
-                // ✅ STEP 2: Increment tradesCompleted for both users
-                incrementTradesCompleted(request.fromUser.userId)
-                incrementTradesCompleted(request.toUser.userId)
+                updateUserTradeStats(request.fromUser.userId, request.toUser.userId, tradeId)
+                createTradeReceipt(request)
 
-                // ✅ STEP 3: Update the system message in Firebase
+                // Update system message
                 val updatedTradeDetails = hashMapOf<String, Any>(
                     "tradeRequestId" to tradeId,
                     "fromUserId" to request.fromUser.userId,
@@ -362,8 +418,6 @@ class SystemMessageBinder(
                     .updateChildren(updates)
                     .addOnSuccessListener {
                         Log.d(TAG, "System message updated to completed in Firebase")
-
-                        // ✅ STEP 4: Call the listeners to refresh UI
                         onTradeCompletedListener?.invoke(request)
                         onMessageUpdated?.invoke()
                     }
@@ -376,24 +430,307 @@ class SystemMessageBinder(
             }
     }
 
-    // 🔹 Increment tradesCompleted for a given user
-    private fun incrementTradesCompleted(userId: String) {
-        val userRef = FirebaseDatabase.getInstance().reference.child("users/$userId")
+    private fun ensureReceiptExists(request: TradeRequest) {
+        val db = FirebaseDatabase.getInstance().reference
+
+        Log.d(TAG, "🔍 ensureReceiptExists() for trade: ${request.requestId}")
+
+        // Mag-check muna sa receipts node directly
+        db.child("receipts").orderByChild("tradeRequestId").equalTo(request.requestId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        // May receipt na, kunin ang ID
+                        var receiptId = ""
+                        for (receipt in snapshot.children) {
+                            receiptId = receipt.key ?: continue
+                            Log.d(TAG, "✅ Found receipt: $receiptId for trade ${request.requestId}")
+                            break
+                        }
+                        if (receiptId.isNotEmpty()) {
+                            checkAndSendMissingNotifications(request, receiptId)
+                        } else {
+                            Log.e(TAG, "❌ Receipt exists but no ID found!")
+                        }
+                    } else {
+                        Log.d(TAG, "⚠️ No receipt found for trade ${request.requestId}")
+                        // 🚨 HUWAG NG TUMAWAG NG createTradeReceipt() DITO!
+                        // ITO ANG NAGIGING DAHILAN NG DOUBLE RECEIPT!
+                    }
+                }
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e(TAG, "❌ Error checking receipts: ${error.message}")
+                    // Huwag na ring gumawa ng receipt dito
+                }
+            })
+    }
+
+    private fun updateUserTradeStats(userAId: String, userBId: String, tradeId: String) {
+
+        // Update both users
+        updateSingleUserTradeStats(userAId, tradeId)
+        updateSingleUserTradeStats(userBId, tradeId)
+    }
+
+    private fun updateSingleUserTradeStats(userId: String, tradeId: String) {
+        val db = FirebaseDatabase.getInstance().reference
+        val userRef = db.child("users").child(userId)
+
+        // Run transaction para safe ang increment
         userRef.child("tradesCompleted").runTransaction(object : com.google.firebase.database.Transaction.Handler {
             override fun doTransaction(currentData: com.google.firebase.database.MutableData): com.google.firebase.database.Transaction.Result {
-                val currentCount = currentData.getValue(Int::class.java) ?: 0
-                currentData.value = currentCount + 1
+                val currentTrades = currentData.getValue(Int::class.java) ?: 0
+                currentData.value = currentTrades + 1
                 return com.google.firebase.database.Transaction.success(currentData)
             }
 
-            override fun onComplete(error: com.google.firebase.database.DatabaseError?, committed: Boolean, snapshot: com.google.firebase.database.DataSnapshot?) {
+            override fun onComplete(error: DatabaseError?, committed: Boolean, snapshot: DataSnapshot?) {
                 if (error != null) {
-                    Log.e(TAG, "Failed to increment tradesCompleted for $userId: ${error.message}")
-                } else {
-                    Log.d(TAG, "Successfully incremented tradesCompleted for $userId")
+                    Log.e(TAG, "Failed to increment tradesCompleted: ${error.message}")
+                    return
                 }
+
+                // After updating tradesCompleted, recalculate success rate
+                recalculateSuccessRate(userId)
+
+                // Save this trade to user's trade history
+                saveTradeToUserHistory(userId, tradeId)
             }
         })
+    }
+
+    private fun recalculateSuccessRate(userId: String) {
+        val db = FirebaseDatabase.getInstance().reference
+        val userRef = db.child("users").child(userId)
+
+        // Get user's trade stats
+        userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val tradesCompleted = snapshot.child("tradesCompleted").getValue(Int::class.java) ?: 0
+                val totalTrades = snapshot.child("totalTrades").getValue(Int::class.java) ?: tradesCompleted
+                val failedTrades = snapshot.child("failedTrades").getValue(Int::class.java) ?: 0
+
+                // Calculate success rate: (completed trades) / (total trades) * 100
+                // Kung walang totalTrades, gamitin ang tradesCompleted as denominator
+                val denominator = if (totalTrades > 0) totalTrades else tradesCompleted + failedTrades
+                val successRate = if (denominator > 0) {
+                    ((tradesCompleted.toDouble() / denominator.toDouble()) * 100).toInt()
+                } else {
+                    100 // Default if no trades
+                }
+
+                // Save success rate
+                userRef.child("successRate").setValue(successRate)
+                    .addOnSuccessListener {
+                        Log.d(TAG, "✅ Success rate updated for user $userId: $successRate%")
+                    }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e(TAG, "Failed to recalculate success rate: ${error.message}")
+            }
+        })
+    }
+
+    private fun saveTradeToUserHistory(userId: String, tradeId: String) {
+        val db = FirebaseDatabase.getInstance().reference
+        db.child("users").child(userId).child("tradeHistory").child(tradeId)
+            .setValue(true)
+            .addOnSuccessListener {
+                Log.d(TAG, "✅ Trade $tradeId saved to user $userId history")
+            }
+    }
+
+    private fun createTradeReceipt(request: TradeRequest) {
+        val db = FirebaseDatabase.getInstance().reference
+        val receiptId = db.child("receipts").push().key ?: return
+
+        db.child("receipts_by_trade").child(request.requestId).get()
+            .addOnSuccessListener { snapshot ->
+                if (snapshot.exists()) {
+                    // May receipt na! Wag na gumawa ng bago
+                    val existingReceiptId = snapshot.value.toString()
+                    Log.d(TAG, "⚠️ Receipt already exists for trade ${request.requestId}: $existingReceiptId")
+                    Log.d(TAG, "⚠️ Skipping duplicate receipt creation")
+
+                    // Pero i-check pa rin kung may notifications na
+                    checkAndSendMissingNotifications(request, existingReceiptId)
+                    return@addOnSuccessListener
+                }
+
+                createNewReceipt(request, receiptId)
+            }
+    }
+
+    private fun createNewReceipt(request: TradeRequest, receiptId: String) {
+        val db = FirebaseDatabase.getInstance().reference
+        val timestamp = System.currentTimeMillis()
+        val receiptNo = generateReceiptNumber()
+        val chatDisplayId = generateChatDisplayId()
+        val requestDisplayId = generateRequestDisplayId()
+
+        Log.d(TAG, "========== 🧾 CREATING NEW RECEIPT ==========")
+        Log.d(TAG, "Receipt ID: $receiptId")
+        Log.d(TAG, "Trade ID: ${request.requestId}")
+        Log.d(TAG, "Called by: $currentUserId")
+
+        val receiptData = hashMapOf<String, Any>(
+            "receiptId" to receiptId,
+            "receiptNo" to receiptNo,
+            "chatDisplayId" to chatDisplayId,
+            "requestDisplayId" to requestDisplayId,
+            "chatId" to chatId,
+            "tradeRequestId" to request.requestId,
+            "timestamp" to timestamp,
+            "completedAt" to timestamp,
+            "status" to "completed",
+            "fromUserId" to request.fromUser.userId,
+            "offeredBy" to request.fromUser.username,
+            "fromUserProfileImage" to request.fromUser.profileImage,
+            "fromUserLocation" to request.fromUser.location,
+            "toUserId" to request.toUser.userId,
+            "acceptedBy" to request.toUser.username,
+            "toUserProfileImage" to request.toUser.profileImage,
+            "toUserLocation" to request.toUser.location,
+            "offeredItemId" to request.offeredItem.itemId,
+            "offeredItemName" to request.offeredItem.title,
+            "offeredItemDescription" to request.offeredItem.description,
+            "offeredItemImage" to request.offeredItem.image,
+            "offeredItemCategory" to request.offeredItem.category,
+            "offeredItemCondition" to request.offeredItem.condition,
+            "targetItemId" to request.targetItem.itemId,
+            "targetItemName" to request.targetItem.title,
+            "targetItemDescription" to request.targetItem.description,
+            "targetItemImage" to request.targetItem.image,
+            "targetItemCategory" to request.targetItem.category,
+            "targetItemCondition" to request.targetItem.condition
+        )
+
+        val updates = hashMapOf<String, Any>(
+            "receipts/$receiptId" to receiptData,
+            "receipts_by_trade/${request.requestId}" to receiptId
+        )
+
+        db.updateChildren(updates)
+            .addOnSuccessListener {
+                Log.d(TAG, "✅ Receipt saved: $receiptId")
+                Log.d(TAG, "✅ receipts_by_trade/${request.requestId} = $receiptId")
+
+                // Save receipt reference to users
+                saveReceiptToUser(request.fromUser.userId, receiptId)
+                saveReceiptToUser(request.toUser.userId, receiptId)
+
+                // Send notification to both users
+                pushReceiptNotification(request, receiptId)
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "❌ Failed to create receipt: ${e.message}")
+            }
+    }
+
+    private fun checkAndSendMissingNotifications(request: TradeRequest, receiptId: String) {
+        val db = FirebaseDatabase.getInstance().reference
+        val notifId = "receipt_$receiptId"
+
+        Log.d(TAG, "🔍 CHECKING NOTIFICATIONS FOR RECEIPT: $receiptId")
+        Log.d(TAG, "🔍 Expected notifId: $notifId")
+
+        db.child("notifications").child(request.fromUser.userId).child(notifId).get()
+            .addOnSuccessListener { snapshot ->
+                if (!snapshot.exists()) {
+                    Log.d(TAG, "⚠️ Notification missing for ${request.fromUser.username}, sending...")
+                    sendNotificationToUser(request.fromUser.userId, request.toUser, request, receiptId)
+                } else {
+                    Log.d(TAG, "✅ Notification already exists for ${request.fromUser.username}")
+                }
+            }
+
+        db.child("notifications").child(request.toUser.userId).child(notifId).get()
+            .addOnSuccessListener { snapshot ->
+                if (!snapshot.exists()) {
+                    Log.d(TAG, "⚠️ Notification missing for ${request.toUser.username}, sending...")
+                    sendNotificationToUser(request.toUser.userId, request.fromUser, request, receiptId)
+                } else {
+                    Log.d(TAG, "✅ Notification already exists for ${request.toUser.username}")
+                }
+            }
+    }
+
+    private fun sendNotificationToUser(userId: String, partner: TradeUser, request: TradeRequest, receiptId: String) {
+        val db = FirebaseDatabase.getInstance().reference
+        val notifId = "receipt_$receiptId"
+
+        val notification = hashMapOf<String, Any>(
+            "id" to notifId,
+            "type" to "receipt_created",
+            "receiptId" to receiptId,
+            "requestId" to request.requestId,
+            "chatId" to chatId,
+            "partnerId" to partner.userId,
+            "partnerName" to partner.username,
+            "message" to "✅ Transaction completed! Receipt is ready.",
+            "timestamp" to System.currentTimeMillis(),
+            "read" to false
+        )
+
+        db.child("notifications").child(userId).child(notifId)
+            .setValue(notification)
+            .addOnSuccessListener {
+                Log.d(TAG, "✅ Missing notification sent to $userId")
+            }
+    }
+
+    private fun saveReceiptToUser(userId: String, receiptId: String) {
+        FirebaseDatabase.getInstance().reference
+            .child("users").child(userId).child("receipts").child(receiptId)
+            .setValue(true)
+    }
+
+    private fun pushReceiptNotification(request: TradeRequest, receiptId: String) {
+        val db = FirebaseDatabase.getInstance().reference
+        val timestamp = System.currentTimeMillis()
+
+        val notifAId = "receipt_$receiptId"
+        val notifA = hashMapOf<String, Any>(
+            "id" to notifAId,
+            "type" to "receipt_created",
+            "receiptId" to receiptId,
+            "requestId" to request.requestId,
+            "chatId" to chatId,
+            "partnerId" to request.toUser.userId,
+            "partnerName" to request.toUser.username,
+            "message" to "✅ Transaction completed! Receipt is ready.",
+            "timestamp" to timestamp,
+            "read" to false
+        )
+
+        // Notification for User B (toUser)
+        val notifBId = "receipt_$receiptId"
+        val notifB = hashMapOf<String, Any>(
+            "id" to notifBId,
+            "type" to "receipt_created",
+            "receiptId" to receiptId,
+            "requestId" to request.requestId,
+            "chatId" to chatId,
+            "partnerId" to request.fromUser.userId,
+            "partnerName" to request.fromUser.username,
+            "message" to "✅ Transaction completed! Receipt is ready.",
+            "timestamp" to timestamp,
+            "read" to false
+        )
+
+        // Save notifications
+        db.child("notifications").child(request.fromUser.userId).child(notifAId)
+            .setValue(notifA)
+            .addOnSuccessListener {
+                Log.d(TAG, "✅ Receipt notification sent to ${request.fromUser.username}")
+            }
+
+        db.child("notifications").child(request.toUser.userId).child(notifBId)
+            .setValue(notifB)
+            .addOnSuccessListener {
+                Log.d(TAG, "✅ Receipt notification sent to ${request.toUser.username}")
+            }
     }
 
 
@@ -438,6 +775,57 @@ class SystemMessageBinder(
             Log.e(TAG, "Error extracting trade request: ${e.message}")
             null
         }
+    }
+
+    private fun generateReceiptNumber(): String {
+        val year = SimpleDateFormat("yyyy", Locale.getDefault()).format(Date())
+        val random = (100000..999999).random()
+        return "RCPT-$year-$random"
+    }
+
+    private fun generateChatDisplayId(): String {
+        val random = (10000..99999).random()
+        return "CHT-$random"
+    }
+
+    private fun generateRequestDisplayId(): String {
+        val random = (10000..99999).random()
+        return "REQ-$random"
+    }
+
+    private fun saveTradeHistory(request: TradeRequest) {
+        val db = FirebaseDatabase.getInstance().reference
+        val tradeId = request.requestId
+        val date = System.currentTimeMillis().toString()
+
+        // history for fromUser (yung natanggap niyang item = target item)
+        val fromUserHistory = TradeHistoryItem(
+            itemName = request.targetItem.title,
+            tradedWith = request.toUser.username,
+            date = date,
+            status = "Completed"
+        )
+
+        // history for toUser (yung natanggap niyang item = offered item)
+        val toUserHistory = TradeHistoryItem(
+            itemName = request.offeredItem.title,
+            tradedWith = request.fromUser.username,
+            date = date,
+            status = "Completed"
+        )
+
+        val updates = hashMapOf<String, Any>(
+            "trades/${request.fromUser.userId}/$tradeId" to fromUserHistory,
+            "trades/${request.toUser.userId}/$tradeId" to toUserHistory
+        )
+
+        db.updateChildren(updates)
+            .addOnSuccessListener {
+                Log.d(TAG, "✅ Trade history saved for both users: tradeId=$tradeId")
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "❌ Failed to save trade history: ${e.message}")
+            }
     }
 
     private fun openEmailReport(context: android.content.Context, request: TradeRequest) {

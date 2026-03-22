@@ -66,12 +66,31 @@ class FriendsAdapter(
             val pos = holder.bindingAdapterPosition
             if (pos == RecyclerView.NO_POSITION) return
 
-            friendsButton.setOnClickListener {
-                onItemClick(friend, Action.REMOVE_FRIEND)
-            }
+            optionsButton.isClickable = true
+            optionsButton.isFocusable = true
+            optionsButton.bringToFront()
 
-            messageButton.setOnClickListener {
-                onItemClick(friend, Action.MESSAGE)
+            optionsButton.setOnClickListener { view ->
+                val popup = android.widget.PopupMenu(view.context, view)
+                popup.menuInflater.inflate(R.menu.friend_options_menu, popup.menu)
+
+                popup.setOnMenuItemClickListener { item ->
+                    when (item.itemId) {
+                        R.id.menu_message -> {
+                            onItemClick(friend, Action.MESSAGE)
+                            true
+                        }
+
+                        R.id.menu_unfriend -> {
+                            showRemoveFriendDialog(view, friend, pos)
+                            true
+                        }
+
+                        else -> false
+                    }
+                }
+
+                popup.show()
             }
 
             cardView.setOnClickListener {
@@ -87,7 +106,6 @@ class FriendsAdapter(
 
     override fun getItemCount(): Int = friends.size
 
-    // ✅ QUICK ACTIONS
     private fun showQuickActionsDialog(
         view: View,
         friend: User,
@@ -121,7 +139,6 @@ class FriendsAdapter(
             .show()
     }
 
-    // ✅ REMOVE FRIEND (FIREBASE + UI)
     private fun removeFriendFromFirebase(
         view: View,
         friendUserId: String,

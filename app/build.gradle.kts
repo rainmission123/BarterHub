@@ -26,7 +26,9 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        // ✅ BuildConfig fields (safe: values come from local.properties)
+        manifestPlaceholders["MAPS_API_KEY"] =
+            localProps.getProperty("MAPS_API_KEY", "")
+
         buildConfigField(
             "String",
             "CLOUDINARY_CLOUD_NAME",
@@ -82,7 +84,6 @@ android {
 
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
-
     // Firebase
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.auth.ktx)
@@ -160,4 +161,9 @@ dependencies {
     implementation("com.github.cooltechworks:ScratchView:v1.1") {
         exclude(group = "com.android.support", module = "support-v4")
     }
+
+    implementation("com.google.android.material:material:1.13.0")
+    implementation("io.coil-kt:coil:2.7.0")
+    implementation("androidx.core:core-splashscreen:1.2.0")
+
 }

@@ -125,20 +125,19 @@ class ProfileDataLoader(private val fragment: Fragment) {
 
         val context = fragment.requireContext()
 
-        // Trades count color
-        val tradesColor = when {
-            tradesCount > 50 -> ContextCompat.getColor(context, R.color.success_green)
-            tradesCount > 20 -> ContextCompat.getColor(context, R.color.premium_gold)
-            tradesCount > 0 -> ContextCompat.getColor(context, R.color.amber_200)
-            else -> ContextCompat.getColor(context, R.color.gray)
+        // ✅ Trades - always green if may value
+        val tradesColor = if (tradesCount > 0) {
+            ContextCompat.getColor(context, R.color.success_green)
+        } else {
+            ContextCompat.getColor(context, R.color.gray)
         }
         tradesCountText.setTextColor(tradesColor)
 
-        // Success rate color
+        // ✅ Success rate - keep smart coloring (optional)
         val successColor = when {
             successRate >= 90 -> ContextCompat.getColor(context, R.color.success_green)
-            successRate >= 70 -> ContextCompat.getColor(context, R.color.premium_gold)
-            successRate > 0 -> ContextCompat.getColor(context, R.color.amber_200)
+            successRate >= 70 -> ContextCompat.getColor(context, R.color.success_green)
+            successRate > 0 -> ContextCompat.getColor(context, R.color.success_green)
             else -> ContextCompat.getColor(context, R.color.gray)
         }
         successRateText.setTextColor(successColor)

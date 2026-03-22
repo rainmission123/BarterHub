@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
+    android:background="@drawable/backgroundlogin"
     android:padding="16dp">
 
     <LinearLayout
@@ -33,7 +33,7 @@
                 android:text="@string/fun_games"
                 android:textSize="24sp"
                 android:textStyle="bold"
-                android:textColor="?attr/colorOnSurface" />
+                android:textColor="@color/White" />
 
         </LinearLayout>
 
@@ -45,7 +45,7 @@
             android:layout_marginBottom="16dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="6dp"
-            app:strokeColor="@color/premium_gold"
+            app:strokeColor="@color/White"
             app:strokeWidth="2dp"
             android:clickable="true"
             android:focusable="true"
@@ -136,8 +136,8 @@
                             android:paddingHorizontal="20dp"
                             android:paddingVertical="10dp"
                             app:cornerRadius="12dp"
-                            android:backgroundTint="@color/premium_gold"
-                            android:textColor="@color/black"
+                            android:backgroundTint="@color/com_facebook_messenger_blue"
+                            android:textColor="@color/White"
                             android:textStyle="bold" />
 
                     </LinearLayout>
@@ -154,7 +154,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:strokeColor="@color/premium_gold"
+            app:strokeColor="@color/White"
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
             android:clickable="true"
@@ -244,14 +244,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/play"
-                            android:backgroundTint="@color/premium_gold"
+                            android:backgroundTint="@color/com_facebook_messenger_blue"
                             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                             android:textSize="13sp"
                             android:paddingHorizontal="20dp"
                             android:paddingVertical="10dp"
                             app:cornerRadius="12dp"
-                            app:strokeColor="@color/gray_400"
-                            android:textColor="@color/gray_700" />
+                            app:strokeColor="@color/com_facebook_messenger_blue"
+                            android:textColor="@color/White" />
 
                     </LinearLayout>
 
@@ -271,7 +271,7 @@
             app:cardElevation="4dp"
             android:clickable="true"
             android:focusable="true"
-            app:strokeColor="@color/premium_gold"
+            app:strokeColor="@color/White"
             android:foreground="?attr/selectableItemBackground">
 
             <LinearLayout
@@ -359,11 +359,11 @@
                             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                             android:textSize="13sp"
                             android:paddingHorizontal="20dp"
-                            android:backgroundTint="@color/premium_gold"
+                            android:backgroundTint="@color/com_facebook_messenger_blue"
                             android:paddingVertical="10dp"
                             app:cornerRadius="12dp"
                             app:strokeColor="@color/gray_400"
-                            android:textColor="@color/gray_700" />
+                            android:textColor="@color/White" />
 
                     </LinearLayout>
 
@@ -379,7 +379,7 @@
             android:layout_height="wrap_content"
             android:text="@string/more_games_coming_soon"
             android:textSize="14sp"
-            android:textColor="@color/gray_500"
+            android:textColor="@color/White"
             android:gravity="center"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="24dp" />

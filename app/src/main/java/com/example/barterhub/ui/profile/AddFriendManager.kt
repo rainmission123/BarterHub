@@ -1,12 +1,8 @@
 package com.example.barterhub.ui.profile
 
-import android.content.Intent
 import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
-import com.example.barterhub.R
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ServerValue
@@ -21,21 +17,17 @@ class AddFriendManager(private val fragment: Fragment) {
     // ===============================
     fun sendFriendRequest(toUserId: String) {
         val fromUserId = auth.currentUser?.uid ?: return
-
         if (fromUserId == toUserId) return
 
         Log.d("AddFriendManager", "🤝 Friend request: $fromUserId → $toUserId")
 
-        val requestData = mapOf(
-            "status" to "pending",
-            "timestamp" to ServerValue.TIMESTAMP
-        )
+        val timestamp = System.currentTimeMillis()
+        val updates = hashMapOf<String, Any>()
 
-        // ✅ NEW STRUCTURE
-        db.child("friendRequests")
-            .child(toUserId)
-            .child(fromUserId)
-            .setValue(requestData)
+        updates["userFriendRequests/$fromUserId/sent/$toUserId"] = timestamp
+        updates["userFriendRequests/$toUserId/received/$fromUserId"] = timestamp
+
+        db.updateChildren(updates)
             .addOnSuccessListener {
                 createFriendRequestNotification(toUserId, fromUserId)
                 toast("Friend request sent")
@@ -51,22 +43,55 @@ class AddFriendManager(private val fragment: Fragment) {
     fun acceptFriendRequest(fromUserId: String) {
         val currentUserId = auth.currentUser?.uid ?: return
 
-        val updates = hashMapOf<String, Any?>(
-            // ✅ Add friends (both sides)
-            "friends/$currentUserId/$fromUserId" to true,
-            "friends/$fromUserId/$currentUserId" to true,
+        val requestRef = db.child("userFriendRequests")
+            .child(currentUserId)
+            .child("received")
+            .child(fromUserId)
 
-            // ❌ Remove pending request
-            "friendRequests/$currentUserId/$fromUserId" to null
-        )
+        requestRef.get()
+            .addOnSuccessListener { snapshot ->
+                if (!snapshot.exists()) {
+                    toast("This friend request is no longer available")
+                    removeStaleFriendRequestNotification(currentUserId, fromUserId)
+                    return@addOnSuccessListener
+                }
 
-        db.updateChildren(updates)
-            .addOnSuccessListener {
-                Log.d("AddFriendManager", "✅ Friend accepted")
-                toast("You are now friends")
+                val updates = hashMapOf<String, Any?>(
+                    "friends/$currentUserId/$fromUserId" to true,
+                    "friends/$fromUserId/$currentUserId" to true,
+                    "userFriendRequests/$currentUserId/received/$fromUserId" to null,
+                    "userFriendRequests/$fromUserId/sent/$currentUserId" to null
+                )
+
+                db.child("notifications").child(currentUserId).get()
+                    .addOnSuccessListener { notifSnapshot ->
+                        for (child in notifSnapshot.children) {
+                            val type = child.child("type").getValue(String::class.java)
+                            val notifFromUserId = child.child("fromUserId").getValue(String::class.java)
+
+                            if (type == "friend_request" && notifFromUserId == fromUserId) {
+                                updates["notifications/$currentUserId/${child.key}"] = null
+                            }
+                        }
+
+                        db.updateChildren(updates)
+                            .addOnSuccessListener {
+                                Log.d("AddFriendManager", "✅ Friend accepted")
+                                toast("You are now friends")
+                            }
+                            .addOnFailureListener {
+                                Log.e("AddFriendManager", "❌ Accept failed: ${it.message}")
+                                toast("Failed to accept friend request")
+                            }
+                    }
+                    .addOnFailureListener {
+                        Log.e("AddFriendManager", "❌ Failed to load notifications: ${it.message}")
+                        toast("Failed to accept friend request")
+                    }
             }
             .addOnFailureListener {
-                Log.e("AddFriendManager", "❌ Accept failed: ${it.message}")
+                Log.e("AddFriendManager", "❌ Failed to verify friend request: ${it.message}")
+                toast("Failed to accept friend request")
             }
     }
 
@@ -76,12 +101,71 @@ class AddFriendManager(private val fragment: Fragment) {
     fun rejectFriendRequest(fromUserId: String) {
         val currentUserId = auth.currentUser?.uid ?: return
 
-        db.child("friendRequests")
-            .child(currentUserId)
-            .child(fromUserId)
-            .removeValue()
-            .addOnSuccessListener {
-                toast("Friend request rejected")
+        db.child("notifications").child(currentUserId).get()
+            .addOnSuccessListener { snapshot ->
+                val updates = hashMapOf<String, Any?>(
+                    "userFriendRequests/$currentUserId/received/$fromUserId" to null,
+                    "userFriendRequests/$fromUserId/sent/$currentUserId" to null
+                )
+
+                for (notifSnapshot in snapshot.children) {
+                    val type = notifSnapshot.child("type").getValue(String::class.java)
+                    val notifFromUserId = notifSnapshot.child("fromUserId").getValue(String::class.java)
+
+                    if (type == "friend_request" && notifFromUserId == fromUserId) {
+                        updates["notifications/$currentUserId/${notifSnapshot.key}"] = null
+                    }
+                }
+
+                db.updateChildren(updates)
+                    .addOnSuccessListener {
+                        toast("Friend request rejected")
+                    }
+                    .addOnFailureListener {
+                        Log.e("AddFriendManager", "❌ Reject failed: ${it.message}")
+                        toast("Failed to reject request")
+                    }
+            }
+            .addOnFailureListener {
+                Log.e("AddFriendManager", "❌ Failed to load notifications: ${it.message}")
+                toast("Failed to reject request")
+            }
+    }
+
+    // ===============================
+    // ❌ CANCEL SENT REQUEST
+    // ===============================
+    fun cancelFriendRequest(targetUserId: String) {
+        val currentUserId = auth.currentUser?.uid ?: return
+
+        db.child("notifications").child(targetUserId).get()
+            .addOnSuccessListener { snapshot ->
+                val updates = hashMapOf<String, Any?>(
+                    "userFriendRequests/$currentUserId/sent/$targetUserId" to null,
+                    "userFriendRequests/$targetUserId/received/$currentUserId" to null
+                )
+
+                for (notifSnapshot in snapshot.children) {
+                    val type = notifSnapshot.child("type").getValue(String::class.java)
+                    val fromUserId = notifSnapshot.child("fromUserId").getValue(String::class.java)
+
+                    if (type == "friend_request" && fromUserId == currentUserId) {
+                        updates["notifications/$targetUserId/${notifSnapshot.key}"] = null
+                    }
+                }
+
+                db.updateChildren(updates)
+                    .addOnSuccessListener {
+                        toast("Request cancelled")
+                    }
+                    .addOnFailureListener {
+                        Log.e("AddFriendManager", "❌ Failed to cancel request: ${it.message}")
+                        toast("Failed to cancel request")
+                    }
+            }
+            .addOnFailureListener {
+                Log.e("AddFriendManager", "❌ Failed to load notifications: ${it.message}")
+                toast("Failed to cancel request")
             }
     }
 
@@ -110,60 +194,24 @@ class AddFriendManager(private val fragment: Fragment) {
             .setValue(notificationData)
     }
 
-    // ===============================
-    // 📍 NAVIGATION / UI OPTIONS
-    // ===============================
-    fun goDirectlyToFindFriends() {
-        try {
-            fragment.findNavController()
-                .navigate(R.id.action_profileFragment_to_findFriendsFragment)
-        } catch (e: Exception) {
-            toast("Find Friends feature is not available")
-        }
-    }
+    private fun removeStaleFriendRequestNotification(currentUserId: String, fromUserId: String) {
+        db.child("notifications").child(currentUserId).get()
+            .addOnSuccessListener { snapshot ->
+                val updates = hashMapOf<String, Any?>()
 
-    fun showSimpleAddFriendOptions() {
-        if (!fragment.isAdded) return
+                for (notifSnapshot in snapshot.children) {
+                    val type = notifSnapshot.child("type").getValue(String::class.java)
+                    val notifFromUserId = notifSnapshot.child("fromUserId").getValue(String::class.java)
 
-        MaterialAlertDialogBuilder(fragment.requireContext())
-            .setTitle("Add Friend")
-            .setMessage("Go to Find Friends screen?")
-            .setPositiveButton("Find Friends") { dialog, _ ->
-                goDirectlyToFindFriends()
-                dialog.dismiss()
+                    if (type == "friend_request" && notifFromUserId == fromUserId) {
+                        updates["notifications/$currentUserId/${notifSnapshot.key}"] = null
+                    }
+                }
+
+                if (updates.isNotEmpty()) {
+                    db.updateChildren(updates)
+                }
             }
-            .setNegativeButton("Share Invite Link") { dialog, _ ->
-                shareInviteLink()
-                dialog.dismiss()
-            }
-            .setNeutralButton("Cancel", null)
-            .show()
-    }
-
-    fun handleAddFriendClick() {
-        goDirectlyToFindFriends()
-    }
-
-    // ===============================
-    // 🔗 INVITE LINK
-    // ===============================
-    private fun shareInviteLink() {
-        val userId = auth.currentUser?.uid ?: return
-        val inviteLink = "https://barterhub.ph/invite/$userId"
-
-        val shareMessage =
-            "Join me on BarterHub! Let's trade items together.\n$inviteLink"
-
-        val shareIntent = Intent(Intent.ACTION_SEND).apply {
-            putExtra(Intent.EXTRA_TEXT, shareMessage)
-            type = "text/plain"
-        }
-
-        fragment.startActivity(
-            Intent.createChooser(shareIntent, "Share Invite Link")
-        )
-
-        toast("Share this link with your friends!")
     }
 
     // ===============================
@@ -171,11 +219,7 @@ class AddFriendManager(private val fragment: Fragment) {
     // ===============================
     private fun toast(message: String) {
         if (fragment.isAdded) {
-            Toast.makeText(
-                fragment.requireContext(),
-                message,
-                Toast.LENGTH_SHORT
-            ).show()
+            Toast.makeText(fragment.requireContext(), message, Toast.LENGTH_SHORT).show()
         }
     }
 }

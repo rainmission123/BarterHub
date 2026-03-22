@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
+    android:background="@drawable/backgroundlogin"
     android:padding="16dp">
 
     <!-- ✅ ADD: Back Button Row -->
@@ -24,14 +24,14 @@
             android:src="@drawable/ic_arrow_back"
             android:contentDescription="@string/back"
             android:layout_marginEnd="16dp"
-            app:tint="?attr/colorOnSurface" />
+            app:tint="@color/White" />
 
         <TextView
             android:id="@+id/tvFavoritesTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/your_favorites_wishlist"
-            android:textColor="?attr/colorOnSurface"
+            android:textColor="@color/White"
             android:textSize="18sp"
             android:textStyle="bold"/>
 

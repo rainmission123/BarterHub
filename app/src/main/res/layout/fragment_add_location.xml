@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
+    android:background="@drawable/backgroundlogin"
     tools:context=".ui.AddLocationFragment">
 
     <androidx.core.widget.NestedScrollView
@@ -23,7 +23,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Item Location"
-                android:textColor="?attr/colorOnSurface"
+                android:textColor="@color/White"
                 android:textSize="22sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp" />
@@ -32,7 +32,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Set where this item is located so others can find it nearby"
-                android:textColor="?attr/colorOnSurface"
+                android:textColor="@color/White"
                 android:textSize="14sp"
                 android:layout_marginBottom="20dp"
                 tools:ignore="HardcodedText" />
@@ -61,6 +61,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Address"
+                android:textColorHint="@color/white"
                 android:layout_marginBottom="16dp">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -76,8 +77,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Use my current location"
+                android:textColor="@color/white"
                 android:textAllCaps="false"
                 app:icon="@drawable/ic_location"
+                app:iconTint="@color/error_dark"
                 style="@style/Widget.Material3.Button.OutlinedButton"/>
 
         </LinearLayout>
@@ -95,7 +98,7 @@
         android:textAllCaps="false"
         android:layout_gravity="bottom"
         app:cornerRadius="16dp"
-        app:backgroundTint="@color/colorAccent"
+        app:backgroundTint="@color/com_facebook_messenger_blue"
         app:icon="@drawable/ic_check"
         app:iconGravity="end"/>
 

@@ -47,8 +47,7 @@ class MessagesAdapter(
     private var onProfilePictureClickListener: ((String) -> Unit)? = null
     private var onViewProfileClickListener: ((String) -> Unit)? = null
     private var onTradeCompletedListener: ((TradeRequest) -> Unit)? = null
-    private var onMessageDeleted: ((Message, Int) -> Unit)? = null
-
+    private var onMessageDeletedListener: ((Message, Int) -> Unit)? = null
     private val ratingStatusMap = mutableMapOf<String, RatingStatus>()
     private var reviewsListener: ValueEventListener? = null
     private val reactionListeners = mutableMapOf<String, ValueEventListener>()
@@ -60,14 +59,17 @@ class MessagesAdapter(
     private var videoMessageBinder: VideoMessageBinder
     private val systemMessageBinder: SystemMessageBinder
 
-    // SA MessagesAdapter.kt, PALITAN ANG init block:
     init {
         textMessageBinder = TextMessageBinder(
             currentUserId = currentUserId,
             partnerProfilePic = partnerProfilePic,
             chatId = chatId,
             onProfilePictureClickListener = { pic -> onProfilePictureClickListener?.invoke(pic) },
-            onMessageDeleted = { message, position -> onMessageDeleted?.invoke(message, position) }
+            onMessageDeleted = { message, position ->
+                // Call the listener if it's set
+                onMessageDeletedListener?.invoke(message, position)
+                Log.d(TAG, "Message deleted callback from binder: ${message.messageId}")
+            }
         )
 
         imageMessageBinder = ImageMessageBinder(
@@ -81,7 +83,7 @@ class MessagesAdapter(
             }
         )
 
-        videoMessageBinder = VideoMessageBinder(  // 👈 WALANG onViewProfile DITO!
+        videoMessageBinder = VideoMessageBinder(
             currentUserId = currentUserId,
             partnerProfilePic = partnerProfilePic,
             onReact = { message ->
@@ -90,7 +92,6 @@ class MessagesAdapter(
                     message = message
                 )
             }
-            // WALANG onViewProfile = { senderId -> ... }
         )
 
         systemMessageBinder = SystemMessageBinder(
@@ -118,7 +119,6 @@ class MessagesAdapter(
     }
 
     private fun updateBindersWithProfilePics() {
-
         textMessageBinder = TextMessageBinder(
             currentUserId = currentUserId,
             partnerProfilePic = partnerProfilePic,
@@ -127,7 +127,9 @@ class MessagesAdapter(
                 onProfilePictureClickListener?.invoke(pic)
             },
             onMessageDeleted = { message, position ->
-                onMessageDeleted?.invoke(message, position)
+                // Use the renamed listener
+                onMessageDeletedListener?.invoke(message, position)
+                Log.d(TAG, "Message deleted from binder update: ${message.messageId}")
             }
         )
 
@@ -163,8 +165,8 @@ class MessagesAdapter(
 
     inner class SentMessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val messageText: TextView = itemView.findViewById(R.id.tvMessageSent)
-        val messageContainer: View = itemView.findViewById(R.id.sentMessageContainer)
         val readStatus: TextView? = itemView.findViewById(R.id.tvReadStatus)
+        val messageContainer: View = itemView.findViewById(R.id.sentMessageContainer)
         val timestampText: TextView = itemView.findViewById(R.id.tvTimestampSent)
         val reactionsContainer: LinearLayout? = itemView.findViewById(R.id.reactionsContainer)
         val tvReactionSummary: TextView? = itemView.findViewById(R.id.tvReactionSummary)
@@ -199,7 +201,7 @@ class MessagesAdapter(
 
     inner class VideoMessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val ivProfile: CircleImageView = itemView.findViewById(R.id.ivProfile)
-        val videoCardContainer: CardView = itemView.findViewById(R.id.videoCardContainer)
+        val videoContainer: CardView = itemView.findViewById(R.id.videoContainer)
         val videoThumbnail: ImageView = itemView.findViewById(R.id.videoThumbnail)
         val tvDuration: TextView = itemView.findViewById(R.id.tvDuration)
         val tvTimestamp: TextView = itemView.findViewById(R.id.tvTimestamp)
@@ -305,7 +307,6 @@ class MessagesAdapter(
         }
     }
 
-    // SA MessagesAdapter.kt, DAGDAGAN NG IMAGE MESSAGES:
     private fun setupReactionsDisplay(holder: RecyclerView.ViewHolder, message: Message) {
         when (holder) {
             is ReceivedMessageViewHolder -> {
@@ -325,7 +326,6 @@ class MessagesAdapter(
         }
     }
 
-    // 👇 DAGDAG NG BAGONG FUNCTION PARA SA IMAGE REACTIONS
     private fun setupImageMessageReactions(holder: ImageMessageViewHolder, message: Message) {
         Log.d(TAG, "setupImageMessageReactions for image message: ${message.messageId}")
         Log.d(TAG, "Image reactions: ${message.reactions}")
@@ -369,6 +369,24 @@ class MessagesAdapter(
                 }
             }
         }
+    }
+
+    fun setOnMessageDeletedListener(listener: (Message, Int) -> Unit) {
+        this.onMessageDeletedListener = listener
+        Log.d(TAG, "Message deleted listener set")
+
+        // Update textMessageBinder with new listener
+        textMessageBinder = TextMessageBinder(
+            currentUserId = currentUserId,
+            partnerProfilePic = partnerProfilePic,
+            chatId = chatId,
+            onProfilePictureClickListener = { pic -> onProfilePictureClickListener?.invoke(pic) },
+            onMessageDeleted = { message, position ->
+                listener.invoke(message, position)
+                Log.d(TAG, "Message deleted via new listener: ${message.messageId}")
+            }
+        )
+        notifyDataSetChanged()
     }
 
     private fun setupTextMessageReactions(holder: RecyclerView.ViewHolder, message: Message) {
@@ -605,24 +623,19 @@ class MessagesAdapter(
                 }
             }
 
-            // SA onBindViewHolder, DAGDAGAN NG CLICK LISTENER:
             is ImageMessageViewHolder -> {
                 imageMessageBinder.bind(holder, message, position, showProfilePic)
-                setupReactionsDisplay(holder, message)  // 👈 DAGDAG ITO
+                setupReactionsDisplay(holder, message)
 
-                // 👇 DAGDAG NG CLICK LISTENER PARA SA REACTION CONTAINER
                 holder.singleReactionContainer?.setOnClickListener {
                     val topReaction = message.reactions.entries.maxByOrNull { it.value.size }
                     if (topReaction != null && topReaction.value.containsKey(currentUserId)) {
-                        // User already reacted → remove reaction
                         removeReaction(message.messageId, topReaction.key)
                     } else {
-                        // User has not reacted → show reaction dialog
                         showReactionDialog(holder.itemView.context, message)
                     }
                 }
 
-                // 👇 PALITAN ITO:
                 holder.itemView.findViewById<androidx.cardview.widget.CardView>(R.id.imageContainer)
                     ?.setOnLongClickListener {
                         showReactionDialog(holder.itemView.context, message)
@@ -643,10 +656,12 @@ class MessagesAdapter(
                     }
                 }
 
-                holder.videoCardContainer.setOnLongClickListener {
-                    showReactionDialog(holder.itemView.context, message)
-                    true
-                }
+                // 👇 FIXED: Use videoContainer instead of videoCardContainer
+                holder.itemView.findViewById<androidx.cardview.widget.CardView>(R.id.videoContainer)
+                    ?.setOnLongClickListener {
+                        showReactionDialog(holder.itemView.context, message)
+                        true
+                    }
             }
 
             is SystemMessageViewHolder -> {
@@ -654,7 +669,6 @@ class MessagesAdapter(
             }
         }
     }
-
     override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
         super.onViewRecycled(holder)
 
@@ -680,13 +694,7 @@ class MessagesAdapter(
 
     private fun shouldShowProfilePic(position: Int): Boolean {
         val currentMessage = messages[position]
-
-        if (currentMessage.senderId == currentUserId) return false
-        if (position == 0) return true
-
-        val previousMessage = messages.getOrNull(position - 1)
-        return previousMessage == null || previousMessage.senderId != currentMessage.senderId
-                || currentMessage.timestamp - previousMessage.timestamp > 5 * 60 * 1000
+        return currentMessage.senderId != currentUserId
     }
 
     private fun setupRealTimeRatingMonitor() {
@@ -863,34 +871,4 @@ class MessagesAdapter(
 
     override fun getItemCount(): Int = messages.size
 
-    fun addMessage(message: Message) {
-        messages.add(message)
-        notifyItemInserted(messages.size - 1)
-    }
-
-    fun updateMessage(message: Message) {
-        val position = messages.indexOfFirst { it.messageId == message.messageId }
-        if (position != -1) {
-            messages[position] = message
-            updateItemWithoutScroll(position)
-            Log.d(TAG, "Message updated at position: $position (no scroll)")
-        }
-    }
-
-    private fun updateItemWithoutScroll(position: Int) {
-        try {
-            notifyItemChanged(position)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error updating item: ${e.message}")
-        }
-    }
-
-    fun updateRatingStatus(tradeId: String, currentUserRated: Boolean, partnerRated: Boolean) {
-        ratingStatusMap[tradeId] = RatingStatus(
-            currentUserRated = currentUserRated,
-            partnerRated = partnerRated,
-            totalRatings = (if (currentUserRated) 1 else 0) + (if (partnerRated) 1 else 0)
-        )
-        notifyDataSetChanged()
-    }
 }

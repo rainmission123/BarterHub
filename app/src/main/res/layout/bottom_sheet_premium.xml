@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="24dp"
+    android:padding="5dp"
     android:background="@drawable/bottom_sheet_background">
 
     <!-- Header with Icon -->
@@ -19,6 +19,7 @@
         <ImageView
             android:layout_width="32dp"
             android:layout_height="32dp"
+            android:contentDescription="@string/todo"
             android:src="@drawable/ic_premium_crown"
             android:layout_marginEnd="8dp"/>
 
@@ -28,7 +29,7 @@
             android:text="@string/go_premium"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:textColor="?attr/postTextColor"/>
+            android:textColor="@color/black"/>
     </LinearLayout>
 
     <!-- Subtitle -->
@@ -37,7 +38,7 @@
         android:layout_height="wrap_content"
         android:text="@string/unlock_premium_features_using_barterhub_coins"
         android:textSize="14sp"
-        android:textColor="?attr/postTextColor"
+        android:textColor="@color/black"
         android:gravity="center"
         android:layout_marginBottom="20dp"/>
 
@@ -45,111 +46,233 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="24dp"
-        android:weightSum="3">
+        android:orientation="vertical"
+        android:layout_marginBottom="24dp">
 
+        <!-- Row 1 -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:padding="12dp"
-            android:background="@drawable/bg_premium_benefit"
-            android:layout_marginEnd="4dp">
+            android:baselineAligned="false"
+            android:orientation="horizontal"
+            android:weightSum="3"
+            android:layout_marginBottom="8dp">
 
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_star"
-                android:layout_marginBottom="4dp"
-                app:tint="@color/premium_gold" />
-
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- Featured Listings -->
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="@string/featured"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:textColor="?attr/postTextColor"/>
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="12dp"
+                android:background="@drawable/bg_premium_benefit"
+                android:layout_marginEnd="4dp">
 
-            <TextView
-                android:layout_width="wrap_content"
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_star"
+                    android:layout_marginBottom="4dp"
+                    tools:ignore="ContentDescription" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Featured"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    tools:ignore="HardcodedText" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Listings"
+                    android:textSize="10sp"
+                    android:textColor="@color/black"
+                    tools:ignore="HardcodedText,SmallSp" />
+            </LinearLayout>
+
+            <!-- Priority Visibility -->
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="@string/listings"
-                android:textSize="10sp"
-                android:textColor="?attr/postTextColor"
-                tools:ignore="SmallSp" />
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="12dp"
+                android:background="@drawable/bg_premium_benefit"
+                android:layout_marginHorizontal="4dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_trending"
+                    android:layout_marginBottom="4dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Priority"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Visibility"
+                    android:textSize="10sp"
+                    android:textColor="@color/black"/>
+            </LinearLayout>
+
+            <!-- Analytics -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="12dp"
+                android:background="@drawable/bg_premium_benefit"
+                android:layout_marginStart="4dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_analytics"
+                    android:layout_marginBottom="4dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Advanced"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Analytics"
+                    android:textSize="10sp"
+                    android:textColor="@color/black"/>
+            </LinearLayout>
         </LinearLayout>
 
+
+        <!-- Row 2 -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:padding="12dp"
-            android:background="@drawable/bg_premium_benefit"
-            android:layout_marginHorizontal="4dp">
+            android:orientation="horizontal"
+            android:weightSum="3">
 
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_trending"
-                android:layout_marginBottom="4dp"
-                tools:ignore="ContentDescription" />
-
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- No Ads -->
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Priority"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:textColor="?attr/postTextColor"
-                tools:ignore="HardcodedText" />
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="12dp"
+                android:background="@drawable/bg_premium_benefit"
+                android:layout_marginEnd="4dp">
 
-            <TextView
-                android:layout_width="wrap_content"
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_ads_off"
+                    android:layout_marginBottom="4dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/no_ads"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/cleaner_app"
+                    android:textSize="10sp"
+                    android:textColor="@color/black"
+                    tools:ignore="SmallSp" />
+            </LinearLayout>
+
+            <!-- Top Barter User -->
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="@string/visibility"
-                android:textSize="10sp"
-                android:textColor="?attr/postTextColor"
-                tools:ignore="SmallSp" />
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="12dp"
+                android:background="@drawable/bg_premium_benefit"
+                android:layout_marginHorizontal="4dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_rank_gold"
+                    android:layout_marginBottom="4dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/top_barter"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/user_badge"
+                    android:textSize="10sp"
+                    android:textColor="@color/black"
+                    tools:ignore="SmallSp" />
+            </LinearLayout>
+
+            <!-- Premium Badge -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="12dp"
+                android:background="@drawable/bg_premium_benefit"
+                android:layout_marginStart="4dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_premium_crown"
+                    android:layout_marginBottom="4dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Premium"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/badge"
+                    android:textSize="10sp"
+                    android:textColor="@color/black"
+                    tools:ignore="SmallSp" />
+            </LinearLayout>
+
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:padding="12dp"
-            android:background="@drawable/bg_premium_benefit"
-            android:layout_marginStart="4dp">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_analytics"
-                android:layout_marginBottom="4dp"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/advanced"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:textColor="?attr/postTextColor"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/analytics"
-                android:textSize="10sp"
-                android:textColor="?attr/postTextColor"
-                tools:ignore="SmallSp" />
-        </LinearLayout>
     </LinearLayout>
 
     <!-- Current Balance -->
@@ -167,7 +290,7 @@
             android:layout_weight="1"
             android:text="@string/your_balance"
             android:textSize="14sp"
-            android:textColor="?attr/postTextColor"/>
+            android:textColor="@color/black"/>
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -200,7 +323,7 @@
         android:text="@string/select_plan"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:textColor="?attr/postTextColor"
+        android:textColor="@color/black"
         android:layout_marginBottom="12dp"/>
 
     <RadioGroup
@@ -243,7 +366,7 @@
                         android:text="@string/_1_month_premium"
                         android:textSize="14sp"
                         android:textStyle="bold"
-                        android:textColor="?attr/postTextColor"/>
+                        android:textColor="@color/black"/>
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -261,7 +384,7 @@
                             android:layout_height="wrap_content"
                             android:text="50 Coins"
                             android:textSize="13sp"
-                            android:textColor="?attr/postTextColor"
+                            android:textColor="@color/black"
                             android:layout_marginStart="4dp"
                             tools:ignore="HardcodedText" />
                     </LinearLayout>
@@ -316,7 +439,7 @@
                         android:text="@string/_5_months_premium"
                         android:textSize="14sp"
                         android:textStyle="bold"
-                        android:textColor="?attr/postTextColor"/>
+                        android:textColor="@color/black"/>
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -334,7 +457,7 @@
                             android:layout_height="wrap_content"
                             android:text="@string/_100_coins"
                             android:textSize="13sp"
-                            android:textColor="?attr/postTextColor"
+                            android:textColor="@color/black"
                             android:layout_marginStart="4dp"/>
                     </LinearLayout>
                 </LinearLayout>
@@ -387,7 +510,7 @@
                         android:text="@string/_1_year_premium"
                         android:textSize="14sp"
                         android:textStyle="bold"
-                        android:textColor="?attr/postTextColor"/>
+                        android:textColor="@color/black"/>
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -406,7 +529,7 @@
                             android:layout_height="wrap_content"
                             android:text="@string/_200_coins"
                             android:textSize="13sp"
-                            android:textColor="?attr/postTextColor"
+                            android:textColor="@color/black"
                             android:layout_marginStart="4dp"/>
                     </LinearLayout>
                 </LinearLayout>
@@ -427,19 +550,19 @@
         </androidx.cardview.widget.CardView>
     </RadioGroup>
 
-    <!-- Buttons -->
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnConfirmPremium"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="8dp"
         android:text="@string/upgrade_now"
         android:textAllCaps="false"
         android:textSize="16sp"
-        android:paddingVertical="14dp"
-        android:background="@drawable/bg_premium_button"
         android:textColor="@color/white"
-        android:layout_marginTop="24dp"
-        android:layout_marginBottom="8dp"/>
+        android:paddingVertical="14dp"
+        app:backgroundTint="@color/com_facebook_messenger_blue"
+        app:cornerRadius="12dp"/>
 
     <TextView
         android:id="@+id/btnCancelPremium"
@@ -447,7 +570,7 @@
         android:layout_height="wrap_content"
         android:text="Maybe Later"
         android:textSize="14sp"
-        android:textColor="?attr/postTextColor"
+        android:textColor="@color/black"
         android:gravity="center"
         android:paddingVertical="12dp"
         tools:ignore="HardcodedText" />

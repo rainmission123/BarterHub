@@ -124,7 +124,6 @@
             app:destination="@id/nav_item_detail" />
     </fragment>
 
-
     <fragment
         android:id="@+id/previewFragment"
         android:name="com.example.barterhub.ui.AddPreviewFragment"
@@ -244,17 +243,17 @@
         <argument
             android:name="chatId"
             app:argType="string"
-            android:defaultValue="" />  <!-- ✅ MADE OPTIONAL -->
+            android:defaultValue="" />
 
         <!-- User Info -->
         <argument
             android:name="partnerId"
-            app:argType="string" />  <!-- ⚠️ REQUIRED -->
+            app:argType="string" />
 
         <argument
             android:name="partnerName"
             app:argType="string"
-            android:defaultValue="User" />  <!-- ✅ MADE OPTIONAL -->
+            android:defaultValue="User" />
 
         <!-- Trade Info - ALL MADE OPTIONAL -->
         <argument
@@ -307,6 +306,10 @@
         <action
             android:id="@+id/action_itemDetailFragment_to_ownerProfileFragment"
             app:destination="@id/ownerProfileFragment" />
+        <action
+            android:id="@+id/action_itemDetailFragment_to_fullScreenMapFragment"
+            app:destination="@id/fullScreenMapFragment" />
+
     </fragment>
 
     <!-- Trade History -->
@@ -355,7 +358,7 @@
             app:argType="string" />
         <argument
             android:name="price"
-            app:argType="float" /> <!-- NOT double -->
+            app:argType="float" />
         <argument
             android:name="category"
             app:argType="string" />
@@ -370,8 +373,6 @@
             app:argType="string" />
     </fragment>
 
-
-    <!-- Trade Requests -->
     <fragment
         android:id="@+id/tradeRequestsFragment"
         android:name="com.example.barterhub.ui.TradeRequestsFragment"
@@ -409,14 +410,12 @@
             app:destination="@id/termsFragment" />
     </fragment>
 
-    <!-- Privacy Policy -->
     <fragment
         android:id="@+id/privacyPolicyFragment"
         android:name="com.example.barterhub.ui.PrivacyPolicyFragment"
         android:label="Privacy Policy"
         tools:layout="@layout/fragment_privacy_policy" />
 
-    <!-- Terms of Service -->
     <fragment
         android:id="@+id/termsFragment"
         android:name="com.example.barterhub.ui.TermsFragment"
@@ -458,7 +457,6 @@
         tools:layout="@layout/fragment_notifications" />
 
 
-    <!-- Add this to your nav_graph.xml -->
     <fragment
         android:id="@+id/gamesListFragment"
         android:name="com.example.barterhub.ui.GamesListFragment"
@@ -504,7 +502,12 @@
         <argument
             android:name="query"
             app:argType="string" />
+
+        <action
+            android:id="@+id/action_searchResultsFragment_to_itemDetailFragment"
+            app:destination="@id/nav_item_detail" />
     </fragment>
+
 
     <fragment
         android:id="@+id/topTradersFragment"
@@ -512,14 +515,12 @@
         android:label="Top Traders"
         tools:layout="@layout/fragment_top_traders" />
 
-    <!-- Inside nav_bot_chat fragment -->
     <fragment
         android:id="@+id/nav_bot_chat"
         android:name="com.example.barterhub.ui.BotChatFragment"
         android:label="Bot Chat"
         tools:layout="@layout/fragment_bot_chat">
 
-        <!-- ADD THESE ACTIONS -->
         <action
             android:id="@+id/action_bot_to_add_item"
             app:destination="@id/addPhotosFragment" />
@@ -555,44 +556,98 @@
     </fragment>
 
     <fragment
+        android:id="@+id/allTrendingItemsFragment"
+        android:name="com.example.barterhub.ui.AllTrendingItemsFragment"
+        android:label="Trending Items"
+        tools:layout="@layout/fragment_all_trending_items">
+
+        <action
+            android:id="@+id/action_allTrendingItemsFragment_to_itemDetailFragment"
+            app:destination="@id/nav_item_detail" />
+    </fragment>
+
+    <!-- Add action from HomeFragment -->
+    <action
+        android:id="@+id/action_homeFragment_to_allTrendingItemsFragment"
+        app:destination="@id/allTrendingItemsFragment" />
+
+    <fragment
         android:id="@+id/findFriendsFragment"
         android:name="com.example.barterhub.ui.FindFriendsFragment"
         android:label="Find Friends"
         tools:layout="@layout/fragment_find_friends">
 
-        <!-- ADD THIS ACTION -->
         <action
             android:id="@+id/action_findFriendsFragment_to_chatFragment"
             app:destination="@id/nav_chat" />
-
     </fragment>
 
-    <!-- Upload ID -->
+    <fragment
+        android:id="@+id/fullScreenMapFragment"
+        android:name="com.example.barterhub.ui.FullScreenMapFragment"
+        android:label="Map"
+        tools:layout="@layout/fragment_fullscreen_map">
+
+        <argument
+            android:name="lat"
+            app:argType="float" />
+
+        <argument
+            android:name="lng"
+            app:argType="float" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fullscreenImageViewerFragment"
+        android:name="com.example.barterhub.ui.FullscreenImageViewerFragment"
+        android:label="Fullscreen"
+        tools:layout="@layout/fragment_fullscreen_images">
+
+        <argument
+            android:name="urls"
+            app:argType="string[]" />
+
+        <argument
+            android:name="index"
+            app:argType="integer"
+            android:defaultValue="0" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/receiptFragment"
+        android:name="com.example.barterhub.ui.ReceiptFragment"
+        android:label="Receipt"
+        tools:layout="@layout/fragment_receipt">
+
+        <argument
+            android:name="receiptId"
+            app:argType="string"
+            android:defaultValue="" />
+    </fragment>
+
     <fragment
         android:id="@+id/uploadIdFragment"
         android:name="com.example.barterhub.ui.UploadIdFragment"
         android:label="Verify ID"
         tools:layout="@layout/fragment_upload_id" />
-    <navigation android:id="@+id/navigation2"
-        app:startDestination="@id/navigation">
-        <navigation android:id="@+id/navigation3"
-            app:startDestination="@id/navigation">
-            <navigation
-                android:id="@+id/navigation"
-                app:startDestination="@id/nav_login">
-                <fragment
-                    android:id="@+id/nav_login"
-                    android:name="com.example.barterhub.ui.LoginFragment"
-                    android:label="Login"
-                    tools:layout="@layout/fragment_login">
-                    <action
-                        android:id="@+id/action_loginFragment_to_homeFragment"
-                        app:destination="@id/nav_home"
-                        app:popUpTo="@id/nav_login"
-                        app:popUpToInclusive="true" />
-                </fragment>
-            </navigation>
-        </navigation>
+
+    <navigation
+        android:id="@+id/navigation2"
+        app:startDestination="@id/nav_login">
+
+        <fragment
+            android:id="@+id/nav_login"
+            android:name="com.example.barterhub.ui.LoginFragment"
+            android:label="Login"
+            tools:layout="@layout/fragment_login">
+
+            <action
+                android:id="@+id/action_loginFragment_to_homeFragment"
+                app:destination="@id/nav_home"
+                app:popUpTo="@id/nav_login"
+                app:popUpToInclusive="true" />
+        </fragment>
+
     </navigation>
 
 </navigation>

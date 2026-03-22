@@ -3,12 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:background="?attr/colorSurface"
+    android:background="@drawable/backgroundlogin"
     android:layout_height="match_parent"
     tools:context=".SignupFragment">
 
     <ScrollView
-        android:background="?attr/colorSurface"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
@@ -32,7 +31,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:text="Create Account"
-                    android:textColor="?attr/colorOnSurface"
+                    android:textColor="@color/com_facebook_messenger_blue"
                     android:textSize="24sp"
                     android:textStyle="bold"
                     tools:ignore="HardcodedText" />
@@ -42,7 +41,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:text="Join our community today"
-                    android:textColor="?attr/colorOnSurface"
+                    android:textColor="@color/com_facebook_messenger_blue"
                     android:textSize="14sp"
                     tools:ignore="HardcodedText" />
             </LinearLayout>
@@ -52,14 +51,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="8dp"
+                app:cardBackgroundColor="@android:color/transparent"
+                app:cardElevation="1dp"
                 android:layout_marginBottom="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:background="?attr/colorSurface"
+                    android:background="@drawable/text_gradient_bg"
                     android:padding="24dp">
 
                     <!-- Social Login Options -->
@@ -68,79 +68,10 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
                         android:gravity="center"
-                        android:text="Sign up with"
+                        android:text="Sign up"
                         android:textColor="?attr/colorOnSurface"
-                        android:textSize="14sp"
+                        android:textSize="@dimen/text_size_body"
                         tools:ignore="HardcodedText" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center"
-                        android:layout_marginBottom="24dp">
-
-                        <com.google.android.material.button.MaterialButton
-                            style="@style/Widget.Material3.Button.OutlinedButton"
-                            android:layout_width="0dp"
-                            android:layout_height="48dp"
-                            android:layout_weight="1"
-                            android:layout_marginEnd="8dp"
-                            app:iconTint="@null"
-                            android:text="Google"
-                            android:textColor="?attr/colorOnSurface"
-                            app:icon="@drawable/google"
-                            app:iconGravity="textStart"
-                            app:strokeColor="?attr/colorOnSurface"
-                            app:strokeWidth="1dp"
-                            tools:ignore="HardcodedText,VisualLintButtonSize" />
-
-                        <com.google.android.material.button.MaterialButton
-                            style="@style/Widget.Material3.Button.OutlinedButton"
-                            android:layout_width="0dp"
-                            android:layout_height="48dp"
-                            android:layout_weight="1"
-                            android:layout_marginStart="8dp"
-                            android:text="Facebook"
-                            android:textColor="?attr/colorOnSurface"
-                            app:iconTint="@null"
-                            app:icon="@drawable/facebook"
-                            app:iconGravity="textStart"
-                            app:strokeColor="?attr/colorOnSurface"
-                            app:strokeWidth="1dp"
-                            tools:ignore="HardcodedText" />
-                    </LinearLayout>
-
-                    <!-- Divider -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center"
-                        android:layout_marginBottom="24dp">
-
-                        <View
-                            android:layout_width="0dp"
-                            android:layout_height="1dp"
-                            android:layout_weight="1"
-                            android:background="?attr/colorOnSurface" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="12dp"
-                            android:layout_marginEnd="12dp"
-                            android:text="OR"
-                            android:textColor="?attr/colorOnSurface"
-                            android:textSize="12sp"
-                            tools:ignore="HardcodedText" />
-
-                        <View
-                            android:layout_width="0dp"
-                            android:layout_height="1dp"
-                            android:layout_weight="1"
-                            android:background="?attr/colorOnSurface" />
-                    </LinearLayout>
 
                     <!-- Form Fields -->
                     <com.google.android.material.textfield.TextInputLayout
@@ -161,7 +92,7 @@
                             android:hint="Full Name"
                             android:inputType="textPersonName"
                             android:paddingStart="40dp"
-                            android:textColor="@color/textPrimary"
+                            android:textColor="?attr/colorOnSurface"
                             tools:ignore="HardcodedText,RtlSymmetry,TextContrastCheck" />
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -183,7 +114,7 @@
                             android:hint="Email"
                             android:inputType="textEmailAddress"
                             android:paddingStart="@dimen/_40dp"
-                            android:textColor="@color/textPrimary"
+                            android:textColor="?attr/colorOnSurface"
                             tools:ignore="HardcodedText,RtlSymmetry,TextContrastCheck" />
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -207,7 +138,7 @@
                             android:hint="Password"
                             android:inputType="textPassword"
                             android:paddingStart="@dimen/_40dp"
-                            android:textColor="@color/textPrimary"
+                            android:textColor="?attr/colorOnSurface"
                             tools:ignore="HardcodedText,RtlSymmetry,TextContrastCheck" />
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -231,7 +162,7 @@
                             android:hint="Confirm Password"
                             android:inputType="textPassword"
                             android:paddingStart="@dimen/_40dp"
-                            android:textColor="@color/textPrimary"
+                            android:textColor="?attr/colorOnSurface"
                             tools:ignore="HardcodedText,RtlSymmetry,TextContrastCheck" />
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -270,7 +201,7 @@
                         android:textAllCaps="false"
                         android:textColor="@color/white"
                         android:textSize="16sp"
-                        app:backgroundTint="@color/colorAccent"
+                        app:backgroundTint="@color/com_facebook_messenger_blue"
                         app:cornerRadius="12dp"
                         app:icon="@drawable/ic_arrow_forward"
                         app:iconGravity="end"
@@ -282,16 +213,16 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp">
+                app:cardCornerRadius="18dp"
+                app:cardElevation="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:background="?attr/colorSurface"
+                    android:background="@drawable/text_gradient_bg"
                     android:gravity="center"
-                    android:padding="16dp">
+                    android:padding="12dp">
 
                     <TextView
                         android:layout_width="wrap_content"

@@ -5,59 +5,57 @@ import com.google.firebase.database.IgnoreExtraProperties
 @IgnoreExtraProperties
 data class User(
     // ============ FIREBASE FIELDS (EXACT MATCH) ============
-    var userId: String = "",  // We'll set this manually
-
-    // ✅ EXACTLY AS IN DATABASE:
-    var username: String? = null,         // ALWAYS exists: "username": "Rain Mission"
-    var fullName: String? = null,         // Sometimes exists: "fullName": "Rian Llanos Mission"
-    var email: String? = null,            // Sometimes exists: "email": "tigcutdog@gmail.com"
+    var userId: String = "",
+    var username: String? = null,
+    var fullName: String? = null,
+    var email: String? = null,
 
     // Profile Images - FROM YOUR DATABASE:
-    var profileImageUrl: String? = null,  // ✅ THIS HAS THE ACTUAL URL: "https://res.cloudinary.com/..."
+    var profileImageUrl: String? = null,
 
     // Contact Info
-    var address: String? = null,          // ✅ "address": "Talisay, Batangas"
-    var phoneNumber: String? = null,      // ✅ "phoneNumber": "9513645480"
+    var address: String? = null,
+    var phoneNumber: String? = null,
 
     // Bio
-    var bio: String? = null,              // ✅ "bio": "Hello"
+    var bio: String? = null,
 
     // Trading Stats
-    var rating: Double? = null,           // ✅ "rating": 5 (Int in Firebase, Double in Kotlin)
-    var recentRating: Double? = null,     // Some users have this
-    var reviewsCount: Int = 0,            // Some users have this
-    var tradesCompleted: Int = 0,         // Some users have this
-    var successRate: Int = 0,             // Some users have this
+    var rating: Double? = null,
+    var recentRating: Double? = null,
+    var reviewsCount: Int = 0,
+    var tradesCompleted: Int = 0,
+    var successRate: Int = 0,
 
     // Coins & Items
-    var coins: Int = 0,                   // ✅ "coins": 546
-    var itemsListed: Int = 0,             // ✅ "itemsListed": 0
+    var coins: Int = 0,
+    var itemsListed: Int = 0,
 
     // Verification
-    var isIDVerified: String? = null,     // ✅ "isIDVerified": "verified"
-    var isPremium: Boolean = false,       // ✅ "isPremium": true
-    var verifiedAt: Long = 0L,            // Some users have this
-    var verifiedBy: String? = null,       // Some users have this
+    var isIDVerified: String? = null,
+    var isPremium: Boolean = false,
+    var verifiedAt: Long = 0L,
+    var verifiedBy: String? = null,
 
     // Badges
-    var badges: Map<String, Boolean>? = null, // ✅ "badges": {community: false, ...}
+    var badges: Map<String, Boolean>? = null,
 
     // Dates & Timestamps
-    var memberSince: String? = null,      // Some users have: "memberSince": "2025-12"
-    var updatedAt: Long = 0L,             // Some users have: "updatedAt": 1760515959433
+    var memberSince: String? = null,
+    var updatedAt: Long = 0L,
     var createdAt: Long = 0L,
     var lastSeen: Long = 0L,
 
     // Premium Info
-    var premiumUntil: String? = null,     // Some users have: "premiumUntil": "Jan 02, 2027"
-    var premiumExpiry: Long = 0L,         // Some users have: "premiumExpiry": 1771134797084
+    var premiumUntil: String? = null,
+    var premiumExpiry: Long = 0L,
 
     // ID Verification URLs
-    var idFrontUrl: String? = null,       // ✅ "idFrontUrl": "https://..."
-    var idBackUrl: String? = null,        // ✅ "idBackUrl": "https://..."
+    var idFrontUrl: String? = null,
+    var idBackUrl: String? = null,
 
     // Other Firebase fields
-    var fcmToken: String? = null,         // ✅ "fcmToken": "dXI3hIBKQ3WteHJkGKXL_r..."
+    var fcmToken: String? = null,
     var lastWeeklyReset: Long = 0L,
     var weeklyTrades: Int = 0,
     var weeklyReviews: Int = 0,
@@ -69,7 +67,6 @@ data class User(
     var isOnline: Boolean = false,
     var lastActive: Long = 0L,
 
-    // ============ LOCAL/UI FIELDS ============
     var friendStatus: FriendStatus = FriendStatus.NOT_FRIEND
 
 ) {
@@ -90,8 +87,6 @@ data class User(
     fun getLocation(): String {
         return when {
             !address.isNullOrEmpty() -> address!!
-            // Add other location fields if you have them
-            // !location.isNullOrEmpty() -> location!!
             else -> "No location specified"
         }
     }
@@ -117,38 +112,6 @@ data class User(
             recentRating != null && recentRating!! > 0 -> "⭐ ${String.format("%.1f", recentRating!!)}"
             else -> "No ratings"
         }
-    }
-
-    fun isVerified(): Boolean {
-        return isIDVerified == "verified"
-    }
-
-    fun getTradeStats(): String {
-        return if (tradesCompleted > 0) "$tradesCompleted trades" else "No trades yet"
-    }
-
-    fun getCoinCount(): String {
-        return if (coins > 0) "$coins coins" else ""
-    }
-
-    fun formatMemberSince(): String {
-        return if (!memberSince.isNullOrEmpty()) "Member since $memberSince" else ""
-    }
-
-    // For debugging
-    fun printDebugInfo() {
-        println("=== USER DEBUG: $userId ===")
-        println("Username: $username")
-        println("Full Name: $fullName")
-        println("Email: $email")
-        println("Address: $address")
-        println("Phone: $phoneNumber")
-        println("Rating: $rating")
-        println("Profile Image: ${getProfileImage()}")
-        println("Bio: ${bio?.take(50)}")
-        println("Is Verified: ${isVerified()}")
-        println("Is Premium: $isPremium")
-        println("=========================")
     }
 
     constructor() : this(

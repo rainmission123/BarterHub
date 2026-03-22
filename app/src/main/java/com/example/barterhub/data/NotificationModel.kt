@@ -11,5 +11,12 @@ data class NotificationModel(
     val timestamp: Long = System.currentTimeMillis(),
     val read: Boolean = false,
     var message: String? = null,
-    var status: String? = null
+    var status: String? = null,
+    val chatId: String? = null,
+    val partnerId: String? = null,
+    val partnerName: String? = null,
+    val requestId: String? = null,
+    val receiptId: String? = null,
+    val tradeRequestId: String? = null
+
 )

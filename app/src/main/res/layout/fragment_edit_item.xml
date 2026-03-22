@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:background="@drawable/backgroundlogin"
     android:layout_height="match_parent"
     android:fillViewport="true">
 
@@ -25,6 +26,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="16dp"
+                android:background="@drawable/text_gradient_bg"
                 android:orientation="vertical">
 
                 <!-- Title -->
@@ -164,7 +166,9 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="8dp"
-                android:text="Update Item"/>
+                android:text="Update Item"
+                android:textColor="@color/white"
+                app:backgroundTint="@color/com_facebook_messenger_blue"/>
 
         </LinearLayout>
 

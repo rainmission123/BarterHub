@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Active / Checked -->
-    <item android:color="?attr/colorPrimary" android:state_checked="true" />
+    <item android:color="@color/com_facebook_messenger_blue" android:state_checked="true" />
 
     <!-- Focused (kapag naka-highlight pero di pa clicked) -->
-    <item android:color="?attr/colorPrimaryVariant" android:state_focused="true" />
+    <item android:color="@color/com_facebook_messenger_blue" android:state_focused="true" />
 
     <!-- Default / Unchecked -->
     <item android:color="@color/black" />

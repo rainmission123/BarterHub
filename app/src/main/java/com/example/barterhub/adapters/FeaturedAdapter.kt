@@ -128,8 +128,8 @@ class FeaturedAdapter(
 
             Glide.with(holder.itemView.context)
                 .load(firstImage)
-                .placeholder(R.drawable.login_background)
-                .error(R.drawable.login_background)
+                .placeholder(R.drawable.backgroundlogin)
+                .error(R.drawable.backgroundlogin)
                 .centerCrop()  // ✅ ADDED: Magfit ng maayos sa ImageView
                 .into(holder.image)
 
@@ -145,9 +145,6 @@ class FeaturedAdapter(
             } else {
                 holder.ownerImage.setImageResource(R.drawable.ic_profile)
             }
-
-            // 🔹 Apply theme colors
-            applyThemeColors(holder)
 
             // 🔹 Three dots click
             holder.btnThreeDots.setOnClickListener {
@@ -175,7 +172,7 @@ class FeaturedAdapter(
             holder.description.text = "Please try again"
             holder.price.text = "N/A"
             holder.ownerName.text = "Posted by: Unknown"
-            holder.image.setImageResource(R.drawable.login_background)
+            holder.image.setImageResource(R.drawable.backgroundlogin)
             holder.ownerImage.setImageResource(R.drawable.ic_profile)
         }
     }

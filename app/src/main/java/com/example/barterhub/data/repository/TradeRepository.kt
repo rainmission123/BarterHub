@@ -26,11 +26,12 @@ class TradeRepository {
 
                         if (!isVerified) continue
 
-                        // ✅ GET PREMIUM STATUS
                         val isPremium = userSnapshot.child("isPremium")
                             .getValue(Boolean::class.java) ?: false
 
-                        // ✅ Get badges from Firebase
+                        val premiumExpiry = userSnapshot.child("premiumExpiry")
+                            .getValue(Long::class.java) ?: 0L
+
                         val badgesSnapshot = userSnapshot.child("badges")
                         val badges = mutableMapOf<String, Boolean>()
 
@@ -50,13 +51,18 @@ class TradeRepository {
                             reviewsCount = userSnapshot.child("reviewsCount").getValue(Long::class.java)?.toInt() ?: 0,
                             tradesCompleted = userSnapshot.child("tradesCompleted").getValue(Long::class.java)?.toInt() ?: 0,
                             isVerified = true,
-                            isPremium = isPremium, // ✅ ADD isPremium FIELD
+                            isPremium = isPremium,
+                            premiumExpiry = premiumExpiry,
                             address = userSnapshot.child("address").getValue(String::class.java),
                             lastWeeklyReset = userSnapshot.child("lastWeeklyReset").getValue(Long::class.java),
                             badges = badges
                         )
 
-                        Log.d("TradeRepository", "Trader ${trader.username} - Premium: $isPremium")
+                        Log.d(
+                            "TradeRepository",
+                            "Trader=${trader.username}, isPremium=${trader.isPremium}, premiumExpiry=${trader.premiumExpiry}"
+                        )
+
                         traders.add(trader)
 
                     } catch (e: Exception) {

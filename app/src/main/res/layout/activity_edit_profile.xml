@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scrollRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="12dp"
-    android:background="?attr/colorSurface"
+    android:background="@drawable/backgroundlogin"
     tools:context=".ui.EditProfileActivity">
 
     <LinearLayout
@@ -20,35 +22,44 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="vertical"
-            android:paddingVertical="24dp">
+            android:paddingVertical="24dp"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
-            <RelativeLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp">
+            <FrameLayout
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_marginBottom="12dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/ivProfileImage"
-                    android:layout_width="120dp"
-                    android:layout_height="120dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:src="@drawable/ic_profile_placeholder"
+                    android:scaleType="centerCrop"
+                    android:elevation="4dp"
                     app:civ_border_width="1dp"
-                    app:civ_border_color="@color/gray_300"
-                    android:elevation="4dp" />
+                    app:civ_border_color="@color/gray_300" />
 
+                <!-- IMPORTANT: use fabCustomSize para sure ang size -->
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/fabChangePhoto"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_alignEnd="@id/ivProfileImage"
-                    android:layout_alignBottom="@id/ivProfileImage"
-                    android:contentDescription="@string/change_photo"
-                    android:src="@drawable/ic_camera"
-                    app:backgroundTint="@color/gray_500"
-                    app:fabSize="mini"
-                    app:tint="@color/white" />
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginEnd="-6dp"
+                    android:layout_marginBottom="-6dp"
+                    android:contentDescription="@string/todo"
+                    app:fabCustomSize="40dp"
+                    app:maxImageSize="20dp"
+                    app:srcCompat="@drawable/profilecamera"
+                    app:backgroundTint="@color/com_facebook_messenger_blue"
+                    app:tint="@android:color/white"
+                    android:elevation="6dp" />
 
-            </RelativeLayout>
+            </FrameLayout>
 
             <TextView
                 android:id="@+id/changePhotoText"
@@ -57,7 +68,8 @@
                 android:text="@string/change_photo"
                 android:textColor="@color/gray_500"
                 android:textSize="14sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:layout_marginTop="4dp"/>
         </LinearLayout>
 
         <!-- Modern Profile Info Section -->
@@ -66,7 +78,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_marginHorizontal="20dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="2dp"
             android:layout_marginBottom="32dp"
             android:background="@drawable/shape_card_modern"
             android:clipToPadding="false"
@@ -289,10 +301,7 @@
                     app:boxCornerRadiusBottomStart="12dp"
                     app:boxCornerRadiusBottomEnd="12dp"
                     app:startIconDrawable="@drawable/ic_location"
-                    app:startIconTint="@color/primary_500"
-                    app:endIconMode="clear_text"
-                    app:endIconDrawable="@drawable/ic_map_pin"
-                    app:endIconTint="@color/primary_500"
+                    app:startIconTint="@color/red"
                     app:placeholderText="@string/location"
                     app:hintTextColor="@color/on_surface_variant">
 
@@ -300,7 +309,7 @@
                         android:id="@+id/editLocation"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:minHeight="56dp"
+                        android:minHeight="5dp"
                         android:inputType="textCapWords"
                         android:paddingStart="12dp"
                         android:paddingEnd="12dp"
@@ -317,6 +326,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_margin="2dp"
             android:orientation="vertical"
             android:paddingHorizontal="16dp"
             android:paddingVertical="8dp">
@@ -329,23 +339,12 @@
                 android:textAllCaps="false"
                 android:textSize="16sp"
                 android:textColor="@color/white"
-                app:backgroundTint="@color/colorAccent"
+                app:backgroundTint="@color/com_facebook_messenger_blue"
                 app:cornerRadius="12dp"
                 app:icon="@drawable/ic_check"
                 app:iconGravity="end"
                 app:iconPadding="4dp"
                 app:iconTint="@color/white" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnCancel"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="12dp"
-                android:text="@string/cancel"
-                android:textAllCaps="false"
-                android:textColor="@color/colorAccent"
-                app:backgroundTint="@color/gray_200"
-                app:cornerRadius="12dp" />
         </LinearLayout>
 
     </LinearLayout>

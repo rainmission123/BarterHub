@@ -18,6 +18,8 @@ import com.example.barterhub.data.models.TradeRequest
 import com.example.barterhub.databinding.ItemTradeRequestBinding
 import java.text.SimpleDateFormat
 import java.util.*
+import com.google.firebase.database.FirebaseDatabase
+
 
 class TradeRequestsAdapter(
     private var requests: List<TradeRequest>,
@@ -25,7 +27,8 @@ class TradeRequestsAdapter(
     private val onStatusUpdate: (TradeRequest, String) -> Unit
 ) : RecyclerView.Adapter<TradeRequestsAdapter.TradeRequestViewHolder>() {
 
-    // ✅ ADD: AdditionalPhotosAdapter class inside the main adapter
+    private val db = FirebaseDatabase.getInstance().reference
+
     private inner class AdditionalPhotosAdapter(
         private val photoUrls: List<String>,
         private val onPhotoClick: (String) -> Unit
@@ -62,16 +65,6 @@ class TradeRequestsAdapter(
     inner class TradeRequestViewHolder(private val binding: ItemTradeRequestBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        private fun debugUserInfo(request: TradeRequest) {
-            Log.d("UserDebug", "=== USER DEBUG INFO ===")
-            Log.d("UserDebug", "From User ID: ${request.fromUser.userId}")
-            Log.d("UserDebug", "From Username: '${request.fromUser.username}'")
-            Log.d("UserDebug", "From Location: '${request.fromUser.location}'")
-            Log.d("UserDebug", "From Profile Image: '${request.fromUser.profileImage}'")
-            Log.d("UserDebug", "Target Item: '${request.targetItem.title}'")
-            Log.d("UserDebug", "Offered Item: '${request.offeredItem.title}'")
-        }
-
         private fun setupAdditionalPhotosRecyclerView(photoUrls: List<String>) {
             val photoAdapter = AdditionalPhotosAdapter(photoUrls) { photoUrl ->
                 // Handle photo click - you can show full screen image here
@@ -84,7 +77,6 @@ class TradeRequestsAdapter(
             }
         }
 
-        // ✅ ADD: Show multiple photos indicator
         private fun showMultiplePhotosIndicator(imageView: ImageView, photoCount: Int) {
             // For now, let's just log it
             Log.d("TradeAdapter", "Multiple photos available: $photoCount")
@@ -145,13 +137,10 @@ class TradeRequestsAdapter(
         @SuppressLint("SetTextI18n")
         fun bind(request: TradeRequest) {
             val isReceived = request.toUser.userId == currentUserId
-
-            // ✅ FIXED: Clean debug logs - REMOVED ADDRESS REFERENCES
             Log.d("LocationDebug", "📍 BEFORE Setting Location: '${binding.tvUserLocation.text}'")
             Log.d("LocationDebug", "📍 START OF BIND FUNCTION")
             Log.d("LocationDebug", "📍 User: ${request.fromUser.username}")
             Log.d("LocationDebug", "📍 Location data: '${request.fromUser.location}'")
-            // ✅ REMOVED: Address debug line - WALANG ADDRESS FIELD!
 
             // Debug each additional photo
             request.additionalPhotos.forEachIndexed { index, url ->
@@ -162,9 +151,7 @@ class TradeRequestsAdapter(
 
             Log.d("LocationDebug", "📍 Before location logic")
             Log.d("LocationDebug", "📍 Location data: '${request.fromUser.location}'")
-            // ✅ REMOVED: Address data debug - WALANG ADDRESS FIELD!
 
-            // ✅ FIXED: SIMPLIFIED LOCATION LOGIC - REMOVED ADDRESS FIELD CHECK
             val displayLocation = if (!request.fromUser.location.isNullOrEmpty()) {
                 request.fromUser.location
             } else {
@@ -173,7 +160,6 @@ class TradeRequestsAdapter(
 
             binding.tvUserLocation.text = displayLocation
 
-            // ✅ FIXED: Load profile picture with proper error handling
             if (request.fromUser.profileImage.isNotEmpty() && request.fromUser.profileImage.startsWith("http")) {
                 Glide.with(binding.root.context)
                     .load(request.fromUser.profileImage)
@@ -222,7 +208,6 @@ class TradeRequestsAdapter(
                 "Target: ${request.targetItem.title}"
             )
 
-            // ✅ FIXED: Load offered item image - PRIORITIZE ADDITIONAL PHOTOS
             val offeredItemImageUrl = if (request.additionalPhotos.isNotEmpty()) {
                 // Use first additional photo as the main offered item image
                 request.additionalPhotos.first()
@@ -246,22 +231,16 @@ class TradeRequestsAdapter(
                 binding.tvMessageLabel.visibility = View.VISIBLE
                 binding.tvMessage.visibility = View.VISIBLE
                 binding.tvMessage.text = request.message
-                // ✅ FIXED: Update the message label to show actual username
                 binding.tvMessageLabel.text = "Message from ${request.fromUser.username}"
             } else {
                 binding.tvMessageLabel.visibility = View.GONE
                 binding.tvMessage.visibility = View.GONE
             }
 
-            // ✅ UPDATED: Handle additional photos - SETUP RECYCLERVIEW
             if (request.additionalPhotos.isNotEmpty() && request.additionalPhotos.any { it.isNotEmpty() }) {
                 binding.tvPhotosLabel.visibility = View.VISIBLE
                 binding.rvOfferPhotos.visibility = View.VISIBLE
-
-                // ✅ FIXED: Actually setup the RecyclerView
                 setupAdditionalPhotosRecyclerView(request.additionalPhotos)
-
-                // ✅ Show indicator for multiple photos
                 showMultiplePhotosIndicator(binding.ivOfferedItem, request.additionalPhotos.size)
 
                 Log.d("TradeAdapter", "Additional photos available: ${request.additionalPhotos.size}")
@@ -271,19 +250,16 @@ class TradeRequestsAdapter(
                 hideMultiplePhotosIndicator(binding.ivOfferedItem)
             }
 
-            // Show/hide action buttons based on status and user
             if (isReceived && request.status == "Pending") {
                 binding.btnAccept.visibility = View.VISIBLE
                 binding.btnReject.visibility = View.VISIBLE
-                binding.btnRemove.visibility = View.VISIBLE
             } else {
                 binding.btnAccept.visibility = View.GONE
                 binding.btnReject.visibility = View.GONE
-                // Hide remove button for non-pending or sent requests
-                binding.btnRemove.visibility = if (request.status == "Pending") View.VISIBLE else View.GONE
             }
 
-            // 🔽 FIXED: CORRECT BUTTON CLICK LISTENERS
+            binding.btnRemove.visibility = View.VISIBLE
+
             binding.btnAccept.setOnClickListener {
                 // Use "accept" (not "Accepted") to trigger acceptTradeRequest function
                 onStatusUpdate(request, "accept")
@@ -294,11 +270,28 @@ class TradeRequestsAdapter(
             }
 
             binding.btnRemove.setOnClickListener {
-                val action = if (isReceived) "Cancelled" else "Withdrawn"
-                onStatusUpdate(request, action)
+                val uid = currentUserId
+                if (uid.isEmpty()) return@setOnClickListener
+
+                val requestId = request.requestId
+                if (requestId.isEmpty()) return@setOnClickListener
+
+                db.child("trade_requests")
+                    .child(requestId)
+                    .child("hiddenBy")
+                    .child(uid)
+                    .setValue(true)
+                    .addOnSuccessListener {
+                        val pos = bindingAdapterPosition
+                        if (pos != RecyclerView.NO_POSITION) {
+                            val mutable = requests.toMutableList()
+                            mutable.removeAt(pos)
+                            updateRequests(mutable)
+                        }
+                    }
             }
 
-            // ✅ FIXED: Add debugging logs
+
             Log.d("TradeAdapter", "Binding request: ${request.fromUser.username} -> ${request.targetItem.title}")
             Log.d("LocationDebug", "📍 FINAL Location Set: '$displayLocation'")
         }

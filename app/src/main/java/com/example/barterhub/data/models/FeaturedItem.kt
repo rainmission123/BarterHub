@@ -1,7 +1,5 @@
 package com.example.barterhub.data.models
 
-import com.google.firebase.database.IgnoreExtraProperties
-
 
 data class FeaturedItem(
     var itemId: String = "",

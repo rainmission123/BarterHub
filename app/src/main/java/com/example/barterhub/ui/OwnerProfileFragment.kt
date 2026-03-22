@@ -8,9 +8,20 @@ import com.bumptech.glide.Glide
 import com.example.barterhub.R
 import com.google.firebase.database.*
 import de.hdodenhof.circleimageview.CircleImageView
+import com.example.barterhub.ui.profile.ProfileBadgeManager
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.navigation.fragment.findNavController
+import com.example.barterhub.adapters.OwnerItemUi
+import com.example.barterhub.adapters.OwnerProfileItemsAdapter
+
+
 
 class OwnerProfileFragment : Fragment(R.layout.fragment_owner_profile) {
-
+    private lateinit var rvOwnerItems: RecyclerView
+    private lateinit var tvItemsCount: TextView
+    private lateinit var tvNoItems: TextView
+    private lateinit var itemsAdapter: OwnerProfileItemsAdapter
     private lateinit var profileImage: CircleImageView
     private lateinit var userNameText: TextView
     private lateinit var ratingBar: RatingBar
@@ -49,6 +60,20 @@ class OwnerProfileFragment : Fragment(R.layout.fragment_owner_profile) {
         badgesContainer = view.findViewById(R.id.badgesContainer)
         progressBar = view.findViewById(R.id.progressBar)
         mainContent = view.findViewById(R.id.mainContent)
+        rvOwnerItems = view.findViewById(R.id.rvOwnerItems)
+        tvItemsCount = view.findViewById(R.id.tvItemsCount)
+        tvNoItems = view.findViewById(R.id.tvNoItems)
+
+        itemsAdapter = OwnerProfileItemsAdapter(mutableListOf()) { clicked ->
+            val bundle = Bundle().apply {
+                putString("itemId", clicked.itemId)
+                putString("ownerId", clicked.ownerId)
+            }
+            findNavController().navigate(R.id.nav_item_detail, bundle)
+        }
+
+        rvOwnerItems.layoutManager = GridLayoutManager(requireContext(), 2)
+        rvOwnerItems.adapter = itemsAdapter
 
         ownerId = arguments?.getString("ownerId") ?: ""
 
@@ -57,6 +82,10 @@ class OwnerProfileFragment : Fragment(R.layout.fragment_owner_profile) {
             return
         }
 
+        val badgeManager = ProfileBadgeManager(this)
+        badgeManager.loadUserBadgesForUserId(ownerId, badgesContainer)
+
+
         database = FirebaseDatabase
             .getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
             .reference
@@ -64,13 +93,71 @@ class OwnerProfileFragment : Fragment(R.layout.fragment_owner_profile) {
         showLoading(true)
         loadOwnerInfo()
         loadOwnerStats()
-        loadOwnerBadges()
+        loadOwnerItems()
     }
 
     private fun showLoading(show: Boolean) {
         progressBar.visibility = if (show) View.VISIBLE else View.GONE
         mainContent.visibility = if (show) View.GONE else View.VISIBLE
     }
+
+    private fun loadOwnerItems() {
+        database.child("items")
+            .orderByChild("ownerId")
+            .equalTo(ownerId)
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (!isAdded) return
+
+                    val list = mutableListOf<OwnerItemUi>()
+
+                    for (itemSnap in snapshot.children) {
+                        val itemId = itemSnap.key ?: continue
+                        val title = itemSnap.child("title").getValue(String::class.java) ?: "Untitled"
+
+                        val priceAny = itemSnap.child("price").value
+                        val priceText = when (priceAny) {
+                            is Long -> if (priceAny == 0L) "Barter Only" else "₱$priceAny"
+                            is Double -> if (priceAny == 0.0) "Barter Only" else "₱${priceAny.toInt()}"
+                            is String -> if (priceAny == "0" || priceAny == "0.0") "Barter Only" else "₱$priceAny"
+                            else -> "Barter Only"
+                        }
+
+                        // imageUrl fallback (imageUrls or imageUrl)
+                        val imageUrlsCsv = itemSnap.child("imageUrls").getValue(String::class.java)
+                        val firstFromCsv = imageUrlsCsv?.split(",")?.firstOrNull()?.trim()
+
+                        val singleImageUrl = itemSnap.child("imageUrl").getValue(String::class.java)
+                        val imageUrl = when {
+                            !firstFromCsv.isNullOrBlank() -> firstFromCsv
+                            !singleImageUrl.isNullOrBlank() -> singleImageUrl
+                            else -> null
+                        }
+
+                        list.add(
+                            OwnerItemUi(
+                                itemId = itemId,
+                                ownerId = ownerId,
+                                title = title,
+                                priceText = priceText,
+                                imageUrl = imageUrl
+                            )
+                        )
+                    }
+
+                    tvItemsCount.text = list.size.toString()
+                    tvNoItems.visibility = if (list.isEmpty()) View.VISIBLE else View.GONE
+                    itemsAdapter.setItems(list)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    if (!isAdded) return
+                    tvItemsCount.text = "0"
+                    tvNoItems.visibility = View.VISIBLE
+                }
+            })
+    }
+
 
     private fun loadOwnerInfo() {
         database.child("users").child(ownerId)
@@ -82,6 +169,10 @@ class OwnerProfileFragment : Fragment(R.layout.fragment_owner_profile) {
                     val profileUrl = snapshot.child("profileImageUrl").value?.toString() ?: ""
                     val memberSince = snapshot.child("memberSince").value?.toString() ?: "Unknown"
                     val bio = snapshot.child("bio").value?.toString() ?: "No bio yet"
+
+                    val raw = snapshot.child("memberSince").value
+                    android.util.Log.d("OwnerProfile", "memberSince raw = $raw (${raw?.javaClass})")
+                    memberSinceText.text = formatMemberSince(raw)
 
                     // Set UI values
                     userNameText.text = username
@@ -115,6 +206,52 @@ class OwnerProfileFragment : Fragment(R.layout.fragment_owner_profile) {
             })
     }
 
+    private fun formatMemberSince(value: Any?): String {
+        if (value == null) return "Member since Unknown"
+
+        return when (value) {
+            is Long -> {
+                // timestamp millis -> "Member since Feb 2026"
+                val cal = java.util.Calendar.getInstance().apply { timeInMillis = value }
+                val month = java.text.SimpleDateFormat("MMM", java.util.Locale.getDefault()).format(cal.time)
+                val year = cal.get(java.util.Calendar.YEAR)
+                "Member since $month $year"
+            }
+
+            is Double -> {
+                // sometimes firebase stores number as Double
+                formatMemberSince(value.toLong())
+            }
+
+            is String -> {
+                val s = value.trim()
+                if (s.isBlank()) return "Member since Unknown"
+
+                // If already looks like "Jan 2023" or "February 2023"
+                if (s.contains(" ")) return "Member since $s"
+
+                // If looks like "2026-02"
+                if (Regex("""\d{4}-\d{2}""").matches(s)) {
+                    val parts = s.split("-")
+                    val y = parts[0].toIntOrNull()
+                    val m = parts[1].toIntOrNull()
+                    if (y != null && m != null && m in 1..12) {
+                        val cal = java.util.Calendar.getInstance().apply {
+                            set(java.util.Calendar.YEAR, y)
+                            set(java.util.Calendar.MONTH, m - 1)
+                        }
+                        val month = java.text.SimpleDateFormat("MMM", java.util.Locale.getDefault()).format(cal.time)
+                        return "Member since $month $y"
+                    }
+                }
+
+                // fallback
+                "Member since $s"
+            }
+
+            else -> "Member since Unknown"
+        }
+    }
 
     private fun loadOwnerStats() {
         database.child("users").child(ownerId)

@@ -62,4 +62,23 @@
         <item name="android:background">@color/white</item>
     </style>
 
+    <style name="BottomNavIndicator" parent="">
+        <item name="android:color">@color/bottom_nav_indicator</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.BottomNavIndicator</item>
+    </style>
+
+    <style name="ShapeAppearance.BottomNavIndicator" parent="ShapeAppearance.Material3.Corner.Full">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+
+    <style name="BottomNavTextActive" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="BottomNavTextInactive" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textStyle">normal</item>
+    </style>
+
+
 </resources>

@@ -1,341 +1,403 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:background="?attr/colorSurface">
+    android:background="@drawable/backgroundlogin">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+    <!-- SCROLL CONTENT -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollContent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:overScrollMode="never"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/bottomActions"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- ✅ PROFESSIONAL IMAGE GALLERY - NOW PART OF SCROLL -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="280dp"
-            app:cardCornerRadius="0dp"
-            app:cardElevation="0dp"
-            app:cardBackgroundColor="?attr/colorSurface">
-
-            <androidx.coordinatorlayout.widget.CoordinatorLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <!-- Image Count Badge -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="16dp"
-                    android:layout_gravity="top|end"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="2dp"
-                    app:cardBackgroundColor="#80000000">
-
-                    <TextView
-                        android:id="@+id/tvImageCount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingHorizontal="8dp"
-                        android:paddingVertical="4dp"
-                        android:text="1/5"
-                        android:textColor="@android:color/white"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Horizontal ScrollView for Images -->
-                <HorizontalScrollView
-                    android:id="@+id/horizontalScrollView"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:fadingEdgeLength="0dp"
-                    android:fillViewport="true"
-                    android:overScrollMode="never"
-                    android:scrollbars="none"
-                    tools:ignore="SpeakableTextPresentCheck">
-
-                    <LinearLayout
-                        android:id="@+id/imageContainer"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:orientation="horizontal"
-                        android:paddingStart="0dp"
-                        android:paddingEnd="0dp">
-
-                        <ImageView
-                            android:id="@+id/itemImage"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:background="@color/gray_light"
-                            android:contentDescription="@string/item_image"
-                            android:scaleType="centerCrop"
-                            android:visibility="gone"
-                            tools:src="@tools:sample/backgrounds/scenic" />
-
-                    </LinearLayout>
-                </HorizontalScrollView>
-
-                <!-- Professional Image Indicator -->
-                <LinearLayout
-                    android:id="@+id/imageIndicator"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|center_horizontal"
-                    android:layout_marginBottom="8dp"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="4dp">
-                </LinearLayout>
-
-            </androidx.coordinatorlayout.widget.CoordinatorLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- ✅ CONTENT - NOW PART OF SAME SCROLL -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="8dp">
+            android:orientation="vertical">
 
-            <!-- Title -->
-            <TextView
-                android:id="@+id/itemTitle"
+            <!-- IMAGE GALLERY (ViewPager2) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/galleryCard"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/sample_item_title"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="?attr/colorOnSurface"
-                android:lineSpacingExtra="4sp"
-                android:layout_marginBottom="8dp" />
+                android:layout_height="280dp"
+                app:cardCornerRadius="0dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="?attr/colorSurface">
 
-            <!-- Price -->
-            <TextView
-                android:id="@+id/itemPrice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/sample_price"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                android:textColor="@color/teal_700"
-                android:background="@drawable/price_background"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="4dp"
-                android:layout_marginBottom="12dp" />
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
 
-            <!-- Category Chip -->
-            <com.google.android.material.chip.Chip
-                android:id="@+id/itemCategory"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/sample_category"
-                app:chipBackgroundColor="@color/teal_100"
-                android:textColor="@color/teal_800"
-                app:chipStrokeColor="@color/teal_300"
-                app:chipStrokeWidth="1dp"
-                android:layout_marginBottom="16dp" />
+                    <androidx.viewpager2.widget.ViewPager2
+                        android:id="@+id/viewPagerImages"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        tools:ignore="SpeakableTextPresentCheck"/>
 
-            <!-- Description Section -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/description"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="?attr/colorOnSurface"
-                android:layout_marginBottom="8dp" />
+                    <!-- Image Count Badge -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="top|end"
+                        android:layout_margin="16dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="2dp"
+                        app:cardBackgroundColor="@color/overlay_black_50">
 
-            <!-- Description with View More functionality -->
+                        <TextView
+                            android:id="@+id/tvImageCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="8dp"
+                            android:paddingVertical="4dp"
+                            android:text="@string/image_count_sample"
+                            android:textColor="@color/white"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- PALITAN NG ITO: -->
+                    <LinearLayout
+                        android:id="@+id/imageIndicator"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom|center_horizontal"
+                        android:layout_marginBottom="16dp"
+                        android:orientation="horizontal"
+                        android:gravity="center" />
+
+                </FrameLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- CONTENT -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_marginBottom="24dp">
+                android:padding="16dp">
 
+                <!-- Title -->
                 <TextView
-                    android:id="@+id/itemDescription"
+                    android:id="@+id/itemTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/sample_description"
-                    android:textSize="16sp"
-                    android:textColor="?attr/colorOnSurface"
-                    android:lineSpacingExtra="6sp"
-                    android:maxLines="3"
-                    android:ellipsize="end" />
+                    android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                    android:textColor="@color/white"
+                    android:layout_marginBottom="10dp"
+                    tools:text="MacBook Pro 16” M3 Max" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnViewMore"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="start"
-                    android:text="View More"
-                    android:textColor="?attr/colorPrimary"
-                    android:visibility="gone" />
-
-            </LinearLayout>
-
-            <!-- Owner Info Section -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/owner_information"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="?attr/colorOnSurface"
-                android:layout_marginBottom="12dp" />
-
-            <LinearLayout
-                android:id="@+id/ownerInfoSection"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="24dp">
-
-                <ImageView
-                    android:id="@+id/ownerImage"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:contentDescription="@string/todo"
-                    android:scaleType="centerCrop"
-                    android:background="@drawable/circle_background"
-                    android:src="@drawable/ic_profile"
-                    android:layout_marginEnd="12dp" />
-
+                <!-- Price + Posted Date Row -->
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
 
+                    <!-- Price (WRAP CONTENT) -->
                     <TextView
-                        android:id="@+id/itemOwner"
+                        android:id="@+id/itemPrice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/sample_owner_name"
-                        android:textSize="16sp"
+                        android:textAppearance="?attr/textAppearanceLabelLarge"
                         android:textStyle="bold"
-                        android:textColor="?attr/colorOnSurface" />
+                        android:textColor="@color/black"
+                        android:background="@drawable/price_background"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"
+                        tools:text="₱50,499" />
 
-                    <!-- Rating with separate ImageView -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <!-- Spacer to push date to the right -->
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+
+                    <!-- Posted Date -->
+                    <TextView
+                        android:id="@+id/postedDate"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginTop="2dp"
-                        tools:ignore="UseCompoundDrawables">
-
-                        <ImageView
-                            android:id="@+id/starIcon"
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:contentDescription="@string/todo"
-                            android:src="@drawable/ic_rate_star"
-                            app:tint="@color/gray_dark" />
-
-                        <TextView
-                            android:id="@+id/ownerRating"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/sample_rating"
-                            android:textSize="14sp"
-                            android:textColor="?attr/colorOnSurface"
-                            android:layout_marginStart="4dp" />
-                    </LinearLayout>
-
+                        android:background="@drawable/date_background"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="6dp"
+                        android:textAppearance="?attr/textAppearanceLabelSmall"
+                        android:textColor="@color/black"
+                        tools:text="2 days ago" />
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/postedDate"
+                <!-- Category Chip -->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/itemCategory"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/date_background"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="4dp"
-                    android:text="@string/sample_date"
-                    android:textColor="#616161"
-                    android:textSize="12sp" />
+                    android:text="@string/sample_category"
+                    android:layout_marginBottom="18dp"
+                    app:chipBackgroundColor="@color/White"
+                    android:textColor="@color/black"
+                    app:chipStrokeColor="@color/White"
+                    app:chipStrokeWidth="1dp"
+                    app:ensureMinTouchTargetSize="true" />
 
-            </LinearLayout>
-
-            <!-- Location Section -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Location"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="?attr/colorOnSurface"
-                android:layout_marginBottom="8dp"
-                tools:ignore="HardcodedText" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="12dp"
-                tools:ignore="UseCompoundDrawables">
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:contentDescription="@string/todo"
-                    android:src="@drawable/ic_location"
-                    android:layout_marginEnd="8dp"
-                    app:tint="?attr/colorOnSurface" />
-
+                <!-- Description Section -->
                 <TextView
-                    android:id="@+id/itemLocation"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/sample_location"
-                    android:textSize="14sp"
-                    android:textColor="?attr/colorOnSurface" />
-            </LinearLayout>
-
-            <!-- Mapbox Map - NOW CLICKABLE -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/mapCardView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                tools:ignore="SpeakableTextPresentCheck">
-
-                <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:text="@string/description"
+                    android:textAppearance="?attr/textAppearanceTitleMedium"
+                    android:textStyle="bold"
+                    android:textColor="@color/White"
+                    android:layout_marginBottom="8dp" />
 
-                    <com.mapbox.maps.MapView
-                        android:id="@+id/mapViewItemDetail"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="22dp">
+
+                    <TextView
+                        android:id="@+id/itemDescription"
                         android:layout_width="match_parent"
-                        android:layout_height="200dp"
-                        app:mapbox_cameraTargetLat="14.5995"
-                        app:mapbox_cameraTargetLng="120.9842"
-                        app:mapbox_cameraZoom="15"
-                        tools:ignore="MissingConstraints" />
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="@color/white"
+                        android:lineSpacingExtra="6sp"
+                        android:maxLines="3"
+                        android:ellipsize="end"
+                        tools:text="Brand new MacBook Pro with M3 Max, 32GB RAM, 1TB SSD. Complete box." />
 
-                </RelativeLayout>
-            </com.google.android.material.card.MaterialCardView>
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnViewMore"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/view_more"
+                        android:visibility="gone" />
+                </LinearLayout>
 
-            <!-- Action Buttons -->
+                <!-- Owner Info -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/owner_information"
+                    android:textAppearance="?attr/textAppearanceTitleMedium"
+                    android:textStyle="bold"
+                    android:textColor="@color/White"
+                    android:layout_marginBottom="12dp" />
+
+                <LinearLayout
+                    android:id="@+id/ownerInfoSection"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:background="@color/card_stroke"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="22dp">
+
+                    <ImageView
+                        android:id="@+id/ownerImage"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@drawable/circle_background"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_profile"
+                        android:layout_marginEnd="12dp"
+                        android:contentDescription="@string/cd_owner_photo" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:id="@+id/itemOwner"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="@color/white"
+                                tools:text="Juan Dela Cruz" />
+
+                            <View
+                                android:layout_width="0dp"
+                                android:layout_height="0dp"
+                                android:layout_weight="1" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipVerified"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:text="Verified"
+                                android:textColor="@color/White"
+                                android:visibility="visible"
+                                app:chipBackgroundColor="@color/green_dark"
+                                app:chipIcon="@drawable/ic_verified"
+                                app:chipIconSize="16dp"
+                                app:chipIconVisible="true"
+                                app:chipMinHeight="24dp"
+                                app:ensureMinTouchTargetSize="false"
+                                tools:ignore="TouchTargetSizeCheck" />
+
+                        </LinearLayout>
+
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginTop="2dp">
+
+                            <ImageView
+                                android:id="@+id/starIcon"
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/ic_rate_star"
+                                app:tint="?attr/colorOnSurface"
+                                android:contentDescription="@string/cd_rating" />
+
+                            <TextView
+                                android:id="@+id/ownerRating"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?attr/textAppearanceBodySmall"
+                                android:textColor="@color/white"
+                                android:layout_marginStart="4dp"
+                                tools:text="4.8 (120 reviews)" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Location -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/location"
+                    android:textAppearance="?attr/textAppearanceTitleMedium"
+                    android:textStyle="bold"
+                    android:textColor="@color/White"
+                    android:layout_marginBottom="8dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_location"
+                        app:tint="@color/error_dark"
+                        android:contentDescription="@string/cd_location_icon"
+                        android:layout_marginEnd="8dp" />
+
+                    <TextView
+                        android:id="@+id/itemLocation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="@color/White"
+                        tools:text="Manila, Philippines" />
+                </LinearLayout>
+
+                <!-- Lightweight Map Preview (tap to open full map) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/mapCardView"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_marginBottom="10dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp">
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+
+                        <ImageView
+                            android:id="@+id/mapPreviewImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop" />
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="bottom|end"
+                            android:layout_margin="12dp"
+                            app:cardCornerRadius="12dp"
+                            app:cardElevation="2dp"
+                            app:cardBackgroundColor="@color/overlay_black_50">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingHorizontal="10dp"
+                                android:paddingVertical="6dp"
+                                android:text="@string/view_on_map"
+                                android:textColor="@android:color/white"
+                                android:textAppearance="?attr/textAppearanceLabelMedium"/>
+                        </com.google.android.material.card.MaterialCardView>
+
+                    </FrameLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Bottom padding so content won't hide behind sticky actions -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp" />
+
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- STICKY ACTIONS (always visible) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/bottomActions"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="0dp"
+        app:cardElevation="6dp"
+        app:cardBackgroundColor="?attr/colorSurface"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorSurface"
+            android:orientation="vertical"
+            android:padding="12dp">
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center"
-                android:layout_marginTop="16dp">
+                android:gravity="center">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnLike"
@@ -345,31 +407,27 @@
                     android:layout_weight="1"
                     android:layout_marginEnd="8dp"
                     android:text="@string/like"
-                    android:textColor="?attr/colorOnSurface"
                     android:textAllCaps="false"
-                    app:icon="@drawable/ic_favorite_border"
+                    app:icon="@drawable/ic_like"
                     app:iconGravity="textStart"
-                    app:strokeColor="@color/teal_700"
+                    app:strokeColor="@color/com_facebook_messenger_blue"
                     app:iconTint="@null" />
-
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnChat"
+                    style="@style/Widget.Material3.Button"
                     android:layout_width="0dp"
                     android:layout_height="52dp"
-                    android:layout_marginStart="8dp"
                     android:layout_weight="2"
+                    android:layout_marginStart="8dp"
                     android:text="@string/chat_owner"
                     android:textAllCaps="false"
-                    android:textColor="#000000"
-                    app:backgroundTint="@color/teal_700"
+                    app:backgroundTint="@color/com_facebook_messenger_blue"
                     app:icon="@drawable/ic_chat"
                     app:iconGravity="textStart"
-                    app:iconTint="@null" />
-
+                    app:iconTint="@color/White" />
             </LinearLayout>
 
-            <!-- Request Trade Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnRequestBarter"
                 style="@style/Widget.Material3.Button"
@@ -378,12 +436,11 @@
                 android:layout_marginTop="8dp"
                 android:text="@string/request_trade"
                 android:textAllCaps="false"
-                android:textColor="?attr/colorOnSurface"
-                app:backgroundTint="@color/teal_700"
+                app:backgroundTint="@color/com_facebook_messenger_blue"
                 app:icon="@drawable/ic_trade"
                 app:iconGravity="textStart"
                 app:iconTint="@android:color/white" />
-
         </LinearLayout>
-    </LinearLayout>
-</ScrollView>
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

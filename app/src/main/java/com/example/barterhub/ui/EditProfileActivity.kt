@@ -26,6 +26,10 @@ import okhttp3.Response
 import org.json.JSONObject
 import java.io.IOException
 import java.io.InputStream
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.widget.NestedScrollView
+import kotlin.math.max
 
 class EditProfileActivity : AppCompatActivity() {
 
@@ -48,6 +52,15 @@ class EditProfileActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit_profile)
 
+        val scroll = findViewById<NestedScrollView>(R.id.scrollRoot)
+
+        ViewCompat.setOnApplyWindowInsetsListener(scroll) { v, insets ->
+            val ime = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+            val nav = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+            v.setPadding(v.paddingLeft, v.paddingTop, v.paddingRight, max(ime, nav))
+            insets
+        }
+
         // Firebase
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance().reference
@@ -57,7 +70,7 @@ class EditProfileActivity : AppCompatActivity() {
         fabChangePhoto = findViewById(R.id.fabChangePhoto)
         etFullName = findViewById(R.id.editFullName)
         etBio = findViewById(R.id.editBio)
-        etPhone = findViewById(R.id.editPhone) // CHANGED: editphone -> editPhone
+        etPhone = findViewById(R.id.editPhone)
         etLocation = findViewById(R.id.editLocation)
         btnSave = findViewById(R.id.btnSave)
 

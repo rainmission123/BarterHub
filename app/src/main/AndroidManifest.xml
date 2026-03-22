@@ -60,7 +60,6 @@
             android:exported="false"
             android:theme="@style/Theme.BarterHub.Fullscreen"/>
 
-        <!-- ✅ FileProvider (use applicationId para safe kapag nagpalit ka package) -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
@@ -71,13 +70,14 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!-- ✅ MAPBOX ACCESS TOKEN
-             IMPORTANT: DAPAT pk.* (public token) hindi sk.*  -->
         <meta-data
             android:name="MAPBOX_ACCESS_TOKEN"
             android:value="@string/mapbox_access_token" />
 
-        <!-- ✅ AdMob App ID -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${MAPS_API_KEY}" />
+
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-6533502787981664~7435802466"/>
@@ -110,7 +110,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Firebase notifications -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_notification" />
@@ -127,12 +126,11 @@
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/colorPrimary" />
 
-        <!-- Launcher -->
         <activity
             android:name=".ui.LoginActivity"
             android:exported="true"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.BarterHub">
+            android:theme="@style/Theme.BarterHub.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -167,6 +165,5 @@
         <activity
             android:name=".ui.TestMapActivity"
             android:exported="false"/>
-
     </application>
 </manifest>

@@ -1,5 +1,6 @@
 package com.example.barterhub.adapters
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,6 +18,7 @@ class FindFriendsAdapter(
 
     enum class Action {
         ADD_FRIEND,
+        ACCEPT_REQUEST,
         CANCEL_REQUEST,
         VIEW_PROFILE
     }
@@ -32,6 +34,7 @@ class FindFriendsAdapter(
         return ViewHolder(binding)
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val user = users[position]
 
@@ -73,48 +76,60 @@ class FindFriendsAdapter(
                 profileImage.setImageResource(R.drawable.ic_profile_placeholder)
             }
 
-            // 5. Set friend status button - SIMPLIFIED: No ic_friends
             when (user.friendStatus) {
                 FriendStatus.NOT_FRIEND -> {
+                    actionButton.visibility = View.VISIBLE
                     actionButton.text = "Add Friend"
                     actionButton.setIconResource(R.drawable.ic_add_friend)
                     actionButton.isEnabled = true
+                    actionButton.isClickable = true
                     actionButton.alpha = 1.0f
                     actionButton.setOnClickListener {
                         onItemClick(user, Action.ADD_FRIEND)
                     }
                 }
+
                 FriendStatus.REQUEST_SENT -> {
-                    actionButton.text = "Request Sent"
+                    actionButton.visibility = View.VISIBLE
+                    actionButton.text = "Cancel Request"
                     actionButton.setIconResource(R.drawable.ic_clock)
-                    actionButton.isEnabled = false
-                    actionButton.alpha = 0.7f
+                    actionButton.isEnabled = true
+                    actionButton.isClickable = true
+                    actionButton.alpha = 1.0f
                     actionButton.setOnClickListener {
                         onItemClick(user, Action.CANCEL_REQUEST)
                     }
                 }
+
                 FriendStatus.REQUEST_RECEIVED -> {
+                    actionButton.visibility = View.VISIBLE
                     actionButton.text = "Accept Request"
                     actionButton.setIconResource(R.drawable.ic_check)
                     actionButton.isEnabled = true
+                    actionButton.isClickable = true
                     actionButton.alpha = 1.0f
                     actionButton.setOnClickListener {
-                        onItemClick(user, Action.ADD_FRIEND)
+                        onItemClick(user, Action.ACCEPT_REQUEST)
                     }
                 }
+
                 FriendStatus.FRIENDS -> {
+                    actionButton.visibility = View.VISIBLE
                     actionButton.text = "Friends"
-                    actionButton.setIconResource(R.drawable.ic_check) // Use check icon instead
+                    actionButton.setIconResource(R.drawable.ic_check)
                     actionButton.isEnabled = false
+                    actionButton.isClickable = false
                     actionButton.alpha = 0.7f
+                    actionButton.setOnClickListener(null)
                 }
+
                 else -> {
                     actionButton.visibility = View.GONE
+                    actionButton.setOnClickListener(null)
                 }
             }
 
-            // 6. Set click on entire card
-            cardView.setOnClickListener {
+            root.setOnClickListener {
                 onItemClick(user, Action.VIEW_PROFILE)
             }
         }

@@ -30,8 +30,11 @@ data class Message(
     var itemId: String? = null,
     var tradeDetails: Map<String, Any>? = null,
 
-    // 🔥 FIX: Change reactions type to match Firebase structure
-    var reactions: Map<String, Map<String, Boolean>> = emptyMap(), // emoji -> userId -> true
+    // REACTIONS
+    var reactions: Map<String, Map<String, Boolean>> = emptyMap(),
+
+    // 👇 BAGONG FIELD: Track kung sino ang nag-delete/hide ng message
+    var hiddenForUsers: Map<String, Boolean> = emptyMap(),
 
     // UI ONLY - Excluded from Firebase
     @get:Exclude
@@ -57,37 +60,8 @@ data class Message(
         reactions = emptyMap()
     )
 
-    // 🔥 UPDATED: Helper function to check if message has reactions
-    @Exclude
-    fun hasReactions(): Boolean {
-        return reactions.isNotEmpty()
-    }
-
-    // 🔥 UPDATED: Helper function to get current user's reaction
-    @Exclude
-    fun getUserReaction(userId: String): String? {
-        return reactions.entries.firstOrNull { entry ->
-            entry.value.containsKey(userId)
-        }?.key
-    }
-
-    // 🔥 UPDATED: Helper function to get reaction count
-    @Exclude
-    fun getReactionCount(): Int {
-        return reactions.values.sumOf { it.size }
-    }
-
-    // 🔥 ADDED: Get reactions as list of user IDs (for UI display)
-    @Exclude
-    fun getReactionsAsUserIds(): Map<String, List<String>> {
-        return reactions.mapValues { entry ->
-            entry.value.keys.toList()
-        }
-    }
-
-    // 🔥 ADDED: Check if specific user reacted with emoji
-    @Exclude
-    fun hasUserReacted(userId: String, emoji: String): Boolean {
-        return reactions[emoji]?.containsKey(userId) ?: false
+    // 👇 HELPER FUNCTION: Check if message is hidden for current user
+    fun isHiddenForUser(userId: String): Boolean {
+        return hiddenForUsers[userId] == true
     }
 }

@@ -35,7 +35,7 @@
             android:layout_marginStart="4dp"
             android:layout_marginBottom="2dp"
             android:text="Partner Name"
-            android:textColor="?attr/postTextColor"
+            android:textColor="@color/White"
             android:textSize="12sp"
             android:textStyle="bold"
             tools:ignore="HardcodedText" />
@@ -83,7 +83,7 @@
                 android:layout_marginStart="4dp"
                 android:padding="2dp"
                 android:src="@drawable/ic_more_vert"
-                app:tint="?attr/postTextColor" />
+                app:tint="@color/White" />
 
         </LinearLayout>
 
@@ -117,7 +117,7 @@
             android:layout_marginTop="4dp"
             android:layout_marginStart="8dp"
             android:text="10:30 AM"
-            android:textColor="?attr/postTextColor"
+            android:textColor="@color/White"
             android:textSize="10sp"
             tools:ignore="HardcodedText,SmallSp" />
 

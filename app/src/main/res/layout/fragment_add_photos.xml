@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
+    android:background="@drawable/backgroundlogin"
     tools:context=".ui.AddPhotosFragment">
 
     <androidx.core.widget.NestedScrollView
@@ -26,7 +26,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/add_photos"
-                android:textColor="?attr/colorOnSurface"
+                android:textColor="@color/White"
                 android:textSize="22sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="12dp" />
@@ -35,7 +35,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/upload_up_to_10_photos_to_showcase_your_item"
-                android:textColor="?attr/colorOnSurface"
+                android:textColor="@color/White"
                 android:textSize="14sp"
                 android:layout_marginBottom="16dp" />
 
@@ -45,7 +45,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="0/10 photos"
-                android:textColor="@color/gray_600"
+                android:textColor="@color/White"
                 android:textSize="12sp"
                 android:layout_marginBottom="8dp"
                 tools:text="3/10 photos" />
@@ -212,7 +212,7 @@
         android:textAllCaps="false"
         android:textColor="@color/white"
         android:textSize="16sp"
-        app:backgroundTint="@color/colorAccent"
+        app:backgroundTint="@color/com_facebook_messenger_blue"
         app:cornerRadius="16dp"
         app:icon="@drawable/ic_arrow_right"
         app:iconGravity="end"

@@ -48,10 +48,8 @@ class ProfileBadgeManager(private val fragment: Fragment) {
         Log.d("ProfileDebug", "🔄 Recreating badges from user data")
 
         val verificationStatus = userSnapshot.child("isIDVerified").getValue(String::class.java)
-        val rating = userSnapshot.child("rating").getValue(Float::class.java) ?: 0f
-        val reviewsCount = userSnapshot.child("reviewsCount").getValue(Int::class.java) ?: 0
+        val leaderboardRank = userSnapshot.child("leaderboardRank").getValue(Int::class.java) ?: 0
 
-        // FIXED: Safer cast for badges
         val currentBadgesMap = userSnapshot.child("badges").value
         val currentBadges = if (currentBadgesMap is Map<*, *>) {
             @Suppress("UNCHECKED_CAST")
@@ -61,26 +59,42 @@ class ProfileBadgeManager(private val fragment: Fragment) {
         }
 
         val badges = currentBadges?.toMutableMap() ?: mutableMapOf()
+        badges.remove("top_trader")
 
-        // Update badges
         badges["verified"] = verificationStatus == "verified"
-        badges["top_trader"] = rating >= 4.5 && reviewsCount >= 5
+        badges["top_1"] = leaderboardRank == 1
+        badges["top_2"] = leaderboardRank == 2
+        badges["top_3"] = leaderboardRank == 3
+        badges["top_4"] = leaderboardRank == 4
+        badges["top_5"] = leaderboardRank == 5
+        badges["top_6"] = leaderboardRank == 6
+        badges["top_7"] = leaderboardRank == 7
+        badges["top_8"] = leaderboardRank == 8
+        badges["top_9"] = leaderboardRank == 9
+        badges["top_10"] = leaderboardRank == 10
 
         checkFirstTradeBadge(userId) { hasFirstTrade ->
             badges["first_trade"] = hasFirstTrade
 
-            // Initialize other badges
             if (!badges.containsKey("community")) badges["community"] = false
             if (!badges.containsKey("friendly")) badges["friendly"] = false
             if (!badges.containsKey("reliable")) badges["reliable"] = false
 
             Log.d("ProfileDebug", "🎯 Final badges: $badges")
 
-            // Save if changed
             val needsUpdate = currentBadges == null ||
                     currentBadges["verified"] != badges["verified"] ||
-                    currentBadges["top_trader"] != badges["top_trader"] ||
-                    currentBadges?.get("first_trade") != hasFirstTrade
+                    currentBadges["top_1"] != badges["top_1"] ||
+                    currentBadges["top_2"] != badges["top_2"] ||
+                    currentBadges["top_3"] != badges["top_3"] ||
+                    currentBadges["top_4"] != badges["top_4"] ||
+                    currentBadges["top_5"] != badges["top_5"] ||
+                    currentBadges["top_6"] != badges["top_6"] ||
+                    currentBadges["top_7"] != badges["top_7"] ||
+                    currentBadges["top_8"] != badges["top_8"] ||
+                    currentBadges["top_9"] != badges["top_9"] ||
+                    currentBadges["top_10"] != badges["top_10"] ||
+                    currentBadges["first_trade"] != hasFirstTrade
 
             if (needsUpdate) {
                 database.child("users").child(userId).child("badges")
@@ -94,7 +108,7 @@ class ProfileBadgeManager(private val fragment: Fragment) {
                         displayBadgesFromMap(badges, badgesContainer)
                     }
             } else {
-                Log.d("ProfileDebug", "   No changes needed")
+                Log.d("ProfileDebug", "No changes needed")
                 displayBadgesFromMap(badges, badgesContainer)
             }
         }
@@ -131,6 +145,7 @@ class ProfileBadgeManager(private val fragment: Fragment) {
         if (!fragment.isAdded) return
 
         val badgeList = mutableListOf<Badge>()
+
         badges.forEach { (key, value) ->
             if (value) {
                 val badgeInfo = getBadgeInfo(key)
@@ -151,6 +166,7 @@ class ProfileBadgeManager(private val fragment: Fragment) {
         badges.forEach { badge ->
             val badgeView = LayoutInflater.from(fragment.requireContext())
                 .inflate(R.layout.item_badge, container, false)
+
             val badgeIcon = badgeView.findViewById<ImageView>(R.id.badgeIcon)
             val badgeText = badgeView.findViewById<TextView>(R.id.badgeText)
 
@@ -179,11 +195,19 @@ class ProfileBadgeManager(private val fragment: Fragment) {
     }
 
     private fun getBadgeInfo(key: String): Pair<String, Int> {
-        // FIXED: Proper when statement structure
         val (name, defaultIconRes) = when (key) {
             "first_trade" -> Pair("First Trade", R.drawable.ic_badge_first_trade)
             "verified" -> Pair("Verified", R.drawable.ic_badge_verified)
-            "top_trader" -> Pair("Top Trader", R.drawable.ic_badge_top_trader)
+            "top_1" -> Pair("Top 1", R.drawable.ic_badge_top1)
+            "top_2" -> Pair("Top 2", R.drawable.ic_badge_top2)
+            "top_3" -> Pair("Top 3", R.drawable.ic_badge_top3)
+            "top_4" -> Pair("Top 4", R.drawable.ic_badge_top4)
+            "top_5" -> Pair("Top 5", R.drawable.ic_badge_top5)
+            "top_6" -> Pair("Top 6", R.drawable.ic_badge_top6)
+            "top_7" -> Pair("Top 7", R.drawable.ic_badge_top7)
+            "top_8" -> Pair("Top 8", R.drawable.ic_badge_top8)
+            "top_9" -> Pair("Top 9", R.drawable.ic_badge_top9)
+            "top_10" -> Pair("Top 10", R.drawable.ic_badge_top10)
             "community" -> Pair("Community", R.drawable.ic_badge_community)
             "friendly" -> Pair("Friendly", R.drawable.ic_badge_friendly)
             "reliable" -> Pair("Reliable", R.drawable.ic_badge_reliable)
@@ -193,11 +217,19 @@ class ProfileBadgeManager(private val fragment: Fragment) {
             )
         }
 
-        // FIXED: Use direct resource IDs instead of getIdentifier
         val iconRes = when (key) {
             "first_trade" -> R.drawable.ic_badge_first_trade
             "verified" -> R.drawable.ic_badge_verified
-            "top_trader" -> R.drawable.ic_badge_top_trader
+            "top_1" -> R.drawable.ic_badge_top1
+            "top_2" -> R.drawable.ic_badge_top2
+            "top_3" -> R.drawable.ic_badge_top3
+            "top_4" -> R.drawable.ic_badge_top4
+            "top_5" -> R.drawable.ic_badge_top5
+            "top_6" -> R.drawable.ic_badge_top6
+            "top_7" -> R.drawable.ic_badge_top7
+            "top_8" -> R.drawable.ic_badge_top8
+            "top_9" -> R.drawable.ic_badge_top9
+            "top_10" -> R.drawable.ic_badge_top10
             "community" -> R.drawable.ic_badge_community
             "friendly" -> R.drawable.ic_badge_friendly
             "reliable" -> R.drawable.ic_badge_reliable
@@ -205,6 +237,62 @@ class ProfileBadgeManager(private val fragment: Fragment) {
         }
 
         return Pair(name, iconRes)
+    }
+
+    fun loadUserBadgesForUserId(userId: String, badgesContainer: LinearLayout) {
+        if (userId.isBlank()) return
+
+        database.child("users").child(userId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (!fragment.isAdded) return
+                    displayBadgesFromUserSnapshot(userId, snapshot, badgesContainer)
+                }
+
+                override fun onCancelled(error: DatabaseError) {}
+            })
+    }
+
+    private fun displayBadgesFromUserSnapshot(
+        userId: String,
+        userSnapshot: DataSnapshot,
+        badgesContainer: LinearLayout
+    ) {
+        val verificationStatus = userSnapshot.child("isIDVerified").getValue(String::class.java)
+        val leaderboardRank = userSnapshot.child("leaderboardRank").getValue(Int::class.java) ?: 0
+
+        val currentBadgesMap = userSnapshot.child("badges").value
+        val currentBadges = if (currentBadgesMap is Map<*, *>) {
+            @Suppress("UNCHECKED_CAST")
+            currentBadgesMap as? Map<String, Boolean>
+        } else {
+            null
+        }
+
+        val badges = currentBadges?.toMutableMap() ?: mutableMapOf()
+        badges.remove("top_trader")
+
+        badges["verified"] = verificationStatus == "verified"
+        badges["top_1"] = leaderboardRank == 1
+        badges["top_2"] = leaderboardRank == 2
+        badges["top_3"] = leaderboardRank == 3
+        badges["top_4"] = leaderboardRank == 4
+        badges["top_5"] = leaderboardRank == 5
+        badges["top_6"] = leaderboardRank == 6
+        badges["top_7"] = leaderboardRank == 7
+        badges["top_8"] = leaderboardRank == 8
+        badges["top_9"] = leaderboardRank == 9
+        badges["top_10"] = leaderboardRank == 10
+
+        checkFirstTradeBadge(userId) { hasFirstTrade ->
+            badges["first_trade"] = hasFirstTrade
+
+            if (!badges.containsKey("community")) badges["community"] = false
+            if (!badges.containsKey("friendly")) badges["friendly"] = false
+            if (!badges.containsKey("reliable")) badges["reliable"] = false
+
+            displayBadgesFromMap(badges, badgesContainer)
+        }
     }
 
     private fun showBadgeInfo(badge: Badge) {

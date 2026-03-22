@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
+    android:background="@drawable/backgroundlogin"
     tools:context=".ui.AddDetailsFragment">
 
     <androidx.core.widget.NestedScrollView
@@ -30,7 +30,8 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/title">
+                android:hint="@string/title"
+                android:textColorHint="@color/white">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/titleInput"
@@ -48,7 +49,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Description"
-                tools:ignore="HardcodedText">
+                tools:ignore="HardcodedText"
+                android:textColorHint="@color/white">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/descriptionInput"
@@ -66,7 +68,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Category"
-                tools:ignore="HardcodedText">
+                tools:ignore="HardcodedText"
+                android:textColorHint="@color/white">
 
                 <AutoCompleteTextView
                     android:id="@+id/categoryDropdown"
@@ -84,6 +87,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Condition"
+                android:textColorHint="@color/white"
                 tools:ignore="HardcodedText">
 
                 <AutoCompleteTextView
@@ -101,7 +105,8 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/price_optional">
+                android:hint="@string/price_optional"
+                android:textColorHint="@color/white">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/priceInput"
@@ -125,7 +130,7 @@
         android:textAllCaps="false"
         android:layout_gravity="bottom"
         app:cornerRadius="16dp"
-        app:backgroundTint="@color/colorAccent"
+        app:backgroundTint="@color/com_facebook_messenger_blue"
         app:icon="@drawable/ic_arrow_right"
         app:iconGravity="end"
         tools:ignore="HardcodedText" />

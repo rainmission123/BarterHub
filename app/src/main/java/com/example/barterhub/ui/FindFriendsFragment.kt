@@ -25,6 +25,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import android.util.Log
 import com.example.barterhub.ui.profile.AddFriendManager
+import com.example.barterhub.utils.ChatUtils
 
 class FindFriendsFragment : Fragment() {
     private lateinit var addFriendManager: AddFriendManager
@@ -76,7 +77,6 @@ class FindFriendsFragment : Fragment() {
             database.reference.child("users").removeEventListener(it)
         }
 
-        // ✅ IDAGDAG ITO: Remove friends listener
         friendsListener?.let {
             database.reference.child("friends").child(auth.currentUser?.uid ?: "").removeEventListener(it)
         }
@@ -135,12 +135,9 @@ class FindFriendsFragment : Fragment() {
     }
 
     private fun updateFilterButtons() {
-        // For regular colors
-        val colorAccent = ContextCompat.getColor(requireContext(), R.color.colorAccent)
+        val colorAccent = ContextCompat.getColor(requireContext(), R.color.com_facebook_messenger_blue)
         val colorWhite = ContextCompat.getColor(requireContext(), android.R.color.white)
         val transparent = ContextCompat.getColor(requireContext(), android.R.color.transparent)
-
-        // For theme attribute (postTextColor)
         val typedArray = requireContext().theme.obtainStyledAttributes(
             intArrayOf(R.attr.postTextColor)
         )
@@ -156,7 +153,7 @@ class FindFriendsFragment : Fragment() {
                 }
                 binding.friendsButton.apply {
                     setBackgroundColor(transparent)
-                    setTextColor(postTextColor) // Use theme color
+                    setTextColor(postTextColor)
                 }
             }
             FriendFilter.FRIENDS -> {
@@ -167,7 +164,7 @@ class FindFriendsFragment : Fragment() {
                 }
                 binding.addFriendButton.apply {
                     setBackgroundColor(transparent)
-                    setTextColor(postTextColor) // Use theme color
+                    setTextColor(postTextColor)
                 }
             }
         }
@@ -179,23 +176,53 @@ class FindFriendsFragment : Fragment() {
 
         findFriendsAdapter = FindFriendsAdapter(filteredUsers) { user, action ->
             when (action) {
+
                 FindFriendsAdapter.Action.ADD_FRIEND -> {
                     addFriendManager.sendFriendRequest(user.userId)
+
+                    val index = allUsers.indexOfFirst { it.userId == user.userId }
+                    if (index != -1) {
+                        allUsers[index] = allUsers[index].copy(
+                            friendStatus = FriendStatus.REQUEST_SENT
+                        )
+                    }
+
+                    filterUsers(binding.searchEditText.text.toString())
                 }
+
+                FindFriendsAdapter.Action.ACCEPT_REQUEST -> {
+                    addFriendManager.acceptFriendRequest(user.userId)
+
+                    val index = allUsers.indexOfFirst { it.userId == user.userId }
+                    if (index != -1) {
+                        allUsers[index] = allUsers[index].copy(
+                            friendStatus = FriendStatus.FRIENDS
+                        )
+                    }
+
+                    filterUsers(binding.searchEditText.text.toString())
+                }
+
                 FindFriendsAdapter.Action.CANCEL_REQUEST -> {
-                    // Maaari rin gumawa ka ng cancelFriendRequest sa AddFriendManager
-                    addFriendManager.rejectFriendRequest(user.userId)
+                    addFriendManager.cancelFriendRequest(user.userId)
+
+                    val index = allUsers.indexOfFirst { it.userId == user.userId }
+                    if (index != -1) {
+                        allUsers[index] = allUsers[index].copy(
+                            friendStatus = FriendStatus.NOT_FRIEND
+                        )
+                    }
+
+                    filterUsers(binding.searchEditText.text.toString())
                 }
+
                 FindFriendsAdapter.Action.VIEW_PROFILE -> viewProfile(user.userId)
             }
         }
 
-
-        // Setup FriendsAdapter
         friendsAdapter = FriendsAdapter(filteredUsers.toMutableList()) { user, action ->
             when (action) {
                 FriendsAdapter.Action.REMOVE_FRIEND -> {
-                    // This is now handled inside the adapter
                     Log.d("FindFriends", "Remove friend: ${user.userId}")
                 }
                 FriendsAdapter.Action.MESSAGE -> openChat(user)
@@ -203,36 +230,27 @@ class FindFriendsFragment : Fragment() {
             }
         }
 
-        // Set initial adapter
         updateAdapter()
     }
 
-
     private fun openChat(user: User) {
-        // Generate chatId from both user IDs
         val currentUserId = auth.currentUser?.uid ?: return
-        val chatId = if (currentUserId < user.userId) {
-            "${currentUserId}_${user.userId}"
-        } else {
-            "${user.userId}_${currentUserId}"
-        }
+        val chatId = ChatUtils.generateChatId(currentUserId, user.userId)
 
         try {
-            // Use Safe Args
             val action = FindFriendsFragmentDirections.actionFindFriendsFragmentToChatFragment(
                 chatId = chatId,
                 partnerId = user.userId,
                 partnerName = user.getDisplayName(),
-                itemId = "",  // Empty for friend chat
-                itemTitle = "",  // Empty for friend chat
-                targetItemTitle = "",  // Empty for friend chat
-                offeredItemTitle = "",  // Empty for friend chat
+                itemId = "",
+                itemTitle = "",
+                targetItemTitle = "",
+                offeredItemTitle = "",
                 isTradeAccepted = false
             )
             findNavController().navigate(action)
 
         } catch (e: Exception) {
-            // Fallback using bundle (if Safe Args not generated yet)
             Log.e("FindFriends", "Safe Args error: ${e.message}")
 
             val bundle = Bundle().apply {
@@ -249,11 +267,12 @@ class FindFriendsFragment : Fragment() {
             findNavController().navigate(R.id.nav_chat, bundle)
         }
     }
-
     private fun updateAdapter() {
         when (currentFilter) {
             FriendFilter.ADD_FRIEND -> {
-                binding.friendsRecyclerView.adapter = findFriendsAdapter
+                if (binding.friendsRecyclerView.adapter != findFriendsAdapter) {
+                    binding.friendsRecyclerView.adapter = findFriendsAdapter
+                }
             }
             FriendFilter.FRIENDS -> {
                 binding.friendsRecyclerView.adapter = friendsAdapter
@@ -282,13 +301,11 @@ class FindFriendsFragment : Fragment() {
                 for (userSnapshot in snapshot.children) {
                     val userId = userSnapshot.key ?: continue
 
-                    // Skip current user
                     if (userId == currentUserId) {
                         continue
                     }
 
                     try {
-                        // Check if it's a Map (user object)
                         if (userSnapshot.value !is Map<*, *>) {
                             continue
                         }
@@ -305,25 +322,21 @@ class FindFriendsFragment : Fragment() {
                             continue
                         }
 
-                        // Parse the user
                         val user = userSnapshot.getValue(User::class.java)
                         if (user == null) {
                             Log.e("FindFriends", "Failed to parse user $userId")
                             continue
                         }
 
-                        // Set the userId
                         val userWithId = user.copy(
                             userId = userId,
                             friendStatus = determineFriendStatus(userId)
                         )
 
                         if (userWithId.address.isNullOrEmpty()) {
-                            // Optional: You can set a default or leave it as null
-                            // userWithId.address = "No location specified"
+
                         }
 
-                        // Add to list
                         allUsers.add(userWithId)
                         loadedCount++
 
@@ -338,10 +351,8 @@ class FindFriendsFragment : Fragment() {
 
                 Log.d("FindFriends", "✅ Loaded: $loadedCount valid users | Skipped: $invalidCount invalid users")
 
-                // Start online status listener
                 startOnlineStatusListener()
-                loadFriends()
-                filterUsers("")
+                loadFriendRequests()
                 showLoading(false)
                 showEmptyState(allUsers.isEmpty())
 
@@ -360,12 +371,10 @@ class FindFriendsFragment : Fragment() {
     private fun startOnlineStatusListener() {
         val currentUserId = auth.currentUser?.uid ?: return
 
-        // Remove existing listener if any
         onlineStatusListener?.let {
             database.reference.child("users").removeEventListener(it)
         }
 
-        // Listen for online status changes
         onlineStatusListener = database.reference.child("users").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 for (userSnapshot in snapshot.children) {
@@ -388,7 +397,6 @@ class FindFriendsFragment : Fragment() {
 
                         Log.d("FindFriends", "📱 Online status updated for ${currentUser.getDisplayName()}: isOnline=$isOnline, lastSeen=$lastSeen")
 
-                        // Update adapter if this user is visible
                         updateAdapterForUser(userId)
                     }
                 }
@@ -409,8 +417,6 @@ class FindFriendsFragment : Fragment() {
         }
     }
 
-
-    // Helper method to show/hide empty state
     private fun showEmptyState(show: Boolean) {
         if (show) {
             binding.emptyStateLayout.visibility = View.VISIBLE
@@ -423,15 +429,12 @@ class FindFriendsFragment : Fragment() {
 
     private fun determineFriendStatus(userId: String): FriendStatus {
 
-        // Check if already in our local list (for caching)
         val existingUser = allUsers.find { it.userId == userId }
         if (existingUser != null && existingUser.friendStatus != FriendStatus.NOT_FRIEND) {
             return existingUser.friendStatus
         }
 
-        // IMPORTANT: We can't check Firebase here because this is called synchronously
-        // during loading. We'll update friend status in loadFriends() instead.
-        return FriendStatus.NOT_FRIEND  // Default, will be updated later
+        return FriendStatus.NOT_FRIEND
     }
 
     private fun filterUsers(searchQuery: String) {
@@ -477,79 +480,6 @@ class FindFriendsFragment : Fragment() {
         binding.loadingProgressBar.visibility = if (show) View.VISIBLE else View.GONE
         binding.friendsRecyclerView.visibility = if (show) View.GONE else View.VISIBLE
         binding.emptyStateLayout.visibility = View.GONE
-    }
-
-    private fun sendFriendRequest(userId: String) {
-        val currentUserId = auth.currentUser?.uid ?: return
-        val databaseRef = database.reference
-
-        // Local UI update
-        val user = allUsers.find { it.userId == userId }
-        user?.let {
-            val index = allUsers.indexOf(it)
-            if (index != -1) {
-                allUsers[index] = it.copy(friendStatus = FriendStatus.REQUEST_SENT)
-                filterUsers(binding.searchEditText.text.toString())
-            }
-        }
-
-        val requestKey = databaseRef.child("friendRequests").push().key ?: return
-
-        val updates = hashMapOf<String, Any>(
-            "friendRequests/$requestKey" to mapOf(
-                "fromUserId" to currentUserId,
-                "toUserId" to userId,
-                "timestamp" to System.currentTimeMillis(),
-                "status" to "pending"
-            ),
-            "userFriendRequests/$currentUserId/sent/$userId" to true,
-            "userFriendRequests/$userId/received/$currentUserId" to true
-        )
-
-        databaseRef.updateChildren(updates)
-            .addOnSuccessListener {
-
-                // 🔔 ADD NOTIFICATION HERE
-                val notificationId = databaseRef
-                    .child("notifications")
-                    .child(userId)
-                    .push().key
-
-                if (notificationId != null) {
-                    val notificationData = mapOf(
-                        "type" to "friend_request",
-                        "fromUserId" to currentUserId,
-                        "read" to false,
-                        "timestamp" to System.currentTimeMillis()
-                    )
-
-                    databaseRef.child("notifications")
-                        .child(userId)
-                        .child(notificationId)
-                        .setValue(notificationData)
-                }
-
-                showMessage("Friend request sent")
-            }
-            .addOnFailureListener {
-                showMessage("Failed to send friend request")
-            }
-    }
-
-
-    private fun cancelFriendRequest(userId: String) {
-        // TODO: Implement cancel request logic
-        showMessage("Friend request cancelled")
-
-        // Update local data
-        val user = allUsers.find { it.userId == userId }
-        user?.let {
-            val index = allUsers.indexOf(it)
-            if (index != -1) {
-                allUsers[index] = it.copy(friendStatus = FriendStatus.NOT_FRIEND)
-                filterUsers(binding.searchEditText.text.toString())
-            }
-        }
     }
 
     private fun loadFriends() {
@@ -599,8 +529,6 @@ class FindFriendsFragment : Fragment() {
                                 )
                                 Log.d("FindFriends", "✅ Marked as friend: ${user.getDisplayName()} (${user.userId})")
                             } else {
-                                // Check if current user has any friend status
-                                // Only update to NOT_FRIEND if it was previously FRIENDS
                                 if (allUsers[index].friendStatus == FriendStatus.FRIENDS) {
                                     allUsers[index] = user.copy(
                                         friendStatus = FriendStatus.NOT_FRIEND
@@ -608,14 +536,12 @@ class FindFriendsFragment : Fragment() {
                                 }
                             }
                         }
-                        // ✅ Update FriendsAdapter after marking friends
                         val friendsList = allUsers.filter { it.friendStatus == FriendStatus.FRIENDS }
                         friendsAdapter.updateFriends(friendsList)
 
                         // Update UI
                         if (isAdded && _binding != null) {
                             filterUsers(binding.searchEditText.text.toString())
-                            Log.d("FindFriends", "🔥 UI updated with friends filter")
                         }
 
                     } catch (e: Exception) {
@@ -647,7 +573,6 @@ class FindFriendsFragment : Fragment() {
                 }
             }
 
-        // Check friends under users node
         database.reference.child("users").child(currentUserId).child("friends").get()
             .addOnSuccessListener { snapshot ->
                 Log.d("DEBUG", "=== FRIENDS UNDER USERS NODE ===")
@@ -663,10 +588,73 @@ class FindFriendsFragment : Fragment() {
             }
     }
 
+    private fun loadFriendRequests() {
+        val currentUserId = auth.currentUser?.uid ?: return
+
+        val requestsRef = database.reference
+            .child("userFriendRequests")
+            .child(currentUserId)
+
+        requestsRef.get()
+            .addOnSuccessListener { snapshot ->
+                val sentRequests = snapshot.child("sent")
+                    .children
+                    .mapNotNull { it.key }
+                    .toSet()
+
+                val receivedRequests = snapshot.child("received")
+                    .children
+                    .mapNotNull { it.key }
+                    .toSet()
+
+                allUsers.forEachIndexed { index, user ->
+                    when {
+                        sentRequests.contains(user.userId) -> {
+                            allUsers[index] = user.copy(
+                                friendStatus = FriendStatus.REQUEST_SENT
+                            )
+                        }
+
+                        receivedRequests.contains(user.userId) -> {
+                            allUsers[index] = user.copy(
+                                friendStatus = FriendStatus.REQUEST_RECEIVED
+                            )
+                        }
+
+                        allUsers[index].friendStatus != FriendStatus.FRIENDS -> {
+                            allUsers[index] = user.copy(
+                                friendStatus = FriendStatus.NOT_FRIEND
+                            )
+                        }
+                    }
+                }
+
+                loadFriends()
+
+                if (isAdded && _binding != null) {
+                    filterUsers(binding.searchEditText.text.toString())
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("FindFriends", "❌ Failed to load friend requests: ${e.message}", e)
+
+                if (isAdded && _binding != null) {
+                    filterUsers(binding.searchEditText.text.toString())
+                }
+            }
+    }
+
     private fun viewProfile(userId: String) {
-        // Navigate to user profile
-        // findNavController().navigate(R.id.action_findFriendsFragment_to_userProfileFragment)
-        showMessage("View profile: $userId")
+        val bundle = Bundle().apply {
+            putString("ownerId", userId)
+        }
+
+        try {
+            findNavController().navigate(R.id.ownerProfileFragment, bundle)
+        } catch (e: Exception) {
+            Log.e("FindFriends", "Navigation error: ${e.message}", e)
+            showMessage("Failed to open profile")
+        }
     }
 
     private fun showMessage(message: String) {

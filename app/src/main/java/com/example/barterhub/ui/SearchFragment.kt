@@ -53,7 +53,6 @@ class SearchFragment : Fragment() {
 
     private lateinit var database: DatabaseReference
 
-    // ✅ Proper debounce
     private val searchHandler = Handler(Looper.getMainLooper())
     private var pendingSearch: Runnable? = null
 
@@ -127,6 +126,11 @@ class SearchFragment : Fragment() {
     }
 
     private fun setupSearchListeners() {
+
+        // ✅ Ensure keyboard shows "Search" action
+        searchEditText.imeOptions = EditorInfo.IME_ACTION_SEARCH
+        searchEditText.setRawInputType(EditorInfo.TYPE_CLASS_TEXT)
+
         searchEditText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
@@ -139,40 +143,43 @@ class SearchFragment : Fragment() {
                 val query = s?.toString()?.trim().orEmpty()
                 btnClearSearch.visibility = if (query.isNotEmpty()) View.VISIBLE else View.GONE
 
+                // ✅ Cancel any pending runnable (we no longer auto navigate)
                 pendingSearch?.let { searchHandler.removeCallbacks(it) }
+                pendingSearch = null
 
-                if (query.length >= 2) {
-                    pendingSearch = Runnable {
-                        // ✅ prevent repeat loop
-                        if (lastNavigatedQuery == query) return@Runnable
-                        lastNavigatedQuery = query
+                // ✅ Optional UI behaviors only (no navigation)
+                // Example: show recent/trending when empty
+                // showRecentAndTrending(query.isEmpty())
 
-                        hideKeyboard()
-                        saveRecentSearch(query)
-                        navigateToSearchResults(query)
-                    }
-                    searchHandler.postDelayed(pendingSearch!!, SEARCH_DELAY_MS)
-                } else {
-                    lastNavigatedQuery = null
-                    progressBar.visibility = View.GONE
-                }
+                progressBar.visibility = View.GONE
+                lastNavigatedQuery = null
             }
-
 
             override fun afterTextChanged(s: Editable?) {}
         })
 
-        searchEditText.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+        // ✅ Navigate ONLY when user presses keyboard search / enter
+        searchEditText.setOnEditorActionListener { _, actionId, event ->
+            val isImeSearch = actionId == EditorInfo.IME_ACTION_SEARCH
+            val isEnter =
+                event?.keyCode == android.view.KeyEvent.KEYCODE_ENTER &&
+                        event.action == android.view.KeyEvent.ACTION_DOWN
+
+            if (isImeSearch || isEnter) {
                 val query = searchEditText.text?.toString()?.trim().orEmpty()
                 if (query.isNotBlank()) {
-                    pendingSearch?.let { searchHandler.removeCallbacks(it) }
+                    // ✅ prevent double-trigger
+                    if (lastNavigatedQuery == query) return@setOnEditorActionListener true
+                    lastNavigatedQuery = query
+
                     hideKeyboard()
                     saveRecentSearch(query)
                     navigateToSearchResults(query)
                 }
                 true
-            } else false
+            } else {
+                false
+            }
         }
     }
 

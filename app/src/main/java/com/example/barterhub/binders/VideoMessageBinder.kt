@@ -11,6 +11,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.DownsampleStrategy
 import com.example.barterhub.R
 import com.example.barterhub.adapters.MessagesAdapter
 import com.example.barterhub.data.models.Message
@@ -18,9 +19,7 @@ import android.app.DownloadManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
-import androidx.core.content.ContentProviderCompat.requireContext
-import androidx.navigation.Navigation.findNavController
-import com.example.barterhub.ui.OwnerProfileFragment
+import androidx.navigation.Navigation
 
 class VideoMessageBinder(
     private val currentUserId: String,
@@ -73,22 +72,24 @@ class VideoMessageBinder(
         // 2️⃣ Align bubble
         // ===============================
         if (message.senderId == currentUserId) {
-            set.clear(R.id.videoCardContainer, ConstraintSet.START)
+            // Sent message - align to right
+            set.clear(R.id.videoContainer, ConstraintSet.START)
             set.connect(
-                R.id.videoCardContainer,
+                R.id.videoContainer,
                 ConstraintSet.END,
                 ConstraintSet.PARENT_ID,
                 ConstraintSet.END,
                 8.dpToPx(context)
             )
             holder.ivProfile.visibility = View.GONE
-            holder.videoCardContainer.setBackgroundResource(R.drawable.bg_video_sent)
+            holder.videoContainer.setBackgroundResource(R.drawable.bg_video_sent)
         } else {
-            set.clear(R.id.videoCardContainer, ConstraintSet.END)
+            // Received message - align to left
+            set.clear(R.id.videoContainer, ConstraintSet.END)
 
             if (showProfilePic && partnerProfilePic != null) {
                 set.connect(
-                    R.id.videoCardContainer,
+                    R.id.videoContainer,
                     ConstraintSet.START,
                     R.id.ivProfile,
                     ConstraintSet.END,
@@ -104,7 +105,7 @@ class VideoMessageBinder(
                     .into(holder.ivProfile)
             } else {
                 set.connect(
-                    R.id.videoCardContainer,
+                    R.id.videoContainer,
                     ConstraintSet.START,
                     ConstraintSet.PARENT_ID,
                     ConstraintSet.START,
@@ -113,14 +114,14 @@ class VideoMessageBinder(
                 holder.ivProfile.visibility = View.GONE
             }
 
-            holder.videoCardContainer.setBackgroundResource(R.drawable.bg_video_received)
+            holder.videoContainer.setBackgroundResource(R.drawable.bg_video_received)
         }
 
         set.applyTo(rootLayout)
 
-                // ===============================
-                // 3️⃣ THREE DOT MENU (OPTIONS)
-                // ===============================
+        // ===============================
+        // 3️⃣ THREE DOT MENU (OPTIONS)
+        // ===============================
         holder.btnVideoMenu?.let { btnMenu ->
             if (message.senderId != currentUserId) {
                 // IKAW ang RECEIVER ng video
@@ -176,8 +177,9 @@ class VideoMessageBinder(
             Glide.with(context)
                 .asBitmap()
                 .load(message.videoUrl)
-                .frame(1_000_000) // 1 second
+                .frame(1000000) // 1 second
                 .placeholder(R.drawable.ic_video_placeholder)
+                .downsample(DownsampleStrategy.CENTER_INSIDE)
                 .centerCrop()
                 .into(holder.videoThumbnail)
 
@@ -194,7 +196,6 @@ class VideoMessageBinder(
                 holder.videoThumbnail.setOnClickListener(null)
             }
         }
-
     }
 
     private fun showVideoOptionsMenu(
@@ -230,7 +231,6 @@ class VideoMessageBinder(
                     openUserProfile(anchorView, message.senderId)
                     true
                 }
-
 
                 else -> false
             }
@@ -300,10 +300,13 @@ class VideoMessageBinder(
         }
 
         // Use view to find NavController
-        androidx.navigation.Navigation.findNavController(view)
-            .navigate(R.id.ownerProfileFragment, bundle)
+        try {
+            Navigation.findNavController(view)
+                .navigate(R.id.ownerProfileFragment, bundle)
+        } catch (e: Exception) {
+            Log.e(TAG, "Navigation error: ${e.message}")
+        }
     }
-
 
     private fun playVideoDirectly(context: Context, videoUrl: String?) {
         if (videoUrl.isNullOrEmpty()) {
@@ -313,7 +316,7 @@ class VideoMessageBinder(
 
         try {
             val intent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(android.net.Uri.parse(videoUrl), "video/*")
+                setDataAndType(Uri.parse(videoUrl), "video/*")
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
@@ -322,10 +325,11 @@ class VideoMessageBinder(
                 context.startActivity(intent)
             } else {
                 Log.e(TAG, "No app available to play video")
-                // You can show a toast or snackbar here
+                Toast.makeText(context, "No video player found", Toast.LENGTH_SHORT).show()
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error playing video: ${e.message}")
+            Toast.makeText(context, "Cannot play video", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -342,5 +346,4 @@ class VideoMessageBinder(
             this.toFloat(),
             context.resources.displayMetrics
         ).toInt()
-
 }

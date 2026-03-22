@@ -102,7 +102,39 @@
 
         </LinearLayout>
 
-        <!-- ✅ ADD CONTAINER FOR THE ENTIRE PHOTO PREVIEW SECTION -->
+        <!-- Offer Title -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layoutOfferTitle"
+            style="@style/Widget.Material3.TextInputLayout.FilledBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:hint="Item Title">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editOfferTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="1"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Offer Condition -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layoutOfferCondition"
+            style="@style/Widget.Material3.TextInputLayout.FilledBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Condition">
+
+            <AutoCompleteTextView
+                android:id="@+id/editOfferCondition"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+
         <LinearLayout
             android:id="@+id/photoPreviewContainer"
             android:layout_width="match_parent"

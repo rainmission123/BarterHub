@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:id="@+id/rootLayout"
-    android:background="@drawable/rounded1_background"
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
@@ -89,7 +88,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:ellipsize="end"
-                android:textColor="?attr/postTextColor"
+                android:textColor="@color/white"
                 android:lineSpacingExtra="2dp"
                 android:maxLines="1"
                 android:scrollHorizontally="false"
@@ -112,12 +111,11 @@
 
             <!-- Like Icon -->
             <ImageView
-                android:layout_width="10dp"
-                android:layout_height="10dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:layout_marginEnd="2dp"
                 android:contentDescription="@string/todo"
-                android:src="@drawable/ic_like"
-                app:tint="?attr/postTextColor" />
+                android:src="@drawable/ic_like"/>
 
             <!-- Like Count -->
             <TextView
@@ -125,8 +123,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="0"
-                android:textColor="?attr/postTextColor"
-                android:textSize="8sp"
+                android:textColor="@color/white"
+                android:textSize="11sp"
                 android:textStyle="bold"
                 tools:ignore="HardcodedText,SmallSp" />
 
@@ -144,7 +142,7 @@
             android:breakStrategy="simple"
             android:scrollHorizontally="false"
             android:text="16-core CPU, 40-core GPU, 48GB RAM"
-            android:textColor="?attr/postTextColorSecondary"
+            android:textColor="@color/white"
             android:textSize="11sp"
             tools:ignore="HardcodedText" />
 
@@ -155,10 +153,10 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:text="Condition: Brand New"
-            android:textColor="?attr/postTextColorSecondary"
+            android:textColor="@color/white"
             android:textSize="9sp"
             android:textStyle="italic"
-            tools:ignore="HardcodedText" />
+            tools:ignore="HardcodedText,SmallSp" />
 
         <!-- Price Section -->
         <LinearLayout
@@ -187,7 +185,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="PHP50,499"
-                        android:textColor="?attr/postPriceColor"
+                        android:textColor="@color/red"
                         android:textSize="13sp"
                         android:textStyle="bold"
                         tools:ignore="HardcodedText" />
@@ -218,7 +216,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/posted_by_unknown"
-                        android:textColor="?attr/postTextColorSecondary"
+                        android:textColor="@color/white"
                         android:textSize="10sp"
                         android:textStyle="italic"
                         tools:ignore="SmallSp" />

@@ -1,39 +1,34 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme - SIMPLIFIED -->
+
     <style name="Base.Theme.BarterHub" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Custom colors for posts -->
         <item name="postTextColor">@color/text_primary_light</item>
         <item name="postTextColorSecondary">@color/text_secondary_light</item>
         <item name="postPriceColor">@color/error</item>
         <item name="postWishlistIconColor">@color/gray_400</item>
         <item name="android:windowFullscreen">true</item>
 
-
-        <!-- Status bar -->
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
-
-        <!-- Navigation bar -->
         <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
 
-        <!-- Material 3 Color Tokens - SIMPLIFIED -->
         <item name="colorPrimary">@color/colorAccent</item>
         <item name="colorOnPrimary">@color/white</item>
-
         <item name="colorSecondary">@color/colorSecondary</item>
         <item name="colorOnSecondary">@color/white</item>
-
-        <!-- Surface colors - SIMPLIFIED -->
         <item name="colorSurface">@color/surface_light</item>
         <item name="colorOnSurface">@color/text_primary_light</item>
         <item name="colorSurfaceVariant">@color/gray_100</item>
         <item name="colorOnSurfaceVariant">@color/text_secondary_light</item>
-
-        <!-- Error colors -->
         <item name="colorError">@color/error</item>
         <item name="colorOnError">@color/white</item>
     </style>
 
-    <!-- App theme -->
     <style name="Theme.BarterHub" parent="Base.Theme.BarterHub" />
+
+    <style name="Theme.BarterHub.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/com_facebook_messenger_blue</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/loginlogo</item>
+        <item name="postSplashScreenTheme">@style/Theme.BarterHub</item>
+    </style>
+
 </resources>

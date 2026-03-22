@@ -3,6 +3,6 @@
     <corners android:topLeftRadius="8dp" android:topRightRadius="8dp" />
     <gradient
         android:startColor="@color/primary_500"
-        android:endColor="@color/colorAccent"
+        android:endColor="@color/com_facebook_messenger_blue"
         android:angle="90" />
 </shape>

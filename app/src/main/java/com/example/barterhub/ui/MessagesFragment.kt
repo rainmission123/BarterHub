@@ -184,7 +184,10 @@ class MessagesFragment : Fragment() {
 
                                 val chatId = chatSnap.key ?: continue
 
-                                // ✅ Check if userId is part of the chatId
+                                // Ignore old chat format like chat_uid1_uid2
+                                if (chatId.startsWith("chat_")) continue
+
+                                // Current user must be part of the chatId
                                 if (!chatId.contains(userId)) continue
 
                                 val partnerId = extractPartnerIdFromChatId(chatId, userId)

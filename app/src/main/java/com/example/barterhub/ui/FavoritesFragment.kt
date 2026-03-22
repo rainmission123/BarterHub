@@ -23,8 +23,7 @@ class FavoritesFragment : Fragment(R.layout.fragment_favorites) {
     private lateinit var progressBar: ProgressBar
     private lateinit var btnBack: View
 
-    private val favoriteItems = mutableListOf<FeaturedItem>()
-    private lateinit var adapter: FavoritesAdapter
+    private val adapter = FavoritesAdapter()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -34,18 +33,12 @@ class FavoritesFragment : Fragment(R.layout.fragment_favorites) {
         btnBack = view.findViewById(R.id.btnBack)
 
         favoritesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = FavoritesAdapter(favoriteItems)
         favoritesRecyclerView.adapter = adapter
 
-        setupBackButton()
+        btnBack.setOnClickListener { findNavController().navigateUp() }
+
         showLoading(true)
         loadFavorites()
-    }
-
-    private fun setupBackButton() {
-        btnBack.setOnClickListener {
-            findNavController().navigateUp()
-        }
     }
 
     private fun showLoading(show: Boolean) {
@@ -54,45 +47,94 @@ class FavoritesFragment : Fragment(R.layout.fragment_favorites) {
     }
 
     private fun loadFavorites() {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val favRef = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
-            .getReference("favorites")
-            .child(userId)
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: run {
+            showLoading(false)
+            return
+        }
+
+        val db = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/").reference
+        val favRef = db.child("favorites").child(userId)
 
         favRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (!isAdded) return
 
-                favoriteItems.clear()
+                val tempList = mutableListOf<FeaturedItem>()
+
                 for (child in snapshot.children) {
-                    try {
-                        val item = parseFeaturedItem(child)
-                        item?.let { favoriteItems.add(it) }
-                    } catch (e: Exception) {
-                        android.util.Log.e("FavoritesFragment", "Error parsing favorite: ${e.message}")
+                    val item = parseFeaturedItem(child) ?: continue
+
+                    if (item.itemId.isBlank()) {
+                        child.ref.removeValue()
+                        continue
                     }
+
+                    tempList.add(item)
                 }
-                adapter.notifyDataSetChanged()
-                showLoading(false)
+
+                resolveOwnerNamesIfNeeded(db, tempList) { resolved ->
+                    adapter.submitList(resolved)
+                    showLoading(false)
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                context?.let { ctx ->
-                    Toast.makeText(ctx, "Failed to load favorites", Toast.LENGTH_SHORT).show()
-                }
+                if (!isAdded) return
+                Toast.makeText(requireContext(), "Failed to load favorites", Toast.LENGTH_SHORT).show()
                 showLoading(false)
             }
         })
     }
 
+    private fun resolveOwnerNamesIfNeeded(
+        db: com.google.firebase.database.DatabaseReference,
+        list: List<FeaturedItem>,
+        done: (List<FeaturedItem>) -> Unit
+    ) {
+        val unresolved = list.filter { it.ownerName.isBlank() && it.ownerId.isNotBlank() }
+
+        if (unresolved.isEmpty()) {
+            done(list)
+            return
+        }
+
+        val result = list.toMutableList()
+        var remaining = unresolved.size
+
+        for (item in unresolved) {
+            db.child("users").child(item.ownerId).child("username")
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(s: DataSnapshot) {
+                        val username = s.getValue(String::class.java).orEmpty().trim()
+                        val fixed = if (username.isNotEmpty()) {
+                            item.copy(ownerName = username)
+                        } else {
+                            item
+                        }
+
+                        val idx = result.indexOfFirst { it.itemId == item.itemId }
+                        if (idx != -1) result[idx] = fixed
+
+                        remaining--
+                        if (remaining == 0) done(result)
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        remaining--
+                        if (remaining == 0) done(result)
+                    }
+                })
+        }
+    }
+
     private fun parseFeaturedItem(snapshot: DataSnapshot): FeaturedItem? {
         return try {
             FeaturedItem(
-                itemId = snapshot.child("itemId").getValue(String::class.java) ?: snapshot.key ?: "",
-                title = snapshot.child("title").getValue(String::class.java) ?: "",
-                description = snapshot.child("description").getValue(String::class.java) ?: "",
-                category = snapshot.child("category").getValue(String::class.java) ?: "",
-                condition = snapshot.child("condition").getValue(String::class.java) ?: "",
+                itemId = snapshot.child("itemId").getValue(String::class.java) ?: snapshot.key.orEmpty(),
+                title = snapshot.child("title").getValue(String::class.java).orEmpty(),
+                description = snapshot.child("description").getValue(String::class.java).orEmpty(),
+                category = snapshot.child("category").getValue(String::class.java).orEmpty(),
+                condition = snapshot.child("condition").getValue(String::class.java).orEmpty(),
                 price = snapshot.child("price").value?.let {
                     when (it) {
                         is Number -> it.toDouble()
@@ -100,16 +142,16 @@ class FavoritesFragment : Fragment(R.layout.fragment_favorites) {
                         else -> 0.0
                     }
                 } ?: 0.0,
-                displayPrice = snapshot.child("displayPrice").value?.toString() ?: "",
+                displayPrice = snapshot.child("displayPrice").value?.toString().orEmpty(),
                 imageUrls = snapshot.child("imageUrls").getValue(String::class.java)
                     ?: snapshot.child("photoUrls").getValue(String::class.java)
                     ?: "",
-                location = snapshot.child("location").getValue(String::class.java) ?: "",
+                location = snapshot.child("location").getValue(String::class.java).orEmpty(),
                 latitude = (snapshot.child("latitude").value as? Number)?.toDouble() ?: 0.0,
                 longitude = (snapshot.child("longitude").value as? Number)?.toDouble() ?: 0.0,
-                ownerId = snapshot.child("ownerId").getValue(String::class.java) ?: "",
-                ownerName = snapshot.child("ownerName").getValue(String::class.java) ?: "",
-                ownerProfileImage = snapshot.child("ownerProfileImage").getValue(String::class.java) ?: "",
+                ownerId = snapshot.child("ownerId").getValue(String::class.java).orEmpty(),
+                ownerName = snapshot.child("ownerName").getValue(String::class.java).orEmpty(),
+                ownerProfileImage = snapshot.child("ownerProfileImage").getValue(String::class.java).orEmpty(),
                 timestamp = snapshot.child("timestamp").value?.let {
                     when (it) {
                         is Number -> it.toLong()

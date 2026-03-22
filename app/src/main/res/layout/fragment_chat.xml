@@ -3,15 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:background="@drawable/backgroundlogin"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
     android:fitsSystemWindows="true">
 
     <!-- App Bar with Custom Chat Header -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
-        android:background="?attr/colorSurface"
         android:layout_height="wrap_content"
         android:elevation="16dp">
 
@@ -20,6 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:menu="@menu/chat_menu"
+            android:background="@color/com_facebook_messenger_blue"
             app:navigationIcon="@drawable/ic_arrow_back">
 
             <LinearLayout
@@ -47,7 +47,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Chat Partner"
-                        android:textColor="?attr/colorOnSurface"
+                        android:textColor="@color/White"
                         android:textSize="16sp"
                         android:textStyle="bold"
                         tools:ignore="HardcodedText" />
@@ -57,7 +57,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Online"
-                        android:textColor="?attr/colorOnSurface"
+                        android:textColor="@color/White"
                         android:textSize="12sp"
                         tools:ignore="HardcodedText" />
                 </LinearLayout>
@@ -71,18 +71,17 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="2dp"
-        android:layout_marginTop="?attr/actionBarSize"
         android:layout_marginBottom="0dp"
-        android:background="?attr/colorSurface"
+        android:background="@drawable/backgroundlogin"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/messagesRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginBottom="55dp"
             android:clipToPadding="false"
-            android:padding="16dp"
+            android:padding="6dp"
             android:paddingBottom="120dp"
             android:scrollbars="vertical"
             tools:listitem="@layout/message_item" />
@@ -93,7 +92,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            android:background="@drawable/messenger_input_top_bg"
             android:orientation="vertical"
             android:paddingTop="8dp"
             android:paddingBottom="0dp">
@@ -257,7 +255,6 @@
             android:textSize="12sp"
             android:textStyle="italic"
             tools:ignore="HardcodedText" />
-
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

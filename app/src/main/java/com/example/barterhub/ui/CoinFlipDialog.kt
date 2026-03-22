@@ -21,12 +21,9 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
 
 class CoinFlipDialog(context: Context) : Dialog(context) {
-
     private var userChoice: String? = null
     private var isFlipping = false
     private lateinit var soundThrow: MediaPlayer
-
-    // Fixed win rate
     private val WIN_RATE = 0.20f
     private val BET_AMOUNT = 5
     private val WIN_AMOUNT = 10

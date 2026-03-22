@@ -43,22 +43,25 @@ class SettingsFragment : Fragment() {
     }
 
     private fun setupDarkModeSwitch() {
-        // Set initial state
-        val isDarkMode = preferences.getBoolean("dark_mode", false)
-        binding.switchDarkMode.isChecked = isDarkMode
+        val savedDark = preferences.getBoolean("dark_mode", false)
 
-        binding.switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
-            // Save preference
+        binding.switchDarkMode.setOnCheckedChangeListener(null)
+
+        binding.switchDarkMode.isChecked = savedDark
+
+        binding.switchDarkMode.setOnCheckedChangeListener { buttonView, isChecked ->
+            if (!buttonView.isPressed) return@setOnCheckedChangeListener
+
             preferences.edit().putBoolean("dark_mode", isChecked).apply()
 
-            AppCompatDelegate.setDefaultNightMode(
-                if (isChecked) AppCompatDelegate.MODE_NIGHT_YES
-                else AppCompatDelegate.MODE_NIGHT_NO
-            )
+            val desiredMode = if (isChecked)
+                AppCompatDelegate.MODE_NIGHT_YES
+            else
+                AppCompatDelegate.MODE_NIGHT_NO
 
-            showMessage(if (isChecked) "Dark mode enabled 🌙" else "Light mode enabled ☀️")
+            if (AppCompatDelegate.getDefaultNightMode() == desiredMode) return@setOnCheckedChangeListener
 
-            requireActivity().recreate()
+            AppCompatDelegate.setDefaultNightMode(desiredMode)
         }
     }
 

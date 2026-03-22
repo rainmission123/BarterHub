@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:padding="20dp"
     android:fillViewport="true"
-    android:background="?attr/colorSurface"
+    android:background="@drawable/backgroundlogin"
     tools:context=".ui.HelpSupportFragment">
 
     <LinearLayout
@@ -22,7 +22,7 @@
             android:text="@string/help_amp_support"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:textColor="?attr/colorOnSurface"
+            android:textColor="@color/White"
             android:layout_marginBottom="8dp" />
 
         <TextView
@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:text="@string/how_can_we_help_you"
             android:textSize="16sp"
-            android:textColor="@color/gray_700"
+            android:textColor="@color/White"
             android:layout_marginBottom="24dp" />
 
         <!-- Support Options Card -->
@@ -68,7 +68,7 @@
                         android:layout_marginEnd="16dp"
                         android:contentDescription="@string/email_support"
                         android:src="@drawable/ic_email"
-                        app:tint="?attr/colorPrimary"
+                        app:tint="@color/gray_700"
                         tools:ignore="ImageContrastCheck" />
 
                     <LinearLayout
@@ -132,7 +132,7 @@
                         android:layout_marginEnd="16dp"
                         android:contentDescription="@string/faqs"
                         android:src="@drawable/ic_info"
-                        app:tint="?attr/colorPrimary"
+                        app:tint="@color/gray_700"
                         tools:ignore="ImageContrastCheck" />
 
                     <LinearLayout
@@ -196,7 +196,7 @@
                         android:layout_marginEnd="16dp"
                         android:contentDescription="@string/community_guidelines"
                         android:src="@drawable/ic_people"
-                        app:tint="?attr/colorPrimary"
+                        app:tint="@color/gray_700"
                         tools:ignore="ImageContrastCheck" />
 
                     <LinearLayout
@@ -243,7 +243,7 @@
             android:text="@string/quick_help"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="?attr/colorOnSurface"
+            android:textColor="@color/White"
             android:layout_marginBottom="16dp" />
 
         <!-- Common Issues Grid -->
@@ -293,7 +293,7 @@
                             android:layout_height="20dp"
                             android:src="@drawable/ic_help"
                             android:layout_marginEnd="12dp"
-                            app:tint="?attr/colorPrimary"
+                            app:tint="@color/gray_700"
                             android:contentDescription="@string/how_to_barter" />
 
                         <TextView
@@ -338,7 +338,7 @@
                             android:layout_height="20dp"
                             android:src="@drawable/ic_help"
                             android:layout_marginEnd="12dp"
-                            app:tint="?attr/colorPrimary"
+                            app:tint="@color/gray_700"
                             android:contentDescription="@string/pod_system" />
 
                         <TextView
@@ -383,7 +383,7 @@
                             android:layout_height="20dp"
                             android:src="@drawable/ic_help"
                             android:layout_marginEnd="12dp"
-                            app:tint="?attr/colorPrimary"
+                            app:tint="@color/gray_700"
                             android:contentDescription="@string/safety_tips" />
 
                         <TextView
@@ -428,7 +428,7 @@
                             android:layout_height="20dp"
                             android:src="@drawable/ic_help"
                             android:layout_marginEnd="12dp"
-                            app:tint="?attr/colorPrimary"
+                            app:tint="@color/gray_700"
                             android:contentDescription="@string/trade_problems" />
 
                         <TextView
@@ -473,7 +473,7 @@
                             android:layout_height="20dp"
                             android:src="@drawable/ic_help"
                             android:layout_marginEnd="12dp"
-                            app:tint="?attr/colorPrimary"
+                            app:tint="@color/gray_700"
                             android:contentDescription="@string/account_issues" />
 
                         <TextView

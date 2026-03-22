@@ -4,10 +4,8 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.SharedPreferences
-import android.graphics.Rect
 import android.os.Bundle
 import android.util.Log
-import android.util.TypedValue
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.ProgressBar
@@ -21,21 +19,22 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.barterhub.R
 import com.example.barterhub.adapters.FeaturedAdapter
 import com.example.barterhub.data.models.FeaturedItem
 import com.example.barterhub.databinding.FragmentHomeBinding
+import com.example.barterhub.ui.helpers.TrendingSliderManager
 import com.example.barterhub.ui.viewmodel.HomeViewModel
 import com.example.barterhub.utils.Categories
-import com.google.android.gms.ads.AdRequest
+import com.example.barterhub.utils.GridItemDecoration
+import com.example.barterhub.utils.dpToPx
 import com.google.android.material.chip.Chip
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-
+import com.example.barterhub.adapters.TrendingAdapter
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
-
+    private lateinit var trendingAdapter: TrendingAdapter
     private lateinit var prefs: SharedPreferences
     private lateinit var auth: FirebaseAuth
     private var _binding: FragmentHomeBinding? = null
@@ -46,8 +45,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private val viewModel: HomeViewModel by viewModels()
     private lateinit var featuredAdapter: FeaturedAdapter
-
     private var isCategoriesExpanded = false
+    private var trendingSliderManager: TrendingSliderManager? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -55,22 +54,147 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         auth = FirebaseAuth.getInstance()
         prefs = requireActivity().getSharedPreferences("AppPrefs", AppCompatActivity.MODE_PRIVATE)
 
+        trendingSliderManager = TrendingSliderManager(binding.trendingViewPager)
+
         initializeLoadingViews(view)
         showLoading(true)
         setupRecyclerView()
         setupUI()
-        diagnoseFirebaseData()
-        cleanupDatabaseFields()
-
         view.postDelayed({
             setupStatusBarInsets()
-            setupAd()
             setupClickListeners()
             setupTradeRequestBadgeListener()
             observeViewModel()
             viewModel.loadAllItems()
             setupScrollListener()
+            setupTrendingSlider()
         }, 1)
+    }
+
+    private fun setupTrendingSlider() {
+        trendingAdapter = TrendingAdapter { item ->
+            Toast.makeText(requireContext(), item.title, Toast.LENGTH_SHORT).show()
+        }
+
+        binding.trendingViewPager.adapter = trendingAdapter
+        binding.trendingSliderContainer.visibility = View.VISIBLE
+
+        // Set click listener para sa "View All"
+        binding.trendingViewAll.setOnClickListener {
+            navigateToAllTrendingItems()
+        }
+
+        loadTrendingItemsFromFirebase()
+    }
+
+    // Sa HomeFragment.kt, hanapin ang navigateToAllTrendingItems()
+    private fun navigateToAllTrendingItems() {
+        try {
+            // Gamitin ang action ID na nasa nav_graph niyo
+            findNavController().navigate(R.id.action_homeFragment_to_allTrendingItemsFragment)
+        } catch (e: Exception) {
+            Log.e("HomeFragment", "Error navigating to AllTrendingItems: ${e.message}")
+            Toast.makeText(requireContext(), "Cannot open trending items", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun loadTrendingItemsFromFirebase() {
+        val ref = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
+            .getReference("items")
+
+        // Kunin ang latest items (pwede ring orderByChild("timestamp").limitToLast(20) para marami)
+        ref.orderByChild("timestamp").limitToLast(20)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val trendingItems = mutableListOf<FeaturedItem>()
+                    val premiumUserIds = mutableSetOf<String>()
+
+                    Log.d("TRENDING_DEBUG", "📦 Loading items for trending slider...")
+
+                    // Una, kunin muna natin ang lahat ng items
+                    val allItems = mutableListOf<FeaturedItem>()
+                    for (itemSnapshot in snapshot.children) {
+                        val item = itemSnapshot.getValue(FeaturedItem::class.java)
+                        item?.let {
+                            it.itemId = itemSnapshot.key ?: ""
+                            allItems.add(it)
+                        }
+                    }
+
+                    val ownerIds = allItems.map { it.ownerId }.distinct()
+
+                    if (ownerIds.isEmpty()) {
+                        binding.trendingSliderContainer.visibility = View.GONE
+                        return
+                    }
+
+                    val usersRef = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
+                        .getReference("users")
+
+                    var processedCount = 0
+
+                    ownerIds.forEach { ownerId ->
+                        usersRef.child(ownerId).child("isPremium").addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(userSnapshot: DataSnapshot) {
+                                val isPremium = userSnapshot.getValue(Boolean::class.java) ?: false
+
+                                if (isPremium) {
+                                    premiumUserIds.add(ownerId)
+                                }
+
+                                processedCount++
+
+                                if (processedCount == ownerIds.size) {
+                                    filterItemsByPremiumUsers(allItems, premiumUserIds)
+                                }
+                            }
+
+                            override fun onCancelled(error: DatabaseError) {
+                                Log.e("TRENDING_DEBUG", "Failed to check user premium status: ${error.message}")
+                                processedCount++
+
+                                if (processedCount == ownerIds.size) {
+                                    filterItemsByPremiumUsers(allItems, premiumUserIds)
+                                }
+                            }
+                        })
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("TRENDING_DEBUG", "❌ Failed to load trending items: ${error.message}")
+                    binding.trendingSliderContainer.visibility = View.GONE
+                }
+            })
+    }
+
+    private fun filterItemsByPremiumUsers(allItems: List<FeaturedItem>, premiumUserIds: Set<String>) {
+        val trendingItems = allItems.filter { it.ownerId in premiumUserIds }
+            .sortedByDescending { it.timestamp } // Pababang ayos (latest first)
+            .take(5)
+
+        Log.d("TRENDING_DEBUG", "📊 Total items: ${allItems.size}")
+        Log.d("TRENDING_DEBUG", "⭐ Premium users: ${premiumUserIds.size}")
+        Log.d("TRENDING_DEBUG", "🔥 Trending items (premium only): ${trendingItems.size}")
+
+        trendingItems.forEachIndexed { index, item ->
+            Log.d("TRENDING_DEBUG", "  $index: ${item.title} - Owner: ${item.ownerId} (Premium)")
+        }
+
+        trendingAdapter.submitList(trendingItems)
+
+        if (trendingItems.isNotEmpty()) {
+            binding.trendingSliderContainer.visibility = View.VISIBLE
+            trendingSliderManager?.startAutoSlide()
+        } else {
+            binding.trendingSliderContainer.visibility = View.GONE
+            Log.d("TRENDING_DEBUG", "😢 No premium items found")
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        trendingSliderManager?.stopAutoSlide()
     }
 
     private fun initializeLoadingViews(view: View) {
@@ -96,38 +220,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             layoutManager = GridLayoutManager(requireContext(), 2)
             adapter = featuredAdapter
 
-            // ✅ 2dp spacing sa gitna lang
             addItemDecoration(GridItemDecoration(4.dpToPx(this)))
-        }
-    }
-    class GridItemDecoration(private val spacing: Int) : RecyclerView.ItemDecoration() {
-        override fun getItemOffsets(
-            outRect: Rect,
-            view: View,
-            parent: RecyclerView,
-            state: RecyclerView.State
-        ) {
-            super.getItemOffsets(outRect, view, parent, state)
-
-            val position = parent.getChildAdapterPosition(view)
-            val column = position % 2
-
-            // ✅ SPACING SA GITNA LANG (2dp)
-            if (column == 0) {
-                // Left item: right spacing only
-                outRect.right = spacing / 2
-            } else {
-                // Right item: left spacing only
-                outRect.left = spacing / 2
-            }
-
-            // ✅ Bottom spacing (2dp din)
-            outRect.bottom = spacing
-
-            // ✅ Top spacing for first row only
-            if (position < 2) {
-                outRect.top = spacing
-            }
         }
     }
 
@@ -141,7 +234,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             .setTitle("Item Options")
             .setItems(options) { dialog, which ->
                 when (which) {
-                    0 -> shareItem(item, title)
+                    0 -> shareItem(title)
                     1 -> reportItem(itemId, title)
                     // 2 is Cancel - do nothing
                 }
@@ -150,7 +243,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             .show()
     }
 
-    private fun shareItem(item: FeaturedItem, title: String) {
+    private fun shareItem(title: String) {
         val shareText = "Check out this item on BarterHub:\n\n" +
                 "📱 $title\n\n" +
                 "Download BarterHub to see more!"
@@ -176,46 +269,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 dialog.dismiss()
             }
             .show()
-    }
-
-    private fun diagnoseFirebaseData() {
-        val ref = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
-            .getReference("items")
-
-        ref.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                Log.d("DIAGNOSE", "=== FIREBASE DATA DIAGNOSIS ===")
-                Log.d("DIAGNOSE", "Total items in DB: ${snapshot.childrenCount}")
-
-                var index = 0
-                snapshot.children.forEach { child ->
-                    index++
-                    Log.d("DIAGNOSE", "--- Item $index (${child.key}) ---")
-
-                    // Check ALL fields
-                    child.children.forEach { field ->
-                        val key = field.key
-                        val value = field.value
-                        val type = value?.javaClass?.simpleName ?: "NULL"
-
-                        Log.d("DIAGNOSE", "  $key: '$value' (type: $type)")
-                    }
-
-                    // Special check for description
-                    val desc = child.child("description").value
-                    Log.d("DIAGNOSE", "  DESCRIPTION ANALYSIS:")
-                    Log.d("DIAGNOSE", "    Raw value: '$desc'")
-                    Log.d("DIAGNOSE", "    Type: ${desc?.javaClass?.simpleName ?: "NULL"}")
-                    Log.d("DIAGNOSE", "    Is null: ${desc == null}")
-                    Log.d("DIAGNOSE", "    Is empty string: ${desc == ""}")
-                    Log.d("DIAGNOSE", "    Is blank string: ${(desc as? String)?.isBlank()}")
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("DIAGNOSE", "Error: ${error.message}")
-            }
-        })
     }
 
     private fun reportItemToModerators(itemId: String, title: String) {
@@ -376,10 +429,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
-    private fun setupAd() {
-        binding.adViewTop.loadAd(AdRequest.Builder().build())
-    }
-
     private fun setupScrollListener() {
         val scrollView = binding.scrollContent
         val filterButtonContainer = binding.filterButton
@@ -398,61 +447,16 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
-    private fun cleanupDatabaseFields() {
-        val ref = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
-            .getReference("items")
-
-        ref.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                snapshot.children.forEach { child ->
-                    val updates = HashMap<String, Any>()
-
-                    // Remove originalPrice if exists
-                    if (child.child("originalPrice").exists()) {
-                        updates["originalPrice"] = ""
-                    }
-
-                    // Remove ownerProfileImage from items (keep in users only)
-                    if (child.child("ownerProfileImage").exists()) {
-                        updates["ownerProfileImage"] = ""
-                    }
-
-                    // Apply updates if needed
-                    if (updates.isNotEmpty()) {
-                        child.ref.updateChildren(updates)
-                            .addOnSuccessListener {
-                                Log.d("Cleanup", "✅ Cleaned item ${child.key}")
-                            }
-                            .addOnFailureListener { e ->
-                                Log.e("Cleanup", "❌ Failed to clean item ${child.key}: ${e.message}")
-                            }
-                    }
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("Cleanup", "Error: ${error.message}")
-            }
-        })
-    }
-
     override fun onResume() {
         super.onResume()
-        setupTradeRequestBadgeListener()
-        viewModel.loadAllItems() // ✅ Refresh data when coming back
+        viewModel.loadAllItems()
         view?.postDelayed({ binding.scrollContent.scrollTo(0, 0) }, 100)
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        trendingSliderManager?.stopAutoSlide()
+        trendingSliderManager = null
         _binding = null
+        super.onDestroyView()
     }
-}
-
-fun Int.dpToPx(view: View): Int {
-    return TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_DIP,
-        this.toFloat(),
-        view.resources.displayMetrics
-    ).toInt()
 }

@@ -37,24 +37,46 @@ import de.hdodenhof.circleimageview.CircleImageView
 import com.google.android.material.snackbar.Snackbar
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Looper
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.barterhub.ads.AppOpenAdManager
+import androidx.appcompat.app.AppCompatDelegate
+import com.example.barterhub.utils.BottomNavBadgeManager
+
 
 @Suppress("DEPRECATION")
 class HomeActivity : AppCompatActivity() {
-
+    private lateinit var badgeManager: BottomNavBadgeManager
     private lateinit var binding: ActivityHomeBinding
     lateinit var drawerLayout: DrawerLayout
     private lateinit var navController: NavController
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
+        val prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE)
+        val isDark = prefs.getBoolean("dark_mode", false)
+
+        val desiredMode = if (isDark) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
+        if (AppCompatDelegate.getDefaultNightMode() != desiredMode) {
+            AppCompatDelegate.setDefaultNightMode(desiredMode)
+        }
+
         super.onCreate(savedInstanceState)
 
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        badgeManager = BottomNavBadgeManager(binding.bottomNavigation)
+        badgeManager.listenForMessagesBadge()
+        badgeManager.listenForProfileBadge()
+
+        binding.bottomNavigation.itemIconTintList =
+            ContextCompat.getColorStateList(this, R.color.bottom_nav_icon_selector)
+
+        binding.bottomNavigation.itemTextColor =
+            ContextCompat.getColorStateList(this, R.color.bottom_nav_text_selector)
 
         drawerLayout = binding.drawerLayout
         val navigationView = binding.navigationView
@@ -69,7 +91,6 @@ class HomeActivity : AppCompatActivity() {
             }
         }
 
-        // 👉 Make indicator follow drawer movement
         drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
                 val translationX = drawerView.width * slideOffset
@@ -87,7 +108,6 @@ class HomeActivity : AppCompatActivity() {
             override fun onDrawerStateChanged(newState: Int) {}
         })
 
-        // 👉 Optional swipe gesture sa indicator
         swipeIndicator.setOnTouchListener(object : View.OnTouchListener {
             private var startX = 0f
             private val SWIPE_THRESHOLD = 50
@@ -107,22 +127,69 @@ class HomeActivity : AppCompatActivity() {
             }
         })
 
-        // The rest of your setup calls
         setupNavController()
         initializeAds()
+        setupAppOpenAd()
+        AppOpenAdManager.loadAd(application)
         setupNavigationMenu()
         setupBackPressedHandler()
         setupSimpleWindowInsets()
         saveFcmToken()
         showSwipeTutorial()
-        listenForBottomNavUnread()
         requestNotificationPermission()
+    }
+
+    private fun setupAppOpenAd() {
+        // Initialize ads first
+        MobileAds.initialize(this) {}
+
+        // Load the ad
+        AppOpenAdManager.loadAd(application)
+
+        // Show ad after a short delay to ensure activity is ready
+        android.os.Handler(Looper.getMainLooper()).postDelayed({
+            AppOpenAdManager.showAdIfAvailable(this@HomeActivity)
+        }, 500)
     }
 
     override fun onStart() {
         super.onStart()
-        val isPremiumUser = false
-        AppOpenAdManager.showAdIfAvailable(this, isPremiumUser)
+
+        // Check if we need to show ad (only if not shown yet)
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid == null) {
+            // Non-logged in user - show ad
+            android.os.Handler(Looper.getMainLooper()).postDelayed({
+                AppOpenAdManager.forceShowAd(this@HomeActivity)
+            }, 300)
+        } else {
+            // Check if premium
+            checkUserPremiumBeforeShowingAd(uid)
+        }
+    }
+
+    private fun checkUserPremiumBeforeShowingAd(uid: String) {
+        FirebaseDatabase.getInstance()
+            .reference
+            .child("users")
+            .child(uid)
+            .get()
+            .addOnSuccessListener { snap ->
+                val isPremium = snap.child("isPremium").getValue(Boolean::class.java) ?: false
+                val expiry = snap.child("premiumExpiry").getValue(Long::class.java) ?: 0L
+                val now = System.currentTimeMillis()
+
+                val premiumActive = isPremium && expiry > now
+
+                if (!premiumActive) {
+                    // Non-premium user - show ad
+                    android.os.Handler(Looper.getMainLooper()).postDelayed({
+                        AppOpenAdManager.forceShowAd(this@HomeActivity)
+                    }, 300)
+                } else {
+                    Log.d("HOME_ACTIVITY", "👑 Premium user - no ads")
+                }
+            }
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -166,6 +233,7 @@ class HomeActivity : AppCompatActivity() {
                 R.id.nav_home -> {
                     if (navController.currentDestination?.id != R.id.nav_home)
                         navController.popBackStack(R.id.nav_home, false)
+                    animateBottomNavSelection()
                     true
                 }
                 R.id.nav_search -> {
@@ -173,11 +241,12 @@ class HomeActivity : AppCompatActivity() {
                         navController.navigate(R.id.nav_search)
                     true
                 }
+
                 R.id.nav_add -> {
-                    // ✅ UPDATED: Verification check before adding item
-                    checkVerificationBeforeAddingItem()
-                    false // Return false to prevent automatic navigation
+                    navigateToAddItem()
+                    false
                 }
+
                 R.id.nav_messages -> {
                     if (navController.currentDestination?.id != R.id.nav_messages)
                         navController.navigate(R.id.nav_messages)
@@ -193,36 +262,21 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    private fun checkVerificationBeforeAddingItem() {
-        val currentUser = FirebaseAuth.getInstance().currentUser
-
-        if (currentUser == null) {
-            Toast.makeText(this, "Please login first to post items", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        // Check verification status
-        val userRef = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
-            .getReference("users")
-            .child(currentUser.uid)
-
-        userRef.get().addOnSuccessListener { snapshot ->
-            if (snapshot.exists()) {
-                val isVerified = snapshot.child("isIDVerified").getValue(String::class.java) == "verified"
-
-                if (isVerified) {
-                    navigateToAddItem()
-                } else {
-                    showVerificationRequiredDialog()
-                }
-            } else {
-                // User data not found - treat as not verified
-                showVerificationRequiredDialog()
+    private fun animateBottomNavSelection() {
+        binding.bottomNavigation.animate()
+            .scaleX(1.02f)
+            .scaleY(1.02f)
+            .setDuration(120)
+            .withEndAction {
+                binding.bottomNavigation.animate()
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .setDuration(120)
+                    .start()
             }
-        }.addOnFailureListener {
-            Toast.makeText(this, "Error checking verification status", Toast.LENGTH_SHORT).show()
-        }
+            .start()
     }
+
 
     private fun navigateToAddItem() {
         try {
@@ -232,36 +286,6 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    private fun showVerificationRequiredDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_verification_required, null)
-
-        // ✅ FIXED: Remove R.style.ModernAlertDialog or use existing theme
-        val dialog = android.app.AlertDialog.Builder(this)
-            .setView(dialogView)
-            .setCancelable(false)
-            .create()
-
-        // Make dialog background transparent
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-
-        val btnGoToProfile = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnGoToProfile)
-        val btnCancel = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnCancel)
-
-        btnGoToProfile.setOnClickListener {
-            try {
-                navController.navigate(R.id.nav_profile)
-            } catch (e: Exception) {
-                Toast.makeText(this, "Error navigating to profile", Toast.LENGTH_SHORT).show()
-            }
-            dialog.dismiss()
-        }
-
-        btnCancel.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        dialog.show()
-    }
     private fun updateBottomNavigationVisibility(destination: NavDestination) {
         when (destination.id) {
             R.id.nav_home, R.id.nav_search, R.id.nav_add,
@@ -297,9 +321,8 @@ class HomeActivity : AppCompatActivity() {
         val profileImageView = headerView.findViewById<CircleImageView>(R.id.userProfileSection)
         val usernameText = headerView.findViewById<TextView>(R.id.userName)
         val emailText = headerView.findViewById<TextView>(R.id.userEmail)
-
-        // 🔹 Load user data
         val uid = FirebaseAuth.getInstance().currentUser?.uid
+
         if (uid != null) {
             FirebaseDatabase.getInstance().getReference("users").child(uid)
                 .addListenerForSingleValueEvent(object : ValueEventListener {
@@ -330,7 +353,6 @@ class HomeActivity : AppCompatActivity() {
                 })
         }
 
-        // 🔹 Handle the rest of the drawer items
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_profile -> {
@@ -372,9 +394,8 @@ class HomeActivity : AppCompatActivity() {
         val isFirstTime = sharedPrefs.getBoolean("first_time_swipe", true)
 
         if (isFirstTime) {
-            // Mas visible na Snackbar
             Snackbar.make(binding.root, "👈 SWIPE FROM LEFT EDGE TO OPEN MENU", Snackbar.LENGTH_LONG)
-                .setBackgroundTint(resources.getColor(R.color.colorAccent))
+                .setBackgroundTint(resources.getColor(R.color.com_facebook_messenger_blue))
                 .setTextColor(resources.getColor(android.R.color.white))
                 .setAction("GOT IT") { }
                 .setActionTextColor(resources.getColor(android.R.color.white))
@@ -398,81 +419,6 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupMessagesBadge() {
-        val currentUser = FirebaseAuth.getInstance().currentUser ?: return
-        val bottomNav = binding.bottomNavigation
-
-        // Reference sa Firebase chat messages ng current user
-        val chatsRef = FirebaseDatabase.getInstance()
-            .getReference("users/${currentUser.uid}/chats")
-
-        chatsRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                var totalUnread = 0
-
-                snapshot.children.forEach { chatSnapshot ->
-                    val messagesSnapshot = chatSnapshot.child("messages")
-                    messagesSnapshot.children.forEach { message ->
-                        val read = message.child("read").getValue(Boolean::class.java) ?: true
-                        val receiverId = message.child("receiverId").getValue(String::class.java)
-                        if (!read && receiverId == currentUser.uid) totalUnread++
-                    }
-                }
-
-                val badge = bottomNav.getOrCreateBadge(R.id.nav_messages)
-                if (totalUnread > 0) {
-                    badge.isVisible = true
-                    badge.number = if (totalUnread > 99) 99 else totalUnread // max 99+
-                } else {
-                    badge.isVisible = false
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                // Hide badge if error occurs
-                val badge = bottomNav.getOrCreateBadge(R.id.nav_messages)
-                badge.isVisible = false
-            }
-        })
-    }
-
-    private fun updateBottomNavBadge(count: Int) {
-        val badge = binding.bottomNavigation.getOrCreateBadge(R.id.nav_messages)
-
-        if (count > 0) {
-            badge.isVisible = true
-            badge.number = if (count > 99) 99 else count
-        } else {
-            badge.clearNumber()
-            badge.isVisible = false
-        }
-    }
-
-    private fun listenForBottomNavUnread() {
-        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-
-        val inboxRef = FirebaseDatabase.getInstance()
-            .getReference("user_inbox")
-            .child(currentUserId)
-
-        inboxRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                var totalUnread = 0
-
-                for (chatSnap in snapshot.children) {
-                    totalUnread += chatSnap
-                        .child("unreadCount")
-                        .getValue(Int::class.java) ?: 0
-                }
-
-                updateBottomNavBadge(totalUnread)
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                updateBottomNavBadge(0)
-            }
-        })
-    }
 
     private fun requestNotificationPermission() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
@@ -511,5 +457,10 @@ class HomeActivity : AppCompatActivity() {
             }
         }
         onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        badgeManager.removeListeners()
     }
 }

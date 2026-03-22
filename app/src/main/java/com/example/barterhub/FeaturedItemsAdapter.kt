@@ -7,47 +7,63 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.barterhub.R
 import com.example.barterhub.data.models.FeaturedItem
 
 class FeaturedItemsAdapter(
-    private val items: List<FeaturedItem>
-) : RecyclerView.Adapter<FeaturedItemsAdapter.ViewHolder>() {
+    private val items: List<FeaturedItem>,
+    private val onItemClick: (FeaturedItem) -> Unit
+) : RecyclerView.Adapter<FeaturedItemsAdapter.VH>() {
 
-    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val title: TextView = view.findViewById(R.id.itemTitle)
-        val image: ImageView = view.findViewById(R.id.itemImage)
+    inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val img: ImageView = itemView.findViewById(com.example.barterhub.R.id.itemImage)
+        val title: TextView = itemView.findViewById(com.example.barterhub.R.id.itemTitle)
+        val price: TextView = itemView.findViewById(com.example.barterhub.R.id.itemPrice)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_featured, parent, false)
-        return ViewHolder(view)
+            .inflate(com.example.barterhub.R.layout.item_featured, parent, false)
+        return VH(view)
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: VH, position: Int) {
         val item = items[position]
 
         holder.title.text = item.title
 
-        // ✅ FIX: imageUrls is comma-separated STRING
-        val firstImageUrl = item.imageUrls
-            .split(",")
-            .firstOrNull()
-            ?.trim()
-            .orEmpty()
+        // ✅ Use displayPrice if available, fallback to numeric price
+        holder.price.text =
+            if (item.displayPrice.isNotBlank()) {
+                item.displayPrice
+            } else if (item.price > 0) {
+                "₱${String.format("%,.2f", item.price)}"
+            } else {
+                "Barter"
+            }
 
-        if (firstImageUrl.isNotEmpty()) {
-            Glide.with(holder.itemView.context)
-                .load(firstImageUrl)
-                .placeholder(R.drawable.placeholder_item)
-                .error(R.drawable.placeholder_item)
-                .centerCrop()
-                .into(holder.image)
-        } else {
-            holder.image.setImageResource(R.drawable.placeholder_item)
+        // ✅ imageUrls is STRING → parse first URL safely
+        val imageUrl = parseFirstImageUrl(item.imageUrls)
+
+        Glide.with(holder.itemView.context)
+            .load(imageUrl)
+            .centerCrop()
+            .into(holder.img)
+
+        // ✅ Delegate click to Fragment
+        holder.itemView.setOnClickListener {
+            onItemClick(item)
         }
     }
 
     override fun getItemCount(): Int = items.size
+
+    private fun parseFirstImageUrl(raw: String?): String? {
+        if (raw.isNullOrBlank()) return null
+
+        // supports: "url1|url2", "url1,url2", or single url
+        return raw
+            .split("|", ",")
+            .map { it.trim() }
+            .firstOrNull { it.isNotEmpty() }
+    }
 }

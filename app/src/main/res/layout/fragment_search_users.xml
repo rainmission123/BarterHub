@@ -4,17 +4,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
+    android:background="@drawable/backgroundlogin">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorSurface"
+        android:background="@color/com_facebook_messenger_blue"
         app:layout_constraintTop_toTopOf="parent"
         app:title="Search Users"
         app:navigationIcon="@drawable/ic_arrow_back"
-        app:titleTextColor="?attr/colorOnSurface" />
+        app:titleTextColor="@color/White" />
 
     <!-- Search Bar -->
     <com.google.android.material.card.MaterialCardView

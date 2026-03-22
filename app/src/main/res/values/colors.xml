@@ -234,5 +234,33 @@
     <color name="chip_background">#F3F4F6</color>
     <color name="outline">#E5E7EB</color>
     <color name="primary_500">#3B82F6</color>
+    <color name="overlay_black_50">#80000000</color>
+    <color name="medium_gray">#9E9E9E</color>
+    <color name="old_paper">#FFF9F0</color>
+    <color name="login_card_bg">#CCFFFFFF</color>
+    <color name="social_btn_bg">#1A000000</color>
+    <color name="bottom_nav_bg">#14161A</color>
+    <color name="bottom_nav_stroke">#2A2F38</color>
+    <color name="bottom_nav_active">#7C4DFF</color>
+    <color name="bottom_nav_inactive">#8B93A5</color>
+    <color name="bottom_nav_indicator">#2A2144</color>
+    <color name="bottom_nav_ripple">#33FFFFFF</color>
+    <color name="tab_home">#7C4DFF</color>
+    <color name="tab_home_indicator">#2A2144</color>
+    <color name="tab_search">#00C853</color>
+    <color name="tab_search_indicator">#143322</color>
+    <color name="tab_add">#FF6D00</color>
+    <color name="tab_add_indicator">#3A2414</color>
+    <color name="tab_messages">#00B0FF</color>
+    <color name="tab_messages_indicator">#142B3A</color>
+    <color name="tab_profile">#FF4081</color>
+    <color name="tab_profile_indicator">#3A1422</color>
+    <color name="trending_card_bg">#1E1E1E</color>
+    <color name="trending_icon_color">#FFD700</color>
+    <color name="trending_text_color">#FFFFFF</color>
+    <color name="trending_view_all">#FFD700</color>
+    <color name="trending_indicator_selected">#FFD700</color>
+    <color name="trending_indicator_default">#666666</color>
+    <color name="splash_bg">#101826</color>
 
 </resources>

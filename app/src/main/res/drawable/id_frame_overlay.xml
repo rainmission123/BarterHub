@@ -9,7 +9,7 @@
         <shape android:shape="rectangle">
             <stroke
                 android:width="4dp"
-                android:color="@color/colorAccent" />
+                android:color="@color/com_facebook_messenger_blue" />
             <solid android:color="@android:color/transparent" />
             <corners android:radius="12dp" />
         </shape>

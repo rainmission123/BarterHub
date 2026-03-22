@@ -7,60 +7,67 @@
     android:layout_height="wrap_content"
     android:paddingVertical="6dp">
 
-    <!-- Profile Image -->
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/ivProfile"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:layout_marginStart="8dp"
-        android:scaleType="centerCrop"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:src="@drawable/ic_profile_placeholder"/>
+        <!-- Profile Image -->
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/ivProfile"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="8dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:src="@drawable/ic_profile_placeholder"/>
 
-    <!-- Sender Name -->
-    <TextView
-        android:id="@+id/tvSender"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="6dp"
-        android:textColor="@color/text_secondary"
-        android:textSize="12sp"
-        android:visibility="gone"
-        app:layout_constraintStart_toEndOf="@id/ivProfile"
-        app:layout_constraintTop_toTopOf="@id/ivProfile"
-        tools:text="John Doe" />
-
-    <!-- VIDEO BUBBLE -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/videoCardContainer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="48dp"
-        android:layout_marginTop="28dp"
-        android:layout_marginEnd="4dp"
-        app:cardCornerRadius="14dp"
-        app:cardElevation="0dp"
-        app:layout_constraintTop_toBottomOf="@id/tvSender"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <LinearLayout
+        <!-- VIDEO BUBBLE (SAME STYLE AS IMAGE BUBBLE) -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/videoContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="4dp">
+            android:layout_marginStart="48dp"
+            android:layout_marginTop="28dp"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@android:color/transparent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
 
             <FrameLayout
                 android:layout_width="160dp"
                 android:layout_height="284dp"
-                android:background="@drawable/rounded_corner_small"
+                android:background="@drawable/rounded_message_bg"
                 android:clipToOutline="true">
 
+                <!-- Video Thumbnail -->
                 <ImageView
                     android:id="@+id/videoThumbnail"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:scaleType="centerCrop" />
+                    android:scaleType="centerCrop"
+                    android:visibility="visible"
+                    tools:src="@drawable/ic_video_placeholder" />
+
+                <ImageView
+                    android:id="@+id/ivPlay"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_play_circle"
+                    android:visibility="visible"
+                    app:tint="@android:color/white" />
+
+                <TextView
+                    android:id="@+id/tvDuration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_margin="8dp"
+                    android:background="@drawable/rounded_dark_bg"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp"
+                    android:textColor="@android:color/white"
+                    android:textSize="11sp"
+                    android:visibility="visible"
+                    tools:text="2:30"/>
 
                 <View
                     android:id="@+id/uploadOverlay"
@@ -72,131 +79,91 @@
                 <ProgressBar
                     android:id="@+id/videoUploadProgress"
                     style="?android:attr/progressBarStyleHorizontal"
-                    android:layout_width="match_parent"
+                    android:layout_width="90dp"
                     android:layout_height="6dp"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginHorizontal="8dp"
-                    android:indeterminate="false"
+                    android:layout_gravity="center"
                     android:max="100"
                     android:progress="0"
                     android:visibility="gone"
                     android:progressTint="@color/colorAccent"
                     android:progressBackgroundTint="@color/gray_light" />
 
-                <ImageView
-                    android:id="@+id/ivPlay"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/ic_play_circle"
-                    app:tint="@android:color/white" />
-
-                <TextView
-                    android:id="@+id/tvDuration"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|end"
-                    android:layout_margin="8dp"
-                    android:background="#80000000"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="3dp"
-                    android:textColor="@android:color/white"
-                    android:textSize="11sp"
-                    tools:text="2:30"/>
             </FrameLayout>
+        </androidx.cardview.widget.CardView>
 
-            <!-- REACTIONS CONTAINER - ADDED -->
-            <LinearLayout
-                android:id="@+id/reactionsContainer"
+        <ImageView
+            android:id="@+id/btnVideoMenu"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_more_vert"
+            android:padding="4dp"
+            android:visibility="visible"
+            app:layout_constraintStart_toEndOf="@id/videoContainer"
+            app:layout_constraintTop_toTopOf="@id/videoContainer"
+            app:layout_constraintBottom_toBottomOf="@id/videoContainer"
+            android:layout_marginStart="4dp"
+            app:tint="@color/White" />
+
+        <LinearLayout
+            android:id="@+id/singleReactionContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/bg_reaction_default"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="6dp"
+            android:paddingVertical="2dp"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="@id/videoContainer"
+            app:layout_constraintTop_toBottomOf="@id/videoContainer">
+
+            <TextView
+                android:id="@+id/tvReactionEmoji"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginStart="4dp"
-                android:layout_marginTop="4dp"
-                android:visibility="gone">
+                android:text="👍"
+                android:textSize="12sp" />
 
-                <!-- Reactions will be added programmatically -->
-            </LinearLayout>
-
-            <!-- SINGLE REACTION DISPLAY - CHANGED -->
-            <LinearLayout
-                android:id="@+id/singleReactionContainer"
+            <TextView
+                android:id="@+id/tvReactionCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginStart="4dp"
-                android:layout_marginTop="2dp"
-                android:paddingHorizontal="6dp"
-                android:paddingVertical="2dp"
-                android:visibility="gone"
-                android:background="@drawable/bg_reaction_default">
-
-                <TextView
-                    android:id="@+id/tvReactionEmoji"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="12sp"
-                    android:text=""
-                    tools:text="👍"/>
-
-                <!-- 🔥 CRITICAL: ADD THIS tvReactionCount TextView -->
-                <TextView
-                    android:id="@+id/tvReactionCount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="10sp"
-                    android:textColor="@color/text_secondary"
-                    android:layout_marginStart="2dp"
-                    android:text=""
-                    tools:text="1"/>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginTop="6dp"
-                android:paddingHorizontal="4dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="end"
-                    android:layout_marginTop="2dp">
-
-                    <TextView
-                        android:id="@+id/tvTimestamp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="10sp"
-                        android:textColor="@color/text_hint"
-                        tools:text="10:30 AM"/>
-
-                    <TextView
-                        android:id="@+id/tvReadStatus"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Sent"
-                        android:textSize="10sp"
-                        android:textColor="@color/text_hint"
-                        android:visibility="visible"/>
-                </LinearLayout>
-            </LinearLayout>
+                android:layout_marginStart="2dp"
+                android:text="1"
+                android:textColor="@color/text_secondary"
+                android:textSize="10sp" />
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
 
-    <ImageView
-        android:id="@+id/btnVideoMenu"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:src="@drawable/ic_more_vert"
-        android:padding="4dp"
-        android:visibility="visible"
-        app:layout_constraintStart_toEndOf="@id/videoCardContainer"
-        app:layout_constraintTop_toTopOf="@id/videoCardContainer"
-        app:layout_constraintBottom_toBottomOf="@id/videoCardContainer"
-        android:layout_marginStart="4dp"
-        app:tint="@color/text_hint" />
+        <LinearLayout
+            android:id="@+id/statusContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:layout_marginStart="@dimen/_60dp"
+            android:orientation="vertical"
+            android:paddingHorizontal="4dp"
+            android:paddingTop="4dp"
+            app:layout_constraintStart_toStartOf="@id/videoContainer"
+            app:layout_constraintTop_toBottomOf="@id/videoContainer"
+            app:layout_constraintEnd_toEndOf="@id/videoContainer">
+
+            <TextView
+                android:id="@+id/tvTimestamp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="10:30 AM"
+                android:textColor="@color/White"
+                android:textSize="9sp" />
+
+            <TextView
+                android:id="@+id/tvReadStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sent"
+                android:textColor="@color/White"
+                android:textSize="9sp" />
+        </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

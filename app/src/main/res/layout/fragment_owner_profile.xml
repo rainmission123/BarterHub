@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="?attr/colorSurface">
+    android:background="@drawable/backgroundlogin">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -36,7 +36,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:background="?attr/colorSurface"
                     android:padding="20dp">
 
                     <!-- Profile Picture & Basic Info -->
@@ -84,7 +83,7 @@
                                 android:text="@string/user_name"
                                 android:textSize="18sp"
                                 android:textStyle="bold"
-                                android:textColor="?attr/postTextColor"
+                                android:textColor="@color/White"
                                 android:layout_marginBottom="4dp" />
 
                             <!-- Rating -->
@@ -114,7 +113,7 @@
                                     android:layout_height="wrap_content"
                                     android:text="@string/_4_5"
                                     android:textSize="12sp"
-                                    android:textColor="?attr/postTextColor" />
+                                    android:textColor="@color/White" />
 
                                 <TextView
                                     android:layout_width="wrap_content"
@@ -132,7 +131,7 @@
                                     android:layout_height="wrap_content"
                                     android:text="128 reviews"
                                     android:textSize="12sp"
-                                    android:textColor="?attr/postTextColor"
+                                    android:textColor="@color/White"
                                     tools:ignore="HardcodedText" />
                             </LinearLayout>
 
@@ -141,7 +140,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/member_since_jan_2023"
-                                android:textColor="#616161"
+                                android:textColor="@color/White"
                                 android:textSize="12sp" />
                         </LinearLayout>
                     </LinearLayout>
@@ -199,7 +198,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="User Name"
                                 android:textSize="14sp"
-                                android:textColor="?attr/colorOnSurface"
+                                android:textColor="@color/White"
                                 tools:ignore="HardcodedText" />
                         </LinearLayout>
                     </LinearLayout>
@@ -238,7 +237,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="+63 912 345 6789"
                                 android:textSize="14sp"
-                                android:textColor="?attr/colorOnSurface" />
+                                android:textColor="@color/White" />
                         </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
@@ -284,7 +283,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="user@email.com"
                                 android:textSize="14sp"
-                                android:textColor="?attr/colorOnSurface"
+                                android:textColor="@color/White"
                                 android:maxLines="1"
                                 android:ellipsize="end" />
                         </LinearLayout>
@@ -324,7 +323,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="Manila, PH"
                                 android:textSize="14sp"
-                                android:textColor="?attr/colorOnSurface" />
+                                android:textColor="@color/White" />
                         </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
@@ -361,7 +360,7 @@
                             android:layout_height="wrap_content"
                             android:text="@string/short_bio_description"
                             android:textSize="14sp"
-                            android:textColor="?attr/colorOnSurface"
+                            android:textColor="@color/White"
                             android:maxLines="2"
                             android:ellipsize="end" />
 
@@ -380,6 +379,61 @@
                 </LinearLayout>
             </LinearLayout>
 
+            <!-- Owner Items Listed -->
+            <LinearLayout
+                android:id="@+id/ownerItemsSection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="18dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="10dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Items Listed"
+                        android:textSize="16sp"
+                        android:textColor="@color/white"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvItemsCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textSize="13sp"
+                        android:textColor="@color/White" />
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvOwnerItems"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    tools:listitem="@layout/item_owner_profile_item" />
+
+                <TextView
+                    android:id="@+id/tvNoItems"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="No items published yet"
+                    android:textSize="13sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:visibility="gone"
+                    android:paddingTop="8dp" />
+            </LinearLayout>
+
+
             <!-- Achievements / Badges -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -394,6 +448,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/achievements_amp_badges"
                     android:textSize="16sp"
+                    android:textColor="@color/white"
                     android:textStyle="bold"
                     android:layout_marginBottom="12dp" />
 

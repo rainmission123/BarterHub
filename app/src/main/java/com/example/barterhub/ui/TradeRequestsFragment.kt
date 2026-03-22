@@ -22,6 +22,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.example.barterhub.utils.ChatUtils
 
 class TradeRequestsFragment : Fragment() {
 
@@ -95,9 +96,7 @@ class TradeRequestsFragment : Fragment() {
         database.child("trade_requests").child(request.requestId).child("status").setValue("Accepted")
             .addOnSuccessListener {
                 Log.d("TradeRequestsDebug", "✅ Trade accepted: ${request.requestId}")
-
-                val chatId = generateChatId(request.fromUser.userId, request.toUser.userId, request.targetItem.itemId)
-
+                val chatId = ChatUtils.generateChatId(request.fromUser.userId, request.toUser.userId)
                 Log.d("ChatDebug", "🎯 ACCEPT TRADE DEBUG:")
                 Log.d("ChatDebug", "   From User: ${request.fromUser.userId}")
                 Log.d("ChatDebug", "   To User: ${request.toUser.userId}")
@@ -112,23 +111,69 @@ class TradeRequestsFragment : Fragment() {
     }
 
     private fun checkAndCreateChat(chatId: String, request: TradeRequest) {
+
         database.child("chats").child(chatId).get().addOnSuccessListener { snapshot ->
-            if (snapshot.exists()) {
-                Log.d("ChatDebug", "✅ Chat already exists, adding system message only")
-                addSystemMessageToChat(chatId, request)
+
+            val requesterId = if (currentUserId == request.toUser.userId) {
+                request.fromUser.userId
             } else {
+                request.toUser.userId
+            }
+
+            if (snapshot.exists()) {
+
+                Log.d("ChatDebug", "✅ Chat already exists, adding system message only")
+
+                addSystemMessageToChat(chatId, request) {
+
+                    // ✅ existing logic
+                    sendTradeAcceptedNotificationToRequester(chatId, request)
+                    incrementInboxUnread(requesterId, chatId)
+
+                }
+
+            } else {
+
                 Log.d("ChatDebug", "✅ Creating new chat with system message")
+
                 saveChatInfo(chatId, request)
-                addSystemMessageToChat(chatId, request)
+
+                addSystemMessageToChat(chatId, request) {
+
+                    sendTradeAcceptedNotificationToRequester(chatId, request)
+                    incrementInboxUnread(requesterId, chatId)
+
+                    val receiptData = mapOf(
+                        "chatId" to chatId,
+                        "requestId" to request.requestId,
+                        "userA" to request.fromUser.userId,
+                        "userB" to request.toUser.userId,
+                        "offeredItemId" to request.offeredItem.itemId,
+                        "targetItemId" to request.targetItem.itemId,
+                        "offeredItemName" to request.offeredItem.title,
+                        "targetItemName" to request.targetItem.title,
+                        "offeredBy" to request.fromUser.username,
+                        "acceptedBy" to request.toUser.username,
+                        "timestamp" to System.currentTimeMillis(),
+                        "status" to "completed"
+                    )
+
+                }
             }
 
             navigateToChat(chatId, request)
+
         }.addOnFailureListener { e ->
             Log.e("ChatDebug", "❌ Error checking chat: ${e.message}")
         }
     }
 
-    private fun addSystemMessageToChat(chatId: String, request: TradeRequest) {
+
+    private fun addSystemMessageToChat(
+        chatId: String,
+        request: TradeRequest,
+        onSaved: (() -> Unit)? = null
+    ) {
         val messageId = FirebaseDatabase.getInstance().reference.push().key ?: return
 
         // ✅ FIX: Get actual data from the request
@@ -174,50 +219,36 @@ class TradeRequestsFragment : Fragment() {
             "isSystemMessage" to true,
             "isRead" to false,
             "tradeDetails" to mapOf(
-                // ✅ Trade Info
                 "tradeRequestId" to request.requestId,
                 "status" to "Accepted",
 
-                // ✅ User 1 Info (FROM USER - nag-offer) - USE ACTUAL DATA
                 "fromUserId" to request.fromUser.userId,
-                "offeredBy" to fromUsername, // ✅ ACTUAL USERNAME
-                "fromUserLocation" to if (request.fromUser.location.isNotEmpty())
-                    request.fromUser.location else "Unknown Location",
+                "offeredBy" to fromUsername,
+                "fromUserLocation" to request.fromUser.location.ifEmpty { "Unknown Location" },
                 "fromUserRating" to request.fromUser.rating,
                 "fromUserProfileImage" to fixImageUrl(request.fromUser.profileImage),
 
-                // ✅ User 2 Info (TO USER - nag-accept) - USE ACTUAL DATA
                 "toUserId" to request.toUser.userId,
-                "acceptedBy" to toUsername, // ✅ ACTUAL USERNAME
-                "toUserLocation" to if (request.toUser.location.isNotEmpty())
-                    request.toUser.location else "Unknown Location",
+                "acceptedBy" to toUsername,
+                "toUserLocation" to request.toUser.location.ifEmpty { "Unknown Location" },
                 "toUserRating" to request.toUser.rating,
                 "toUserProfileImage" to fixImageUrl(request.toUser.profileImage),
 
-                // ✅ Offered Item Details (ITEM NA INIOFFER) - USE ACTUAL DATA
                 "offeredItemId" to request.offeredItem.itemId,
-                "offeredItemName" to offeredItemTitle, // ✅ ACTUAL ITEM NAME
-                "offeredItemDescription" to if (request.offeredItem.description.isNotEmpty())
-                    request.offeredItem.description else "No description",
+                "offeredItemName" to offeredItemTitle,
+                "offeredItemDescription" to request.offeredItem.description.ifEmpty { "No description" },
                 "offeredItemImage" to offeredItemImage,
-                "offeredItemCategory" to if (request.offeredItem.category.isNotEmpty())
-                    request.offeredItem.category else "Unknown",
-                "offeredItemCondition" to if (request.offeredItem.condition.isNotEmpty())
-                    request.offeredItem.condition else "Unknown",
+                "offeredItemCategory" to request.offeredItem.category.ifEmpty { "Unknown" },
+                "offeredItemCondition" to request.offeredItem.condition.ifEmpty { "Unknown" },
 
-                // ✅ Target Item Details (ITEM NA TARGET) - USE ACTUAL DATA
                 "targetItemId" to request.targetItem.itemId,
-                "targetItemName" to targetItemTitle, // ✅ ACTUAL ITEM NAME
-                "targetItemDescription" to if (request.targetItem.description.isNotEmpty())
-                    request.targetItem.description else "No description",
+                "targetItemName" to targetItemTitle,
+                "targetItemDescription" to request.targetItem.description.ifEmpty { "No description" },
                 "targetItemImage" to targetItemImage,
-                "targetItemCategory" to if (request.targetItem.category.isNotEmpty())
-                    request.targetItem.category else "Unknown",
-                "targetItemCondition" to if (request.targetItem.condition.isNotEmpty())
-                    request.targetItem.condition else "Unknown",
+                "targetItemCategory" to request.targetItem.category.ifEmpty { "Unknown" },
+                "targetItemCondition" to request.targetItem.condition.ifEmpty { "Unknown" },
 
-                // ✅ Additional Info
-                "message" to if (request.message.isNotEmpty()) request.message else "No message",
+                "message" to request.message.ifEmpty { "No message" },
                 "additionalPhotos" to request.additionalPhotos.joinToString(","),
                 "preferredMeetup" to request.preferredMeetup
             )
@@ -226,6 +257,7 @@ class TradeRequestsFragment : Fragment() {
         database.child("chats").child(chatId).child("messages").child(messageId)
             .setValue(systemMessage)
             .addOnSuccessListener {
+                onSaved?.invoke()
                 Log.d("FirebaseDebug", "✅ REAL DATA SAVED TO SYSTEM MESSAGE:")
                 Log.d("FirebaseDebug", "   From User: $fromUsername")
                 Log.d("FirebaseDebug", "   To User: $toUsername")
@@ -237,11 +269,6 @@ class TradeRequestsFragment : Fragment() {
             .addOnFailureListener { e ->
                 Log.e("FirebaseDebug", "❌ Failed to save system message: ${e.message}")
             }
-    }
-
-    private fun generateChatId(userA: String, userB: String, itemId: String): String {
-        val sortedUsers = listOf(userA, userB).sorted()
-        return "${sortedUsers[0]}_${sortedUsers[1]}"
     }
 
     private fun saveChatInfo(chatId: String, request: TradeRequest) {
@@ -273,11 +300,11 @@ class TradeRequestsFragment : Fragment() {
                 request.toUser.userId to true
             ),
             "user1Id" to request.fromUser.userId,
-            "user1Name" to fromUsername, // ✅ ACTUAL NAME
+            "user1Name" to fromUsername,
             "user2Id" to request.toUser.userId,
-            "user2Name" to toUsername, // ✅ ACTUAL NAME
+            "user2Name" to toUsername,
             "itemId" to request.targetItem.itemId,
-            "itemTitle" to targetItemTitle, // ✅ ACTUAL ITEM NAME
+            "itemTitle" to targetItemTitle,
             "createdAt" to System.currentTimeMillis(),
             "lastMessage" to "Trade accepted! Discuss transaction details.",
             "lastMessageTime" to System.currentTimeMillis(),
@@ -294,51 +321,49 @@ class TradeRequestsFragment : Fragment() {
     }
 
     private fun navigateToChat(chatId: String, request: TradeRequest) {
-        val fromUsername = if (request.fromUser.username.isNotEmpty() &&
-            request.fromUser.username != "Unknown User") {
-            request.fromUser.username
+        val partnerId: String
+        val partnerName: String
+
+        if (currentUserId == request.fromUser.userId) {
+            partnerId = request.toUser.userId
+            partnerName = request.toUser.username.ifBlank { "User" }
         } else {
-            "User"
+            partnerId = request.fromUser.userId
+            partnerName = request.fromUser.username.ifBlank { "User" }
         }
 
-        val toUsername = if (request.toUser.username.isNotEmpty() &&
-            request.toUser.username != "Unknown User") {
-            request.toUser.username
-        } else {
-            "User"
-        }
-
-        val offeredItemTitle = if (request.offeredItem.title.isNotEmpty() &&
-            request.offeredItem.title != "Unknown Item") {
-            request.offeredItem.title
-        } else {
-            "Item"
-        }
-
-        val targetItemTitle = if (request.targetItem.title.isNotEmpty() &&
-            request.targetItem.title != "Unknown Item") {
+        val targetItemTitle = if (
+            request.targetItem.title.isNotEmpty() &&
+            request.targetItem.title != "Unknown Item"
+        ) {
             request.targetItem.title
         } else {
             "Item"
         }
 
-        Log.d("ChatDebug", "📍 NAVIGATING TO CHAT WITH REAL DATA:")
-        Log.d("ChatDebug", "   Chat ID: $chatId")
-        Log.d("ChatDebug", "   Partner: $fromUsername")
-        Log.d("ChatDebug", "   Offered Item: $offeredItemTitle")
-        Log.d("ChatDebug", "   Target Item: $targetItemTitle")
+        val offeredItemTitle = if (
+            request.offeredItem.title.isNotEmpty() &&
+            request.offeredItem.title != "Unknown Item"
+        ) {
+            request.offeredItem.title
+        } else {
+            "Item"
+        }
+
+        val offeredBy = request.fromUser.username.ifBlank { "User" }
+        val acceptedBy = request.toUser.username.ifBlank { "User" }
 
         val bundle = Bundle().apply {
             putString("chatId", chatId)
-            putString("partnerId", request.fromUser.userId)
-            putString("partnerName", fromUsername) // ✅ ACTUAL NAME
+            putString("partnerId", partnerId)
+            putString("partnerName", partnerName)
             putString("itemId", request.targetItem.itemId)
-            putString("itemTitle", targetItemTitle) // ✅ ACTUAL ITEM NAME
+            putString("itemTitle", targetItemTitle)
             putBoolean("isTradeAccepted", true)
-            putString("targetItemTitle", targetItemTitle) // ✅ ACTUAL ITEM NAME
-            putString("offeredItemTitle", offeredItemTitle) // ✅ ACTUAL ITEM NAME
-            putString("offeredBy", fromUsername) // ✅ ACTUAL NAME
-            putString("acceptedBy", toUsername) // ✅ ACTUAL NAME
+            putString("targetItemTitle", targetItemTitle)
+            putString("offeredItemTitle", offeredItemTitle)
+            putString("offeredBy", offeredBy)
+            putString("acceptedBy", acceptedBy)
             putInt("offeredItemPoints", 0)
             putInt("targetItemPoints", 0)
         }
@@ -376,6 +401,10 @@ class TradeRequestsFragment : Fragment() {
                     for (tradeSnap in snapshot.children) {
                         try {
                             val tradeMap = tradeSnap.value as? Map<*, *> ?: continue
+
+                            val hiddenByMap = tradeMap["hiddenBy"] as? Map<*, *>
+                            val isHidden = hiddenByMap?.get(currentUserId) as? Boolean ?: false
+                            if (isHidden) continue
 
                             // Parse fromUser
                             val fromUserMap = tradeMap["fromUser"] as? Map<*, *> ?: continue
@@ -498,6 +527,79 @@ class TradeRequestsFragment : Fragment() {
             })
     }
 
+    private fun sendTradeAcceptedNotificationToRequester(chatId: String, request: TradeRequest) {
+
+        // ✅ who accepted? current user
+        val acceptorId = currentUserId
+
+        // ✅ who should receive notification? the other user (requester)
+        val requesterId = if (currentUserId == request.toUser.userId) {
+            request.fromUser.userId
+        } else {
+            request.toUser.userId
+        }
+
+        if (requesterId.isBlank() || acceptorId.isBlank()) return
+
+        val notifRef = database.child("notifications").child(requesterId).push()
+        val notifId = notifRef.key ?: return
+
+        val acceptorName = if (currentUserId == request.toUser.userId) {
+            request.toUser.username
+        } else {
+            request.fromUser.username
+        }.ifBlank { "Someone" }
+
+        val acceptorProfile = if (currentUserId == request.toUser.userId) {
+            request.toUser.profileImage
+        } else {
+            request.fromUser.profileImage
+        }
+
+        val data = mapOf(
+            "id" to notifId,
+            "type" to "trade_accepted",
+            "fromUserId" to acceptorId,
+            "fromUserName" to acceptorName,
+            "fromUserProfile" to acceptorProfile,
+            "itemId" to request.targetItem.itemId,
+            "requestId" to request.requestId,
+            "chatId" to chatId,
+
+            // ✅ When requester clicks, open chat with acceptor
+            "partnerId" to acceptorId,
+            "partnerName" to acceptorName,
+
+            "message" to "✅ $acceptorName accepted your trade request",
+            "timestamp" to System.currentTimeMillis(),
+            "read" to false
+        )
+
+        notifRef.setValue(data)
+    }
+
+    private fun incrementInboxUnread(userId: String, chatId: String) {
+        val inboxRef = database.child("user_inbox").child(userId).child(chatId)
+
+        inboxRef.child("unreadCount").runTransaction(object : com.google.firebase.database.Transaction.Handler {
+            override fun doTransaction(currentData: com.google.firebase.database.MutableData): com.google.firebase.database.Transaction.Result {
+                val current = currentData.getValue(Int::class.java) ?: 0
+                currentData.value = current + 1
+                return com.google.firebase.database.Transaction.success(currentData)
+            }
+
+            override fun onComplete(error: DatabaseError?, committed: Boolean, snapshot: DataSnapshot?) {
+                if (error != null) {
+                    Log.e("TradeInbox", "❌ increment unread failed: ${error.message}")
+                    return
+                }
+
+                // ✅ ensure metadata exists
+                inboxRef.child("lastUpdated").setValue(System.currentTimeMillis())
+            }
+        })
+    }
+
     private fun updateAdapterAndUI() {
         if (!isAdded || _binding == null) {
             return
@@ -556,7 +658,6 @@ class TradeRequestsFragment : Fragment() {
         }
     }
 
-    // ✅ OPTIONAL: Fix all broken image URLs in Firebase (run once)
     private fun fixBrokenImageUrlsInFirebase() {
         Log.d("FirebaseFix", "🔧 Starting to fix broken image URLs in Firebase...")
 
