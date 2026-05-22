@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -25,28 +26,66 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         val title = remoteMessage.data["title"]
             ?: remoteMessage.notification?.title
-            ?: "New Message"
+            ?: "BarterHub PH"
 
         val body = remoteMessage.data["body"]
             ?: remoteMessage.notification?.body
-            ?: "You have a new message"
+            ?: "You have a new notification"
 
+        val type = remoteMessage.data["type"]
         val chatId = remoteMessage.data["chatId"]
+        val itemId = remoteMessage.data["itemId"]
+        val requestId = remoteMessage.data["requestId"]
 
-        showNotification(title, body, chatId)
+        val partnerId = remoteMessage.data["partnerId"]
+        val partnerName = remoteMessage.data["partnerName"]
+        val partnerProfilePic = remoteMessage.data["partnerProfilePic"]
+
+        val fromUserId = remoteMessage.data["fromUserId"]
+        val fromUserName = remoteMessage.data["fromUserName"]
+        val fromUserProfilePic = remoteMessage.data["fromUserProfilePic"]
+
+        Log.d(
+            "FCM_DEBUG",
+            "Message received: type=$type chatId=$chatId partnerId=$partnerId fromUserId=$fromUserId"
+        )
+
+        showNotification(
+            title = title,
+            message = body,
+            type = type,
+            chatId = chatId,
+            itemId = itemId,
+            requestId = requestId,
+            partnerId = partnerId,
+            partnerName = partnerName,
+            partnerProfilePic = partnerProfilePic,
+            fromUserId = fromUserId,
+            fromUserName = fromUserName,
+            fromUserProfilePic = fromUserProfilePic
+        )
     }
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
+        Log.d("FCM_DEBUG", "New FCM token: $token")
         saveTokenToFirebase(token)
     }
 
     private fun saveTokenToFirebase(token: String) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
         FirebaseDatabase.getInstance()
-            .getReference("fcm_tokens")
+            .getReference("users")
             .child(userId)
+            .child("fcmToken")
             .setValue(token)
+            .addOnSuccessListener {
+                Log.d("FCM_DEBUG", "FCM token saved for user: $userId")
+            }
+            .addOnFailureListener { e ->
+                Log.e("FCM_DEBUG", "Failed to save token: ${e.message}")
+            }
     }
 
     private fun canPostNotifications(): Boolean {
@@ -60,34 +99,90 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         }
     }
 
-    private fun showNotification(title: String, message: String, chatId: String? = null) {
-        if (!canPostNotifications()) return
+    private fun showNotification(
+        title: String,
+        message: String,
+        type: String? = null,
+        chatId: String? = null,
+        itemId: String? = null,
+        requestId: String? = null,
+        partnerId: String? = null,
+        partnerName: String? = null,
+        partnerProfilePic: String? = null,
+        fromUserId: String? = null,
+        fromUserName: String? = null,
+        fromUserProfilePic: String? = null
+    ) {
+        if (!canPostNotifications()) {
+            Log.d("FCM_DEBUG", "POST_NOTIFICATIONS permission not granted")
+            return
+        }
 
         val channelId = CHANNEL_ID
         ensureChannel(channelId)
 
-        // Open HomeActivity, optionally with chatId
         val intent = Intent(this, HomeActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+
+            putExtra("notification_type", type)
+
             chatId?.let { putExtra("chatId", it) }
+            itemId?.let { putExtra("itemId", it) }
+            requestId?.let { putExtra("requestId", it) }
+
+            partnerId?.let { putExtra("partnerId", it) }
+            partnerName?.let { putExtra("partnerName", it) }
+            partnerProfilePic?.let { putExtra("partnerProfilePic", it) }
+
+            fromUserId?.let { putExtra("fromUserId", it) }
+            fromUserName?.let { putExtra("fromUserName", it) }
+            fromUserProfilePic?.let { putExtra("fromUserProfilePic", it) }
         }
 
-        val pendingIntentFlags = when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ->
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-            else ->
-                PendingIntent.FLAG_UPDATE_CURRENT
+        val requestCode = when {
+            !chatId.isNullOrBlank() -> chatId.hashCode()
+            !requestId.isNullOrBlank() -> requestId.hashCode()
+            !itemId.isNullOrBlank() -> itemId.hashCode()
+            !fromUserId.isNullOrBlank() -> fromUserId.hashCode()
+            else -> (System.currentTimeMillis() and 0xFFFFFFF).toInt()
         }
 
         val pendingIntent = PendingIntent.getActivity(
             this,
-            0,
+            requestCode,
             intent,
-            pendingIntentFlags
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val smallIcon = when (type) {
+
+            "chat_message" ->
+                R.drawable.ic_notification_message
+
+            "trade_request" ->
+                R.drawable.handshake2
+
+            "friend_request" ->
+                R.drawable.ic_add_friend
+
+            "friend_accept" ->
+                R.drawable.ic_accept
+
+            "trade_completed_clicked" ->
+                R.drawable.ic_notification_handshake
+
+            "trade_rated" ->
+                R.drawable.ic_notification_star
+
+            "receipt_created" ->
+                R.drawable.ic_notification_receipt
+
+            else ->
+                R.drawable.ic_notification
+        }
+
         val notification = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.ic_notification)
+            .setSmallIcon(smallIcon)
             .setContentTitle(title)
             .setContentText(message)
             .setStyle(NotificationCompat.BigTextStyle().bigText(message))
@@ -96,65 +191,44 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .build()
 
-        // Notification ID:
-        // If may chatId, use stable id per chat para grouped/consistent.
-        // Else use time-based unique id.
-        val notificationId = chatId?.hashCode() ?: (System.currentTimeMillis() and 0xFFFFFFF).toInt()
-
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return
+        val notificationId = when {
+            !chatId.isNullOrBlank() -> chatId.hashCode()
+            !requestId.isNullOrBlank() -> requestId.hashCode()
+            !itemId.isNullOrBlank() -> itemId.hashCode()
+            !fromUserId.isNullOrBlank() -> fromUserId.hashCode()
+            else -> (System.currentTimeMillis() and 0xFFFFFFF).toInt()
         }
-        NotificationManagerCompat.from(this).notify(notificationId, notification)
+
+        try {
+            NotificationManagerCompat.from(this).notify(notificationId, notification)
+            Log.d("FCM_DEBUG", "Notification shown. type=$type, notificationId=$notificationId")
+        } catch (e: SecurityException) {
+            Log.e("FCM_DEBUG", "SecurityException while showing notification: ${e.message}")
+        } catch (e: Exception) {
+            Log.e("FCM_DEBUG", "Error while showing notification: ${e.message}")
+        }
     }
 
     private fun ensureChannel(channelId: String) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
 
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
         val existing = manager.getNotificationChannel(channelId)
         if (existing != null) return
 
         val channel = NotificationChannel(
             channelId,
-            "Chat Messages",
+            "BarterHub Notifications",
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
-            description = "Notifications for incoming chat messages"
+            description = "Chat, trade, friend request, and system notifications"
         }
 
         manager.createNotificationChannel(channel)
     }
 
     companion object {
-        private const val CHANNEL_ID = "chat_messages_channel"
-
-        // Call this from your Activity (e.g. Login/Home) on app start for Android 13+
-        fun requestNotificationPermission(activity: android.app.Activity) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                val granted = ActivityCompat.checkSelfPermission(
-                    activity,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) == PackageManager.PERMISSION_GRANTED
-
-                if (!granted) {
-                    ActivityCompat.requestPermissions(
-                        activity,
-                        arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                        101
-                    )
-                }
-            }
-        }
+        private const val CHANNEL_ID = "barterhub_general_notifications"
     }
 }

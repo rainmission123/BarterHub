@@ -71,182 +71,175 @@ class AllTrendingItemsFragment : Fragment(R.layout.fragment_all_trending_items) 
         showLoading(true)
         showEmptyState(false)
 
-        val itemsRef = database.getReference("items")
-
-        Log.d("AllTrendingItems", "🔍 Loading items from Firebase...")
-
-        itemsRef.orderByChild("timestamp").limitToLast(50)
+        database.getReference("items")
+            .orderByChild("timestamp")
+            .limitToLast(100)
             .addListenerForSingleValueEvent(object : ValueEventListener {
+
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val allItems = mutableListOf<FeaturedItem>()
 
-                    Log.d("AllTrendingItems", "📦 Found ${snapshot.childrenCount} items in database")
+                    Log.d("AllTrendingItems", "Found ${snapshot.childrenCount} items")
 
                     for (itemSnapshot in snapshot.children) {
                         val item = itemSnapshot.getValue(FeaturedItem::class.java)
-                        item?.let {
-                            it.itemId = itemSnapshot.key ?: ""
 
-                            Log.d("AllTrendingItems", "Loaded item: ${it.title}")
-                            Log.d("AllTrendingItems", "ownerId=${it.ownerId}")
-                            Log.d("AllTrendingItems", "ownerName=${it.ownerName}")
-                            Log.d("AllTrendingItems", "ownerProfileImage=${it.ownerProfileImage}")
+                        if (item != null) {
+                            item.itemId = itemSnapshot.key ?: ""
 
-                            allItems.add(it)
+                            // FORCE READ important fields
+                            item.ownerId = itemSnapshot.child("ownerId").getValue(String::class.java) ?: ""
+                            item.likeCount = itemSnapshot.child("likeCount").getValue(Int::class.java) ?: 0
+                            item.timestamp = itemSnapshot.child("timestamp").getValue(Long::class.java) ?: 0L
+
+                            Log.d("TRENDING_TEST", "itemId=${item.itemId}")
+                            Log.d("TRENDING_TEST", "title=${item.title}")
+                            Log.d("TRENDING_TEST", "ownerId=${item.ownerId}")
+                            Log.d("TRENDING_TEST", "likeCount=${item.likeCount}")
+
+                            allItems.add(item)
                         }
                     }
 
                     if (allItems.isEmpty()) {
-                        Log.d("AllTrendingItems", "❌ No items found")
                         showLoading(false)
                         showEmptyState(true)
                         return
                     }
 
-                    filterPremiumItems(allItems)
+                    loadPremiumOwnersAndFilterItems(allItems)
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    Log.e("AllTrendingItems", "❌ Failed to load items: ${error.message}")
+                    Log.e("AllTrendingItems", "Failed to load items: ${error.message}")
                     showLoading(false)
                     showEmptyState(true)
                 }
             })
     }
 
-    private fun filterPremiumItems(items: MutableList<FeaturedItem>) {
-        val usersRef = database.getReference("users")
+    private fun loadPremiumOwnersAndFilterItems(items: MutableList<FeaturedItem>) {
         val now = System.currentTimeMillis()
 
-        usersRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val premiumOwnerIds = mutableSetOf<String>()
+        database.getReference("public_users")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
 
-                Log.d("TrendingPremium", "users childrenCount = ${snapshot.childrenCount}")
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val premiumOwnerIds = mutableSetOf<String>()
 
-                for (userSnapshot in snapshot.children) {
-                    val uid = userSnapshot.key ?: continue
+                    for (userSnapshot in snapshot.children) {
+                        val uid = userSnapshot.key ?: continue
 
-                    val premiumExpiry = userSnapshot.child("premiumExpiry").getValue(Long::class.java) ?: 0L
-                    val premiumUntil = userSnapshot.child("premiumUntil").getValue(String::class.java).orEmpty()
+                        val isPremium = userSnapshot.child("isPremium")
+                            .getValue(Boolean::class.java) ?: false
 
-                    val isPremium = premiumExpiry > now
+                        val premiumExpiry = userSnapshot.child("premiumExpiry")
+                            .getValue(Long::class.java) ?: 0L
 
-                    Log.d(
-                        "TrendingPremium",
-                        "uid=$uid, premiumExpiry=$premiumExpiry, premiumUntil=$premiumUntil, isPremium=$isPremium"
-                    )
+                        val premiumActive = isPremium && premiumExpiry > now
 
-                    if (isPremium) {
-                        premiumOwnerIds.add(uid)
+                        if (premiumActive) {
+                            premiumOwnerIds.add(uid)
+                        }
+
+                        Log.d(
+                            "TrendingPremium",
+                            "uid=$uid, isPremium=$isPremium, premiumExpiry=$premiumExpiry, premiumActive=$premiumActive"
+                        )
                     }
+
+                    val trendingItems = items
+                        .filter { item ->
+                            val matched = item.ownerId.isNotBlank() &&
+                                    premiumOwnerIds.contains(item.ownerId)
+
+                            Log.d(
+                                "TRENDING_MATCH",
+                                "title=${item.title}, ownerId=${item.ownerId}, matched=$matched"
+                            )
+
+                            matched
+                        }
+                        .sortedWith(
+                            compareByDescending<FeaturedItem> { it.likeCount }
+                                .thenByDescending { it.timestamp }
+                        )
+                        .take(20)
+                        .toMutableList()
+
+                    Log.d("TrendingPremium", "Premium owners count = ${premiumOwnerIds.size}")
+                    Log.d("TrendingPremium", "Trending premium items count = ${trendingItems.size}")
+
+                    if (trendingItems.isEmpty()) {
+                        showLoading(false)
+                        showEmptyState(true)
+                        return
+                    }
+
+                    enrichItemsWithOwnerInfo(trendingItems, snapshot)
                 }
 
-                Log.d("TrendingPremium", "premiumOwnerIds = $premiumOwnerIds")
-
-                val premiumItems = items.filter { item ->
-                    item.ownerId.isNotBlank() &&
-                            premiumOwnerIds.contains(item.ownerId) &&
-                            item.isActive &&
-                            !item.isArchived
-                }.toMutableList()
-
-                Log.d("TrendingPremium", "premiumItems count = ${premiumItems.size}")
-
-                if (premiumItems.isEmpty()) {
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("TrendingPremium", "Failed to load users: ${error.message}")
                     showLoading(false)
                     showEmptyState(true)
-                    return
                 }
-
-                enrichItemsWithOwnerInfo(premiumItems)
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("TrendingPremium", "❌ Failed to load users: ${error.message}")
-                showLoading(false)
-                showEmptyState(true)
-            }
-        })
+            })
     }
 
-    private fun enrichItemsWithOwnerInfo(items: MutableList<FeaturedItem>) {
-        val usersRef = database.getReference("users")
+    private fun enrichItemsWithOwnerInfo(
+        items: MutableList<FeaturedItem>,
+        usersSnapshot: DataSnapshot
+    ) {
+        for (item in items) {
+            if (item.ownerId.isBlank()) continue
 
-        val ownerIds = items.map { it.ownerId }
-            .filter { it.isNotBlank() }
-            .distinct()
+            val userSnapshot = usersSnapshot.child(item.ownerId)
+            if (!userSnapshot.exists()) continue
 
-        if (ownerIds.isEmpty()) {
-            Log.d("AllTrendingItems", "⚠️ No ownerIds found, showing items without user enrichment")
-            showLoading(false)
-            showEmptyState(false)
-            trendingAdapter.submitList(items.takeLast(10).reversed())
-            return
+            val fetchedName =
+                userSnapshot.child("fullName").getValue(String::class.java)
+                    ?.takeIf { it.isNotBlank() }
+                    ?: userSnapshot.child("name").getValue(String::class.java)
+                        ?.takeIf { it.isNotBlank() }
+                    ?: userSnapshot.child("username").getValue(String::class.java)
+                        ?.takeIf { it.isNotBlank() }
+                    ?: userSnapshot.child("displayName").getValue(String::class.java)
+                        ?.takeIf { it.isNotBlank() }
+
+            val fetchedProfile =
+                userSnapshot.child("profileImage").getValue(String::class.java)
+                    ?.takeIf { it.isNotBlank() }
+                    ?: userSnapshot.child("profileImageUrl").getValue(String::class.java)
+                        ?.takeIf { it.isNotBlank() }
+                    ?: userSnapshot.child("imageUrl").getValue(String::class.java)
+                        ?.takeIf { it.isNotBlank() }
+                    ?: userSnapshot.child("avatar").getValue(String::class.java)
+                        ?.takeIf { it.isNotBlank() }
+
+            if (item.ownerName.isBlank() && !fetchedName.isNullOrBlank()) {
+                item.ownerName = fetchedName
+            }
+
+            if (item.ownerProfileImage.isBlank() && !fetchedProfile.isNullOrBlank()) {
+                item.ownerProfileImage = fetchedProfile
+            }
         }
 
-        usersRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                for (item in items) {
-                    if (item.ownerId.isBlank()) continue
+        showLoading(false)
+        showEmptyState(false)
+        trendingAdapter.submitList(items)
 
-                    val userSnapshot = snapshot.child(item.ownerId)
-                    if (!userSnapshot.exists()) continue
-
-                    val fetchedName =
-                        userSnapshot.child("fullName").getValue(String::class.java)
-                            ?.takeIf { it.isNotBlank() }
-                            ?: userSnapshot.child("name").getValue(String::class.java)
-                                ?.takeIf { it.isNotBlank() }
-                            ?: userSnapshot.child("username").getValue(String::class.java)
-                                ?.takeIf { it.isNotBlank() }
-                            ?: userSnapshot.child("displayName").getValue(String::class.java)
-                                ?.takeIf { it.isNotBlank() }
-
-                    val fetchedProfile =
-                        userSnapshot.child("profileImage").getValue(String::class.java)
-                            ?.takeIf { it.isNotBlank() }
-                            ?: userSnapshot.child("profileImageUrl").getValue(String::class.java)
-                                ?.takeIf { it.isNotBlank() }
-                            ?: userSnapshot.child("imageUrl").getValue(String::class.java)
-                                ?.takeIf { it.isNotBlank() }
-                            ?: userSnapshot.child("avatar").getValue(String::class.java)
-                                ?.takeIf { it.isNotBlank() }
-
-                    if (item.ownerName.isBlank() && !fetchedName.isNullOrBlank()) {
-                        item.ownerName = fetchedName
-                    }
-
-                    if (item.ownerProfileImage.isBlank() && !fetchedProfile.isNullOrBlank()) {
-                        item.ownerProfileImage = fetchedProfile
-                    }
-
-                    Log.d(
-                        "AllTrendingItems",
-                        "✅ Enriched item '${item.title}' -> ownerName='${item.ownerName}', ownerProfile='${item.ownerProfileImage}'"
-                    )
-                }
-
-                showLoading(false)
-                showEmptyState(false)
-                trendingAdapter.submitList(items.takeLast(10).reversed())
-                Log.d("AllTrendingItems", "✅ Displaying ${items.takeLast(10).reversed().size} enriched items")
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("AllTrendingItems", "❌ Failed to load users: ${error.message}")
-                showLoading(false)
-                showEmptyState(false)
-                trendingAdapter.submitList(items.takeLast(10).reversed())
-            }
-        })
+        Log.d("AllTrendingItems", "Displaying ${items.size} trending premium items")
     }
 
     private fun showLoading(show: Boolean) {
+        if (_binding == null) return
         binding.progressBar.visibility = if (show) View.VISIBLE else View.GONE
     }
 
     private fun showEmptyState(show: Boolean) {
+        if (_binding == null) return
         binding.emptyStateLayout.visibility = if (show) View.VISIBLE else View.GONE
         binding.trendingItemsRecyclerView.visibility = if (show) View.GONE else View.VISIBLE
     }

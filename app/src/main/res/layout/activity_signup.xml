@@ -1,253 +1,747 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:background="@drawable/backgroundlogin"
     android:layout_height="match_parent"
+    android:background="@drawable/bg_home_profile_logo"
+    android:fitsSystemWindows="true"
     tools:context=".SignupFragment">
 
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
-        android:fitsSystemWindows="true">
+        android:clipToPadding="false"
+        android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:paddingStart="24dp"
+            android:paddingTop="28dp"
+            android:paddingEnd="24dp"
+            android:paddingBottom="28dp">
 
-
-            <LinearLayout
+            <TextView
+                android:id="@+id/tvSignupHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="10dp"
+                android:gravity="center"
+                android:text="Join BarterHub community today"
+                android:textAlignment="center"
+                android:textColor="@android:color/white"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:lineSpacingExtra="2dp"
+                android:shadowColor="#66000000"
+                android:shadowDx="0"
+                android:shadowDy="4"
+                android:shadowRadius="12"
+                tools:ignore="HardcodedText,SpUsage" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="Create Account"
-                    android:textColor="@color/com_facebook_messenger_blue"
-                    android:textSize="24sp"
-                    android:textStyle="bold"
-                    tools:ignore="HardcodedText" />
+            <TextView
+                android:id="@+id/tvSignupSubHeader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:gravity="center"
+                android:text="Create your account and start bartering securely"
+                android:textColor="#D8E4EC"
+                android:textSize="13sp"
+                tools:ignore="HardcodedText,SpUsage" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Join our community today"
-                    android:textColor="@color/com_facebook_messenger_blue"
-                    android:textSize="14sp"
-                    tools:ignore="HardcodedText" />
-            </LinearLayout>
-
-            <!-- Main Card Container -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/formCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="16dp"
-                app:cardBackgroundColor="@android:color/transparent"
-                app:cardElevation="1dp"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="30dp"
+                app:cardElevation="10dp"
+                app:strokeColor="?attr/colorSurface"
+                app:strokeWidth="1.2dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:background="@drawable/text_gradient_bg"
-                    android:padding="24dp">
+                    android:background="?attr/colorSurface"
+                    android:paddingStart="22dp"
+                    android:paddingTop="28dp"
+                    android:paddingEnd="22dp"
+                    android:paddingBottom="24dp">
 
-                    <!-- Social Login Options -->
                     <TextView
+                        android:id="@+id/tvCreateAccountSubtitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="22dp"
                         android:gravity="center"
-                        android:text="Sign up"
+                        android:text="Fill in your details to get started"
                         android:textColor="?attr/colorOnSurface"
-                        android:textSize="@dimen/text_size_body"
-                        tools:ignore="HardcodedText" />
+                        android:textSize="13sp"
+                        tools:ignore="HardcodedText,SpUsage" />
 
-                    <!-- Form Fields -->
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"
-                        app:startIconDrawable="@drawable/ic_person"
-                        app:startIconTint="@color/gray_600"
-                        app:boxBackgroundMode="outline"
-                        app:hintTextColor="?attr/colorOnSurface"
-                        app:boxBackgroundColor="@android:color/transparent"
-                        app:shapeAppearance="@style/ShapeAppearance.Material3.SmallComponent">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etFullName"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Full Name"
-                            android:inputType="textPersonName"
-                            android:paddingStart="40dp"
-                            android:textColor="?attr/colorOnSurface"
-                            tools:ignore="HardcodedText,RtlSymmetry,TextContrastCheck" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"
-                        app:startIconDrawable="@drawable/ic_email_login"
-                        app:startIconTint="@color/gray_600"
-                        app:hintTextColor="?attr/colorOnSurface"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="@android:color/transparent"
-                        app:shapeAppearance="@style/ShapeAppearance.Material3.SmallComponent">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etEmail"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Email"
-                            android:inputType="textEmailAddress"
-                            android:paddingStart="@dimen/_40dp"
-                            android:textColor="?attr/colorOnSurface"
-                            tools:ignore="HardcodedText,RtlSymmetry,TextContrastCheck" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"
-                        app:hintTextColor="?attr/colorOnSurface"
-                        app:startIconDrawable="@drawable/ic_lock"
-                        app:startIconTint="@color/gray_600"
-                        app:endIconMode="password_toggle"
-                        app:endIconTint="@color/gray_600"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="@android:color/transparent"
-                        app:shapeAppearance="@style/ShapeAppearance.Material3.SmallComponent">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etPassword"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Password"
-                            android:inputType="textPassword"
-                            android:paddingStart="@dimen/_40dp"
-                            android:textColor="?attr/colorOnSurface"
-                            tools:ignore="HardcodedText,RtlSymmetry,TextContrastCheck" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="24dp"
-                        app:startIconDrawable="@drawable/ic_lock"
-                        app:startIconTint="@color/gray_600"
-                        app:hintTextColor="?attr/colorOnSurface"
-                        app:endIconMode="password_toggle"
-                        app:endIconTint="@color/gray_600"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="@android:color/transparent"
-                        app:shapeAppearance="@style/ShapeAppearance.Material3.SmallComponent">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etConfirmPassword"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Confirm Password"
-                            android:inputType="textPassword"
-                            android:paddingStart="@dimen/_40dp"
-                            android:textColor="?attr/colorOnSurface"
-                            tools:ignore="HardcodedText,RtlSymmetry,TextContrastCheck" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <!-- Terms and Conditions -->
+                    <!-- Full Name -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="24dp">
+                        android:orientation="vertical"
+                        android:layout_marginBottom="16dp">
 
-                        <CheckBox
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Name"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_marginBottom="8dp" />
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="?attr/colorOutline"
+                            app:cardBackgroundColor="?attr/colorSurfaceContainerHigh">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:paddingStart="14dp"
+                                android:paddingEnd="14dp">
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:src="@drawable/ic_person"
+                                    android:contentDescription="@null"
+                                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                                <View
+                                    android:layout_width="1dp"
+                                    android:layout_height="24dp"
+                                    android:layout_marginStart="10dp"
+                                    android:layout_marginEnd="12dp"
+                                    android:background="?attr/colorOutlineVariant" />
+
+                                <com.google.android.material.textfield.TextInputLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    app:boxBackgroundMode="none"
+                                    app:hintEnabled="false"
+                                    app:startIconDrawable="@null"
+                                    app:endIconMode="clear_text"
+                                    app:endIconTint="?attr/colorOnSurfaceVariant">
+
+                                    <com.google.android.material.textfield.TextInputEditText
+                                        android:id="@+id/etFullName"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:background="@android:color/transparent"
+                                        android:hint="Juan Dela Cruz"
+                                        android:inputType="textPersonName|textCapWords"
+                                        android:maxLines="1"
+                                        android:textColor="?attr/colorOnSurface"
+                                        android:textColorHint="?attr/colorOnSurfaceVariant" />
+                                </com.google.android.material.textfield.TextInputLayout>
+
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+
+                    </LinearLayout>
+
+                    <!-- Username -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Username"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_marginBottom="8dp" />
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="?attr/colorOutline"
+                            app:cardBackgroundColor="?attr/colorSurfaceContainerHigh">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:paddingStart="14dp"
+                                android:paddingEnd="14dp">
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:src="@drawable/ic_person"
+                                    android:contentDescription="@null"
+                                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                                <View
+                                    android:layout_width="1dp"
+                                    android:layout_height="24dp"
+                                    android:layout_marginStart="10dp"
+                                    android:layout_marginEnd="12dp"
+                                    android:background="?attr/colorOutlineVariant" />
+
+                                <com.google.android.material.textfield.TextInputLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    app:boxBackgroundMode="none"
+                                    app:hintEnabled="false"
+                                    app:endIconMode="clear_text"
+                                    app:endIconTint="?attr/colorOnSurfaceVariant">
+
+                                    <com.google.android.material.textfield.TextInputEditText
+                                        android:id="@+id/etUsername"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:background="@android:color/transparent"
+                                        android:hint="e.g. juancruz"
+                                        android:inputType="text"
+                                        android:textColor="?attr/colorOnSurface"
+                                        android:textColorHint="?attr/colorOnSurfaceVariant"
+                                        android:maxLines="1" />
+                                </com.google.android.material.textfield.TextInputLayout>
+
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+
+                    </LinearLayout>
+
+                    <!-- Email Address -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Email Address"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_marginBottom="8dp" />
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="?attr/colorOutline"
+                            app:cardBackgroundColor="?attr/colorSurfaceContainerHigh">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:paddingStart="14dp"
+                                android:paddingEnd="14dp">
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:src="@drawable/ic_email_login"
+                                    android:contentDescription="@null"
+                                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                                <View
+                                    android:layout_width="1dp"
+                                    android:layout_height="24dp"
+                                    android:layout_marginStart="10dp"
+                                    android:layout_marginEnd="12dp"
+                                    android:background="?attr/colorOutlineVariant" />
+
+                                <com.google.android.material.textfield.TextInputLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    app:boxBackgroundMode="none"
+                                    app:hintEnabled="false"
+                                    app:startIconDrawable="@null"
+                                    app:endIconMode="clear_text"
+                                    app:endIconTint="?attr/colorOnSurfaceVariant">
+
+                                    <com.google.android.material.textfield.TextInputEditText
+                                        android:id="@+id/etEmail"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:background="@android:color/transparent"
+                                        android:hint="juan.cruz@email.com"
+                                        android:inputType="textEmailAddress"
+                                        android:textColor="?attr/colorOnSurface"
+                                        android:textColorHint="?attr/colorOnSurfaceVariant"
+                                        android:maxLines="1" />
+                                </com.google.android.material.textfield.TextInputLayout>
+
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+
+                    </LinearLayout>
+
+                    <!-- Province + City/Municipality -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="8dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Province"
+                                android:textSize="13sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:layout_marginBottom="8dp" />
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:layout_width="match_parent"
+                                android:layout_height="56dp"
+                                app:cardCornerRadius="16dp"
+                                app:cardElevation="0dp"
+                                app:strokeWidth="1dp"
+                                app:strokeColor="?attr/colorOutline"
+                                app:cardBackgroundColor="?attr/colorSurfaceContainerHigh">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:gravity="center_vertical"
+                                    android:paddingHorizontal="14dp">
+
+                                    <com.google.android.material.textfield.TextInputLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        app:boxBackgroundMode="none"
+                                        app:hintEnabled="false"
+                                        app:startIconDrawable="@null"
+                                        app:endIconMode="clear_text"
+                                        app:endIconTint="?attr/colorOnSurfaceVariant">
+
+                                        <com.google.android.material.textfield.TextInputEditText
+                                            android:id="@+id/etProvince"
+                                            android:layout_width="match_parent"
+                                            android:layout_height="wrap_content"
+                                            android:background="@android:color/transparent"
+                                            android:hint="Metro Manila"
+                                            android:inputType="textCapWords"
+                                            android:textColor="?attr/colorOnSurface"
+                                            android:textColorHint="?attr/colorOnSurfaceVariant"
+                                            android:maxLines="1" />
+                                    </com.google.android.material.textfield.TextInputLayout>
+                                </LinearLayout>
+                            </com.google.android.material.card.MaterialCardView>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="City/Municipality"
+                                android:textSize="13sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:layout_marginBottom="8dp" />
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:layout_width="match_parent"
+                                android:layout_height="56dp"
+                                app:cardCornerRadius="16dp"
+                                app:cardElevation="0dp"
+                                app:strokeWidth="1dp"
+                                app:strokeColor="?attr/colorOutline"
+                                app:cardBackgroundColor="?attr/colorSurfaceContainerHigh">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:gravity="center_vertical"
+                                    android:paddingHorizontal="14dp">
+
+                                    <com.google.android.material.textfield.TextInputLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        app:boxBackgroundMode="none"
+                                        app:hintEnabled="false"
+                                        app:startIconDrawable="@null"
+                                        app:endIconMode="clear_text"
+                                        app:endIconTint="?attr/colorOnSurfaceVariant">
+
+                                        <com.google.android.material.textfield.TextInputEditText
+                                            android:id="@+id/etCityMunicipality"
+                                            android:layout_width="match_parent"
+                                            android:layout_height="wrap_content"
+                                            android:background="@android:color/transparent"
+                                            android:hint="Manila"
+                                            android:inputType="textCapWords"
+                                            android:textColor="?attr/colorOnSurface"
+                                            android:textColorHint="?attr/colorOnSurfaceVariant"
+                                            android:maxLines="1" />
+                                    </com.google.android.material.textfield.TextInputLayout>
+                                </LinearLayout>
+                            </com.google.android.material.card.MaterialCardView>
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <!-- Full Address -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Full Address (Optional)"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_marginBottom="8dp" />
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="match_parent"
+                            android:layout_height="72dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="?attr/colorOutline"
+                            app:cardBackgroundColor="?attr/colorSurfaceContainerHigh">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center_vertical"
+                                android:paddingHorizontal="14dp">
+
+                                <com.google.android.material.textfield.TextInputLayout
+                                    android:id="@+id/tilAddress"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    app:boxBackgroundMode="none"
+                                    app:hintEnabled="false"
+                                    app:startIconDrawable="@null"
+                                    app:endIconMode="clear_text"
+                                    app:endIconTint="?attr/colorOnSurfaceVariant">
+
+                                    <com.google.android.material.textfield.TextInputEditText
+                                        android:id="@+id/etAddress"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:background="@android:color/transparent"
+                                        android:hint="Street name, Barangay, House No."
+                                        android:inputType="textPostalAddress"
+                                        android:maxLines="2"
+                                        android:textColor="?attr/colorOnSurface"
+                                        android:textColorHint="?attr/colorOnSurfaceVariant" />
+                                </com.google.android.material.textfield.TextInputLayout>
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+
+                    </LinearLayout>
+
+                    <!-- Password -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Password"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_marginBottom="8dp" />
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="?attr/colorOutline"
+                            app:cardBackgroundColor="?attr/colorSurfaceContainerHigh">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:paddingStart="14dp"
+                                android:paddingEnd="10dp">
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:src="@drawable/ic_lock"
+                                    android:contentDescription="@null"
+                                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                                <View
+                                    android:layout_width="1dp"
+                                    android:layout_height="24dp"
+                                    android:layout_marginStart="10dp"
+                                    android:layout_marginEnd="12dp"
+                                    android:background="?attr/colorOutlineVariant" />
+
+                                <com.google.android.material.textfield.TextInputLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    app:boxBackgroundMode="none"
+                                    app:hintEnabled="false"
+                                    app:startIconDrawable="@null"
+                                    app:endIconMode="password_toggle"
+                                    app:endIconTint="?attr/colorOnSurfaceVariant">
+
+                                    <com.google.android.material.textfield.TextInputEditText
+                                        android:id="@+id/etPassword"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:background="@android:color/transparent"
+                                        android:hint="Enter your password"
+                                        android:inputType="textPassword"
+                                        android:textColor="?attr/colorOnSurface"
+                                        android:textColorHint="?attr/colorOnSurfaceVariant"
+                                        android:maxLines="1" />
+                                </com.google.android.material.textfield.TextInputLayout>
+
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+
+                    </LinearLayout>
+
+                    <!-- Confirm Password -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Confirm Password"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_marginBottom="8dp" />
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="?attr/colorOutline"
+                            app:cardBackgroundColor="?attr/colorSurfaceContainerHigh">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:paddingStart="14dp"
+                                android:paddingEnd="10dp">
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:src="@drawable/ic_lock"
+                                    android:contentDescription="@null"
+                                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                                <View
+                                    android:layout_width="1dp"
+                                    android:layout_height="24dp"
+                                    android:layout_marginStart="10dp"
+                                    android:layout_marginEnd="12dp"
+                                    android:background="?attr/colorOutlineVariant" />
+
+                                <com.google.android.material.textfield.TextInputLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    app:boxBackgroundMode="none"
+                                    app:hintEnabled="false"
+                                    app:startIconDrawable="@null"
+                                    app:endIconMode="password_toggle"
+                                    app:endIconTint="?attr/colorOnSurfaceVariant"
+                                    app:helperText="Must match password above"
+                                    app:helperTextTextColor="?attr/colorOnSurfaceVariant">
+
+                                    <com.google.android.material.textfield.TextInputEditText
+                                        android:id="@+id/etConfirmPassword"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:background="@android:color/transparent"
+                                        android:hint="Confirm your password"
+                                        android:inputType="textPassword"
+                                        android:textColor="?attr/colorOnSurface"
+                                        android:textColorHint="?attr/colorOnSurfaceVariant"
+                                        android:maxLines="1" />
+                                </com.google.android.material.textfield.TextInputLayout>
+
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+
+                    </LinearLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilReferralCode"
+                        style="@style/Widget.Material3.TextInputLayout.FilledBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="18dp"
+                        app:boxBackgroundColor="?attr/colorSurface"
+                        app:boxCornerRadiusBottomEnd="18dp"
+                        app:boxCornerRadiusBottomStart="18dp"
+                        app:boxCornerRadiusTopEnd="18dp"
+                        app:boxCornerRadiusTopStart="18dp"
+                        app:endIconMode="clear_text"
+                        app:endIconTint="#9BB2BF"
+                        app:hintTextColor="#A8BBC6">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etReferralCode"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Referral Code (Optional)"
+                            android:inputType="textCapCharacters"
+                            android:maxLines="1"
+                            android:minHeight="58dp"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textColorHint="?attr/colorOnSurface"
+                            android:textCursorDrawable="@null"
+                            tools:ignore="HardcodedText,TextContrastCheck" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="22dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.checkbox.MaterialCheckBox
                             android:id="@+id/cbTerms"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:buttonTint="@color/chip_selector" />
+                            android:buttonTint="#67C7FF" />
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
                             android:layout_marginStart="8dp"
-                            android:text="I agree to the Terms and Conditions"
-                            android:textSize="14sp"
+                            android:layout_weight="1"
+                            android:lineSpacingExtra="3sp"
+                            android:text="I agree to the Terms and Conditions and Privacy Policy"
                             android:textColor="?attr/colorOnSurface"
-                            android:lineSpacingExtra="4sp"
-                            tools:ignore="HardcodedText" />
+                            android:textSize="13sp"
+                            tools:ignore="HardcodedText,SpUsage" />
                     </LinearLayout>
 
-                    <!-- Sign Up Button -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnSignUp"
                         style="@style/Widget.Material3.Button"
                         android:layout_width="match_parent"
-                        android:layout_height="56dp"
+                        android:layout_height="58dp"
+                        android:layout_marginBottom="18dp"
                         android:text="Create Account"
                         android:textAllCaps="false"
-                        android:textColor="@color/white"
+                        android:textColor="@android:color/white"
                         android:textSize="16sp"
-                        app:backgroundTint="@color/com_facebook_messenger_blue"
-                        app:cornerRadius="12dp"
-                        app:icon="@drawable/ic_arrow_forward"
-                        app:iconGravity="end"
-                        tools:ignore="HardcodedText,DuplicateSpeakableTextCheck" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Login Redirect -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="18dp"
-                app:cardElevation="1dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:background="@drawable/text_gradient_bg"
-                    android:gravity="center"
-                    android:padding="12dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Already have an account?"
-                        android:textColor="?attr/colorOnSurface"
-                        android:textSize="14sp"
-                        tools:ignore="HardcodedText" />
-
-                    <TextView
-                        android:id="@+id/tvLogin"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text=" Log In"
-                        android:textSize="14sp"
-                        android:textColor="#009688"
                         android:textStyle="bold"
-                        tools:ignore="HardcodedText" />
+                        app:backgroundTint="@color/bh_primary"
+                        app:cornerRadius="18dp"
+                        app:icon="@drawable/ic_arrow_forward"
+                        app:iconGravity="textEnd"
+                        app:iconPadding="10dp"
+                        app:iconTint="@android:color/white"
+                        tools:ignore="HardcodedText,SpUsage" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Already have an account?"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="15sp"
+                            tools:ignore="HardcodedText,SpUsage" />
+
+                        <TextView
+                            android:id="@+id/tvLogin"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:minHeight="48dp"
+                            android:minWidth="48dp"
+                            android:paddingVertical="12dp"
+                            android:text="Log In"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            tools:ignore="HardcodedText,SpUsage" />
+                    </LinearLayout>
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
-    <!-- ProgressBar na nasa gitna ng screen -->
     <ProgressBar
         android:id="@+id/progressBar"
         style="?android:attr/progressBarStyleLarge"
@@ -255,7 +749,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:indeterminate="true"
+        android:indeterminateTint="@android:color/white"
         android:visibility="gone" />
 
-
-</FrameLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

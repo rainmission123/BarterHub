@@ -5,7 +5,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/backgroundlogin"
+    android:fitsSystemWindows="true"
+    android:background="@drawable/bg_home_profile_logo"
     tools:context=".ui.AddDetailsFragment">
 
     <androidx.core.widget.NestedScrollView
@@ -130,7 +131,7 @@
         android:textAllCaps="false"
         android:layout_gravity="bottom"
         app:cornerRadius="16dp"
-        app:backgroundTint="@color/com_facebook_messenger_blue"
+        app:backgroundTint="@color/bh_primary"
         app:icon="@drawable/ic_arrow_right"
         app:iconGravity="end"
         tools:ignore="HardcodedText" />

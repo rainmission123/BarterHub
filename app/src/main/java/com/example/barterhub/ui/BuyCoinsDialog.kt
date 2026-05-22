@@ -34,6 +34,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 @SuppressLint("SetTextI18n")
@@ -43,7 +44,7 @@ class BuyCoinsDialog(private val onCoinsUpdated: (() -> Unit)? = null) : DialogF
     private var selectedCoins = 0
     private var selectedPrice = 0.0
     private var paymentListener: ValueEventListener? = null
-
+    private var isTransactionSaved = false
     private lateinit var packageOptions: RadioGroup
     private lateinit var btnConfirmBuy: MaterialButton
     private lateinit var btnCancel: MaterialButton
@@ -72,24 +73,26 @@ class BuyCoinsDialog(private val onCoinsUpdated: (() -> Unit)? = null) : DialogF
 
         // RadioGroup
         val radioGroup = RadioGroup(context)
-        val rb20 = RadioButton(context).apply {
-            text = "20 Coins - ₱10"
+        val rb100 = RadioButton(context).apply {
+            text = "100 Coins - ₱50"
             setPadding(24, 24, 24, 24)
         }
-        val rb50 = RadioButton(context).apply {
-            text = "50 Coins - ₱25"
+
+        val rb200 = RadioButton(context).apply {
+            text = "200 Coins - ₱100"
             setPadding(24, 24, 24, 24)
         }
-        val rb120 = RadioButton(context).apply {
-            text = "120 Coins - ₱60 (Best Value!)"
+
+        val rb500 = RadioButton(context).apply {
+            text = "500 Coins - ₱250 (Best Value 🔥)"
             setPadding(24, 24, 24, 24)
         }
-        radioGroup.addView(rb20)
-        radioGroup.addView(rb50)
-        radioGroup.addView(rb120)
+
+        radioGroup.addView(rb100)
+        radioGroup.addView(rb200)
+        radioGroup.addView(rb500)
         rootLayout.addView(radioGroup)
 
-// Buttons
         val buttonLayout = LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.END
@@ -157,16 +160,37 @@ class BuyCoinsDialog(private val onCoinsUpdated: (() -> Unit)? = null) : DialogF
     @SuppressLint("DefaultLocale")
     private fun updateSelectedPackage(rb: RadioButton) {
         when (rb.text.toString()) {
-            "20 Coins - ₱10" -> { selectedCoins = 20; selectedPrice = 10.0 }
-            "50 Coins - ₱25" -> { selectedCoins = 50; selectedPrice = 25.0 }
-            "120 Coins - ₱60 (Best Value!)" -> { selectedCoins = 120; selectedPrice = 60.0 }
-            else -> { selectedCoins = 0; selectedPrice = 0.0 }
+
+            "100 Coins - ₱50" -> {
+                selectedCoins = 100
+                selectedPrice = 50.0
+            }
+
+            "200 Coins - ₱100" -> {
+                selectedCoins = 200
+                selectedPrice = 100.0
+            }
+
+            "500 Coins - ₱250 (Best Value 🔥)" -> {
+                selectedCoins = 500
+                selectedPrice = 250.0
+            }
+
+            else -> {
+                selectedCoins = 0
+                selectedPrice = 0.0
+            }
         }
+
         btnConfirmBuy.text = "Buy Now - ₱${String.format("%.2f", selectedPrice)}"
     }
 
     private fun showPaymentOptionsDialog() {
-        val paymentMethods = listOf("GCash" to "gcash")
+        val paymentMethods = listOf(
+            "GCash" to "gcash",
+            "GrabPay" to "grab_pay",
+            "Credit / Debit Card" to "card"
+        )
         AlertDialog.Builder(requireContext())
             .setTitle("Choose Payment Method")
             .setItems(paymentMethods.map { it.first }.toTypedArray()) { _, which ->
@@ -243,9 +267,17 @@ class BuyCoinsDialog(private val onCoinsUpdated: (() -> Unit)? = null) : DialogF
 
     private fun listenForCoinUpdates() {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val db = FirebaseDatabase.getInstance().getReference("users").child(uid).child("coins")
+        val db = FirebaseDatabase.getInstance()
+            .getReference("users")
+            .child(uid)
+            .child("wallet")
+            .child("coins")
+
         db.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) { onCoinsUpdated?.invoke() }
+            override fun onDataChange(snapshot: DataSnapshot) {
+                onCoinsUpdated?.invoke()
+            }
+
             override fun onCancelled(error: DatabaseError) { }
         })
     }
@@ -268,19 +300,31 @@ class BuyCoinsDialog(private val onCoinsUpdated: (() -> Unit)? = null) : DialogF
 
     private fun listenForCoinBalance() {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val db = FirebaseDatabase.getInstance().getReference("users").child(uid).child("coins")
+
+        val db = FirebaseDatabase.getInstance()
+            .getReference("users")
+            .child(uid)
+            .child("wallet")
+            .child("coins")
 
         db.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val coins = snapshot.getValue(Int::class.java) ?: 0
 
-                // Automatic dismiss kapag nadagdagan ang coins
-                if (coins >= selectedCoins && isAdded) {
-                    Toast.makeText(requireContext(), "Coins received: $coins", Toast.LENGTH_SHORT).show()
+                if (coins >= selectedCoins && isAdded && !isTransactionSaved) {
+                    isTransactionSaved = true
+
+                    recordTransactionHistory(uid, selectedCoins, selectedPrice)
+
+                    Toast.makeText(
+                        requireContext(),
+                        "Coins received: $selectedCoins",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
                     dismissAllowingStateLoss()
                 }
 
-                // Optional: i-update ang UI kung may callback
                 onCoinsUpdated?.invoke()
             }
 
@@ -290,43 +334,34 @@ class BuyCoinsDialog(private val onCoinsUpdated: (() -> Unit)? = null) : DialogF
         })
     }
 
-    private fun addCoinsToUser(amount: Int) {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val db = FirebaseDatabase.getInstance().getReference("users").child(uid)
-
-        db.child("coins").get().addOnSuccessListener { snapshot ->
-            val current = snapshot.getValue(Int::class.java) ?: 0
-            val newBalance = current + amount
-
-            db.child("coins").setValue(newBalance).addOnSuccessListener {
-                recordTransactionHistory(uid, amount, selectedPrice)
-
-                onCoinsUpdated?.invoke()
-                showToast("Successfully added $amount coins!")
-            }.addOnFailureListener { e ->
-                Log.e(TAG, "Failed to update coins: ${e.message}")
-                showToast("Error updating coins. Contact support.")
-            }
-        }
-    }
-
     private fun recordTransactionHistory(uid: String, coins: Int, amount: Double) {
         val transactionRef = FirebaseDatabase.getInstance()
             .getReference("transactions")
             .push()
 
+        val transactionId = "TXN${System.currentTimeMillis()}"
+        val referenceNo = "REF${UUID.randomUUID().toString().take(8).uppercase()}"
+
         val data = hashMapOf<String, Any>(
             "userId" to uid,
-            "type" to "cashin",
+            "type" to "purchase",
             "coins" to coins,
             "amount" to amount,
             "status" to "completed",
-            "createdAt" to System.currentTimeMillis(),
-            "currency" to "PHP"
+            "timestamp" to System.currentTimeMillis(),
+            "currency" to "PHP",
+
+            // ✅ FIX: IDs
+            "transactionId" to transactionId,
+            "referenceNo" to referenceNo,
+
+            // optional display
+            "fromName" to "System",
+            "toName" to "You"
         )
 
         transactionRef.setValue(data).addOnSuccessListener {
-            Log.d(TAG, "Cashin transaction recorded for user $uid: $coins coins")
+            Log.d(TAG, "Transaction saved with ID: $transactionId")
         }.addOnFailureListener { e ->
             Log.e(TAG, "Failed to record transaction: ${e.message}")
         }

@@ -30,30 +30,25 @@ class LuckySpinDialog(
 ) {
 
     private var specialSound: MediaPlayer? = null
-
     private lateinit var dialog: Dialog
     private lateinit var rewardViews: List<FrameLayout>
-
     private lateinit var spinWheelContainer: RelativeLayout
     private lateinit var spinWheel: ImageView
     private lateinit var btnSpin: MaterialButton
     private lateinit var tvSpinCost: TextView
-
     private lateinit var tvCoinBalance: TextView
-
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseDatabase.getInstance()
 
-    // ✅ FIXED: Reward map matches actual rewards
     private val rewardMap = mapOf(
         0 to "10 Coins",
         1 to "15 Coins",
         2 to "Mystery Gift",
         3 to "1 Extra Spin",
         4 to "1 Coin",
-        5 to "25 Coins",  // ✅ Fixed: was "0.6 Coins"
+        5 to "25 Coins",
         6 to "5 Coins",
-        7 to "2 Coins"    // ✅ Fixed: was "0.5 Coins"
+        7 to "2 Coins"
     )
 
     private var onCoinsUpdateListener: ((Double) -> Unit)? = null
@@ -119,7 +114,11 @@ class LuckySpinDialog(
     private fun saveCoinsToFirebase(coins: Double) {
         val currentUser = auth.currentUser
         if (currentUser != null) {
-            database.getReference("users").child(currentUser.uid).child("coins")
+
+            database.getReference("users")
+                .child(currentUser.uid)
+                .child("wallet")
+                .child("coins")
                 .setValue(coins.toInt())
                 .addOnSuccessListener {
                     Log.d("LuckySpinDialog", "Coins saved to Firebase: $coins")
@@ -132,11 +131,24 @@ class LuckySpinDialog(
 
     private fun loadCoinsFromFirebase(callback: (Double) -> Unit) {
         val currentUser = auth.currentUser
+
         if (currentUser != null) {
-            database.getReference("users").child(currentUser.uid).child("coins")
+
+            database.getReference("users")
+                .child(currentUser.uid)
+                .child("wallet")
+                .child("coins")
                 .addListenerForSingleValueEvent(object : ValueEventListener {
+
                     override fun onDataChange(snapshot: DataSnapshot) {
-                        val coins = snapshot.getValue(Int::class.java) ?: 0
+
+                        val coins = when (val value = snapshot.value) {
+                            is Long -> value.toInt()
+                            is Int -> value
+                            is Double -> value.toInt()
+                            else -> 0
+                        }
+
                         callback(coins.toDouble())
                     }
 
@@ -144,6 +156,7 @@ class LuckySpinDialog(
                         callback(0.0)
                     }
                 })
+
         } else {
             callback(0.0)
         }

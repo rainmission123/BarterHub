@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/backgroundlogin"
+    android:background="@drawable/bg_home_profile_logo"
     android:padding="16dp">
 
     <LinearLayout
@@ -46,7 +46,7 @@
             app:cardCornerRadius="16dp"
             app:cardElevation="6dp"
             app:strokeColor="@color/White"
-            app:strokeWidth="2dp"
+            app:strokeWidth="1dp"
             android:clickable="true"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackground">
@@ -56,7 +56,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:padding="20dp"
-                android:background="@drawable/game_card_gradient">
+                android:background="?attr/colorSurface">
 
                 <!-- Game Icon -->
                 <LinearLayout
@@ -86,14 +86,14 @@
                         android:text="@string/lucky_spin"
                         android:textSize="20sp"
                         android:textStyle="bold"
-                        android:textColor="@color/black" />
+                        android:textColor="?attr/colorOnSurface" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/spin_the_wheel_win_amazing_rewards"
                         android:textSize="14sp"
-                        android:textColor="@color/gray_700"
+                        android:textColor="?attr/colorOnSurface"
                         android:layout_marginTop="4dp" />
 
                     <!-- Cost and Play Button -->
@@ -122,7 +122,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="10 coins per spin"
                                 android:textSize="13sp"
-                                android:textColor="@color/gray_600"
+                                android:textColor="?attr/colorOnSurface"
                                 android:textStyle="bold" />
 
                         </LinearLayout>
@@ -136,7 +136,7 @@
                             android:paddingHorizontal="20dp"
                             android:paddingVertical="10dp"
                             app:cornerRadius="12dp"
-                            android:backgroundTint="@color/com_facebook_messenger_blue"
+                            android:backgroundTint="@color/bh_primary"
                             android:textColor="@color/White"
                             android:textStyle="bold" />
 
@@ -167,7 +167,7 @@
                 android:orientation="horizontal"
                 android:padding="20dp"
                 app:strokeColor="@color/premium_gold"
-                android:background="@drawable/game_card_gradient">
+                android:background="?attr/colorSurface">
 
                 <!-- Game Icon -->
                 <LinearLayout
@@ -198,14 +198,14 @@
                         android:text="@string/coin_flip"
                         android:textSize="20sp"
                         android:textStyle="bold"
-                        android:textColor="@color/black" />
+                        android:textColor="?attr/colorOnSurface" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/heads_or_tails_double_your_coins"
                         android:textSize="14sp"
-                        android:textColor="@color/gray_700"
+                        android:textColor="?attr/colorOnSurface"
                         android:layout_marginTop="4dp" />
 
                     <!-- Cost and Play Button -->
@@ -234,7 +234,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="5 coins per game"
                                 android:textSize="13sp"
-                                android:textColor="@color/gray_600"
+                                android:textColor="?attr/colorOnSurface"
                                 android:textStyle="bold" />
 
                         </LinearLayout>
@@ -244,13 +244,12 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/play"
-                            android:backgroundTint="@color/com_facebook_messenger_blue"
+                            android:backgroundTint="@color/bh_primary"
                             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                             android:textSize="13sp"
                             android:paddingHorizontal="20dp"
                             android:paddingVertical="10dp"
                             app:cornerRadius="12dp"
-                            app:strokeColor="@color/com_facebook_messenger_blue"
                             android:textColor="@color/White" />
 
                     </LinearLayout>
@@ -277,23 +276,23 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="?attr/colorSurface"
                 android:orientation="horizontal"
-                android:padding="20dp"
-                android:background="@drawable/game_card_gradient">
+                android:padding="20dp">
 
                 <!-- Game Icon -->
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
                     android:background="@drawable/circle_green_bg"
-                    android:gravity="center"
-                    android:layout_marginEnd="16dp">
+                    android:gravity="center">
 
                     <ImageView
                         android:layout_width="70dp"
                         android:layout_height="80dp"
-                        android:src="@drawable/ic_scratch_card"
-                        android:contentDescription="@string/scratch_card" />
+                        android:contentDescription="@string/scratch_card"
+                        android:src="@drawable/ic_scratch_card" />
 
                 </LinearLayout>
 
@@ -308,62 +307,62 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/scratch_card"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/black" />
+                        android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
                         android:text="@string/scratch_to_reveal_instant_prizes"
-                        android:textSize="14sp"
-                        android:textColor="@color/gray_700"
-                        android:layout_marginTop="4dp" />
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="14sp" />
 
                     <!-- Cost and Play Button -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
+                        android:layout_marginTop="12dp"
                         android:gravity="center_vertical"
-                        android:layout_marginTop="12dp">
+                        android:orientation="horizontal">
 
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
 
                             <ImageView
                                 android:layout_width="18dp"
                                 android:layout_height="18dp"
-                                android:src="@drawable/ic_barter_coins"
-                                android:layout_marginEnd="6dp" />
+                                android:layout_marginEnd="6dp"
+                                android:src="@drawable/ic_barter_coins" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="15 coins per card"
+                                android:textColor="?attr/colorOnSurface"
                                 android:textSize="13sp"
-                                android:textColor="@color/gray_600"
                                 android:textStyle="bold" />
 
                         </LinearLayout>
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnPlayScratchCard"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/play"
-                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                            android:textSize="13sp"
+                            android:backgroundTint="@color/bh_primary"
                             android:paddingHorizontal="20dp"
-                            android:backgroundTint="@color/com_facebook_messenger_blue"
                             android:paddingVertical="10dp"
+                            android:text="@string/play"
+                            android:textColor="@color/White"
+                            android:textSize="13sp"
                             app:cornerRadius="12dp"
-                            app:strokeColor="@color/gray_400"
-                            android:textColor="@color/White" />
+                            app:strokeColor="@color/gray_400" />
 
                     </LinearLayout>
 

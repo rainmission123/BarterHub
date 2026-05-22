@@ -44,11 +44,7 @@ object ImageGalleryManager {
         )
     }
 
-
-// ======== ADD THESE FUNCTIONS ========
-
     private fun setupCustomDots(binding: FragmentItemDetailBinding, count: Int) {
-        // Clear existing dots
         binding.imageIndicator.removeAllViews()
 
         if (count <= 1) {
@@ -58,7 +54,6 @@ object ImageGalleryManager {
 
         binding.imageIndicator.visibility = View.VISIBLE
 
-        // Create dots
         for (i in 0 until count) {
             val dot = createDot(binding.root.context, i == 0)
             binding.imageIndicator.addView(dot)
@@ -66,34 +61,43 @@ object ImageGalleryManager {
     }
 
     private fun createDot(context: Context, isSelected: Boolean): View {
-        val dotSize = 8.dpToPx(context) // Helper function below
+        val dotSize = if (isSelected) 10.dpToPx(context) else 6.dpToPx(context)
 
         return View(context).apply {
             layoutParams = LinearLayout.LayoutParams(dotSize, dotSize).apply {
-                marginStart = 4.dpToPx(context)
-                marginEnd = 4.dpToPx(context)
+                marginStart = 3.dpToPx(context)
+                marginEnd = 3.dpToPx(context)
             }
 
             background = if (isSelected) {
-                ContextCompat.getDrawable(context, R.drawable.tab_dot_selected)
+                ContextCompat.getDrawable(context, R.drawable.indicator_dot_active)
             } else {
-                ContextCompat.getDrawable(context, R.drawable.tab_dot_default)
+                ContextCompat.getDrawable(context, R.drawable.indicator_dot_inactive)
             }
         }
     }
 
     private fun updateDotsSelection(binding: FragmentItemDetailBinding, selectedPosition: Int) {
+        val context = binding.root.context
+
         for (i in 0 until binding.imageIndicator.childCount) {
             val dot = binding.imageIndicator.getChildAt(i)
+
+            val dotSize = if (i == selectedPosition) 10.dpToPx(context) else 6.dpToPx(context)
+
+            dot.layoutParams = LinearLayout.LayoutParams(dotSize, dotSize).apply {
+                marginStart = 3.dpToPx(context)
+                marginEnd = 3.dpToPx(context)
+            }
+
             dot.background = if (i == selectedPosition) {
-                ContextCompat.getDrawable(binding.root.context, R.drawable.tab_dot_selected)
+                ContextCompat.getDrawable(context, R.drawable.indicator_dot_active)
             } else {
-                ContextCompat.getDrawable(binding.root.context, R.drawable.tab_dot_default)
+                ContextCompat.getDrawable(context, R.drawable.indicator_dot_inactive)
             }
         }
     }
 
-    // Helper function to convert dp to pixels
     private fun Int.dpToPx(context: Context): Int {
         return (this * context.resources.displayMetrics.density).toInt()
     }
@@ -116,8 +120,8 @@ object ImageGalleryManager {
 
         Glide.with(context)
             .load(mapUrl)
-            .placeholder(R.drawable.backgroundlogin)
-            .error(R.drawable.backgroundlogin)
+            .placeholder(R.drawable.bg_home_profile_logo)
+            .error(R.drawable.bg_home_profile_logo)
             .centerCrop()
             .into(imageView)
     }
@@ -129,7 +133,6 @@ object ImageGalleryManager {
             return "https://via.placeholder.com/900x450/cccccc/333333?text=Missing+Mapbox+Token"
         }
 
-        // Mapbox wants lng,lat
         val lngLat = String.format(java.util.Locale.US, "%.6f,%.6f", longitude, latitude)
 
         val style = "mapbox/satellite-streets-v12"
@@ -147,15 +150,14 @@ object ImageGalleryManager {
 
     fun loadDefaultImage(context: Context, binding: FragmentItemDetailBinding) {
         binding.tvImageCount.visibility = View.GONE
+        binding.imageIndicator.visibility = View.GONE
 
         val adapter = ImageViewPagerAdapter(listOf("default")) { _ ->
         }
         binding.viewPagerImages.adapter = adapter
     }
 
-
     private fun updateImageCounter(binding: FragmentItemDetailBinding, current: Int, total: Int) {
         binding.tvImageCount.text = "$current/$total"
     }
-
 }

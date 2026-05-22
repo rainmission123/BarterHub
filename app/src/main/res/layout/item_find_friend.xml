@@ -35,7 +35,7 @@
             android:text="User Name"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:textColor="@color/White"
+            android:textColor="?attr/colorOnSurface"
             android:ellipsize="end"
             android:maxLines="1" />
 
@@ -45,7 +45,7 @@
             android:layout_height="wrap_content"
             android:text="Location"
             android:textSize="12sp"
-            android:textColor="@color/White"
+            android:textColor="?attr/colorOnSurface"
             android:ellipsize="end"
             android:maxLines="1"
             android:layout_marginBottom="2dp" />
@@ -59,7 +59,7 @@
             android:paddingHorizontal="6dp"
             android:paddingVertical="2dp"
             android:background="@drawable/bg_online_status"
-            android:textColor="@android:color/white"
+            android:textColor="?attr/colorOnSurface"
             android:visibility="visible" />
 
     </LinearLayout>
@@ -72,10 +72,10 @@
         android:layout_height="wrap_content"
         android:text="Add"
         android:textSize="12sp"
-        android:textColor="@color/White"
+        android:textColor="?attr/colorOnSurface"
         app:cornerRadius="8dp"
         app:icon="@drawable/ic_add_friend"
-        app:iconTint="@color/White"
+        app:iconTint="?attr/colorOnSurface"
         app:iconSize="16dp" />
 
 </LinearLayout>

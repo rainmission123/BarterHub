@@ -1,5 +1,6 @@
 package com.example.barterhub.ui
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.net.Uri
 import android.os.Bundle
@@ -34,19 +35,18 @@ import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.io.File
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
+import androidx.recyclerview.widget.RecyclerView
+import android.widget.FrameLayout
 
 class ChatFragment : Fragment() {
     private var _binding: FragmentChatBinding? = null
     private val binding get() = _binding!!
-
-    // ViewModel
     private lateinit var viewModel: ChatViewModel
-
-    // Adapter
     private lateinit var messagesAdapter: MessagesAdapter
     private val messagesList = mutableListOf<Message>()
-
-    // Arguments
     private var chatId = ""
     private var partnerId = ""
     private var partnerName = ""
@@ -54,18 +54,10 @@ class ChatFragment : Fragment() {
     private var itemTitle = ""
     private var currentUserId = ""
     private var currentUserName = ""
-
-    // Profile pics
     private var currentUserProfilePic: String? = null
     private var partnerProfilePic: String? = null
-
-    // Camera
     private var currentPhotoPath: String? = null
-
-    // Fragment state
     private var isFragmentActive = false
-
-    // Activity Result Launchers
     private val takePictureLauncher = registerForActivityResult(
         ActivityResultContracts.TakePicture()
     ) { success ->
@@ -161,12 +153,13 @@ class ChatFragment : Fragment() {
         }
 
         val database = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
-        val usersRef = database.getReference("users")
+        val usersRef = database.getReference("public_users")
 
         usersRef.child(currentUserId).get().addOnSuccessListener { snapshot ->
-            currentUserName = snapshot.child("fullName").getValue(String::class.java)
-                ?: snapshot.child("username").getValue(String::class.java)
-                        ?: "You"
+            currentUserName =
+                snapshot.child("fullName").getValue(String::class.java)
+                    ?: snapshot.child("username").getValue(String::class.java)
+                            ?: "You"
 
             initializeViewModel()
         }.addOnFailureListener {
@@ -191,8 +184,45 @@ class ChatFragment : Fragment() {
         setupToolbar()
         setupRecyclerView()
         setupInputListeners()
-        setupKeyboardListener()
+        setupChatInsets()
         loadProfilePictures()
+        updateScrollButtonPosition()
+
+        binding.scrollToBottomButton.setOnClickListener {
+            if (messagesList.isNotEmpty()) {
+                binding.messagesRecyclerView.smoothScrollToPosition(messagesList.size - 1)
+                binding.scrollToBottomButton.visibility = View.GONE
+            }
+        }
+    }
+
+    private fun setupChatInsets() {
+        val appBarInitialTop = binding.appBarLayout.paddingTop
+        val inputInitialBottom = binding.inputContainer.paddingBottom
+        val recyclerInitialBottom = binding.messagesRecyclerView.paddingBottom
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
+
+            binding.appBarLayout.updatePadding(
+                top = appBarInitialTop + systemBars.top
+            )
+
+            val bottomInset = maxOf(systemBars.bottom, imeInsets.bottom)
+
+            binding.inputContainer.updatePadding(
+                bottom = inputInitialBottom + bottomInset
+            )
+
+            binding.messagesRecyclerView.updatePadding(
+                bottom = recyclerInitialBottom + bottomInset
+            )
+
+            insets
+        }
+
+        ViewCompat.requestApplyInsets(binding.root)
     }
 
     private fun setupToolbar() {
@@ -224,7 +254,6 @@ class ChatFragment : Fragment() {
             currentUserProfilePic = currentUserProfilePic,
             partnerProfilePic = partnerProfilePic
         ).apply {
-            // 👇 SET THE DELETE LISTENER HERE
             setOnMessageDeletedListener { message, position ->
                 Log.d("ChatFragment", "Deleting message: ${message.messageId}")
                 viewModel.hideMessageForCurrentUser(message)
@@ -233,6 +262,7 @@ class ChatFragment : Fragment() {
             setOnProfilePictureClickListener { profilePicUrl ->
                 showProfilePictureDialog(profilePicUrl)
             }
+
             setOnViewProfileClickListener { senderId ->
                 openUserProfile(senderId)
             }
@@ -245,6 +275,36 @@ class ChatFragment : Fragment() {
             }
             adapter = messagesAdapter
             itemAnimator = null
+
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+
+                    val lm = recyclerView.layoutManager as LinearLayoutManager
+                    val lastVisible = lm.findLastVisibleItemPosition()
+                    val total = lm.itemCount
+
+                    if (total > 0 && total - lastVisible > 3) {
+                        binding.scrollToBottomButton.visibility = View.VISIBLE
+                    } else {
+                        binding.scrollToBottomButton.visibility = View.GONE
+                    }
+                }
+            })
+        }
+    }
+
+    private fun updateScrollButtonPosition() {
+        binding.inputContainer.post {
+            val params = binding.scrollToBottomButton.layoutParams as FrameLayout.LayoutParams
+
+            val extraSpacingDp = 4
+            val extraSpacingPx = (extraSpacingDp * resources.displayMetrics.density).toInt()
+
+            params.gravity = android.view.Gravity.BOTTOM or android.view.Gravity.CENTER_HORIZONTAL
+            params.bottomMargin = binding.inputContainer.height + extraSpacingPx
+
+            binding.scrollToBottomButton.layoutParams = params
         }
     }
 
@@ -328,7 +388,7 @@ class ChatFragment : Fragment() {
 
     private fun loadProfilePictures() {
         val database = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
-        val usersRef = database.getReference("users")
+        val usersRef = database.getReference("public_users")
 
         // Load current user profile
         if (currentUserId.isNotEmpty()) {
@@ -341,7 +401,9 @@ class ChatFragment : Fragment() {
         // Load partner profile
         if (partnerId.isNotEmpty()) {
             usersRef.child(partnerId).get().addOnSuccessListener { snapshot ->
-                partnerProfilePic = snapshot.child("profileImageUrl").getValue(String::class.java)
+                partnerProfilePic =
+                    snapshot.child("profileImageUrl").getValue(String::class.java)
+                        ?: snapshot.child("profileImage").getValue(String::class.java)
                 val partnerFullName = snapshot.child("fullName").getValue(String::class.java)
 
                 partnerFullName?.let {
@@ -376,12 +438,24 @@ class ChatFragment : Fragment() {
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun updateUI(state: ChatState) {
+        val layoutManager = binding.messagesRecyclerView.layoutManager as LinearLayoutManager
+        val lastVisiblePosition = layoutManager.findLastVisibleItemPosition()
+        val oldTotalItemCount = layoutManager.itemCount
+        val shouldAutoScroll = oldTotalItemCount == 0 || oldTotalItemCount - lastVisiblePosition <= 5
+
         // Update messages
         messagesList.clear()
         messagesList.addAll(state.messages)
         messagesAdapter.notifyDataSetChanged()
-        scrollToBottom()
+
+        if (shouldAutoScroll && messagesList.isNotEmpty()) {
+            binding.messagesRecyclerView.scrollToPosition(messagesList.size - 1)
+            binding.scrollToBottomButton.visibility = View.GONE
+        } else {
+            binding.scrollToBottomButton.visibility = View.VISIBLE
+        }
 
         // Update toolbar
         binding.partnerNameText.text = state.partnerName

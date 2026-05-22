@@ -1,238 +1,127 @@
 package com.example.barterhub.ui
 
-import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Typeface
 import android.os.Bundle
-import android.util.Log
 import android.util.Patterns
 import android.view.View
-import android.widget.CheckBox
-import android.widget.ProgressBar
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.graphics.toColorInt
 import com.example.barterhub.R
-import com.google.android.material.button.MaterialButton
+import com.example.barterhub.data.UserRepository
+import com.example.barterhub.data.UsernameRepository
+import com.example.barterhub.domain.SignupManager
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
-import java.io.ByteArrayOutputStream
 
 class SignupActivity : AppCompatActivity() {
 
-    private lateinit var auth: FirebaseAuth
-    private lateinit var db: FirebaseFirestore
-    private lateinit var storage: FirebaseStorage
-    private lateinit var progressBar: ProgressBar
-    private lateinit var btnSignUp: MaterialButton
+    private lateinit var manager: SignupManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_signup) // Tiyakin na ito ang tamang layout
+        setContentView(R.layout.activity_signup)
 
-        auth = FirebaseAuth.getInstance()
-        db = FirebaseFirestore.getInstance()
-        storage = FirebaseStorage.getInstance()
+        manager = SignupManager(
+            FirebaseAuth.getInstance(),
+            UsernameRepository(),
+            UserRepository()
+        )
 
         val etFullName = findViewById<TextInputEditText>(R.id.etFullName)
+        val etUsername = findViewById<TextInputEditText>(R.id.etUsername)
         val etEmail = findViewById<TextInputEditText>(R.id.etEmail)
         val etPassword = findViewById<TextInputEditText>(R.id.etPassword)
         val etConfirmPassword = findViewById<TextInputEditText>(R.id.etConfirmPassword)
-        val cbTerms = findViewById<CheckBox>(R.id.cbTerms)
-        btnSignUp = findViewById<MaterialButton>(R.id.btnSignUp)
-        val tvLogin = findViewById<TextView>(R.id.tvLogin)
-        progressBar = findViewById<ProgressBar>(R.id.progressBar)
 
-        btnSignUp.setOnClickListener {
-            Log.d("SignupActivity", "Sign Up button clicked")
+        findViewById<View>(R.id.btnSignUp).setOnClickListener {
+
             val fullName = etFullName.text.toString().trim()
+            val username = etUsername.text.toString().trim().lowercase()
             val email = etEmail.text.toString().trim()
-            val password = etPassword.text.toString().trim()
-            val confirmPassword = etConfirmPassword.text.toString().trim()
+            val password = etPassword.text.toString()
+            val confirmPassword = etConfirmPassword.text.toString()
 
-            // Validation checks
             when {
-                fullName.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() -> {
-                    showToast("Please fill all fields")
-                    return@setOnClickListener
+                fullName.isEmpty() ||
+                        username.isEmpty() ||
+                        email.isEmpty() ||
+                        password.isEmpty() -> {
+                    toast("Fill all fields")
                 }
+
+                username.length < 3 -> {
+                    toast("Username too short")
+                }
+
+                !username.matches(Regex("^[a-z0-9_]+$")) -> {
+                    toast("Invalid username format")
+                }
+
                 !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> {
-                    showToast("Invalid email format")
-                    return@setOnClickListener
+                    toast("Invalid email")
                 }
-                password.length < 6 -> {
-                    showToast("Password must be at least 6 characters")
-                    return@setOnClickListener
-                }
+
                 password != confirmPassword -> {
-                    showToast("Passwords do not match")
-                    return@setOnClickListener
+                    toast("Passwords do not match")
                 }
-                !cbTerms.isChecked -> {
-                    showToast("You must agree to Terms and Conditions")
-                    return@setOnClickListener
-                }
+
                 else -> {
-                    signUpUser(fullName, email, password)
-                }
-            }
-        }
+                    manager.signup(
+                        fullName = fullName,
+                        username = username,
+                        email = email,
+                        password = password,
+                        address = "",
+                        province = "",
+                        cityMunicipality = "",
+                        referralCode = null,
+                        onSuccess = {
 
-        tvLogin.setOnClickListener {
-            startActivity(Intent(this, LoginActivity::class.java))
-            finish()
-        }
-    }
+                            FirebaseAuth.getInstance().signOut()
 
-    private fun signUpUser(fullName: String, email: String, password: String) {
-        showLoading(true)
+                            com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                                .setTitle("Verify your email")
+                                .setMessage(
+                                    "Account created successfully.\n\n" +
+                                            "Please check your email (Inbox or Spam) to verify your account before logging in."
+                                )
+                                .setPositiveButton("Open Email") { dialog, _ ->
+                                    dialog.dismiss()
 
-        auth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val user = auth.currentUser
-                    val userId = user?.uid
-                    val initials = generateInitials(fullName)
+                                    val intent = android.content.Intent(android.content.Intent.ACTION_MAIN).apply {
+                                        addCategory(android.content.Intent.CATEGORY_APP_EMAIL)
+                                        flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                                    }
 
-                    user?.sendEmailVerification()
-                        ?.addOnSuccessListener {
-                            if (userId != null) {
-                                saveUserToFirestore(userId, fullName, email, initials)
-                                saveUserToRealtimeDatabase(userId, fullName, email, "") // empty string for profileImage for now
-                            }
+                                    try {
+                                        startActivity(intent)
+                                    } catch (e: Exception) {
+                                        toast("No email app found")
+                                    }
+                                }
+                                .setNegativeButton("Go to Login") { dialog, _ ->
+                                    dialog.dismiss()
 
-                            showToast("Please check your email to verify your account.")
-                            auth.signOut()
-                            showLoading(false)
-                            startActivity(Intent(this, LoginActivity::class.java))
-                            finish()
+                                    val intent = android.content.Intent(this, LoginActivity::class.java)
+                                    intent.flags =
+                                        android.content.Intent.FLAG_ACTIVITY_NEW_TASK or
+                                                android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+
+                                    startActivity(intent)
+                                    finish()
+                                }
+                                .setCancelable(false)
+                                .show()
+                        },
+                        onError = {
+                            toast(it)
                         }
-                        ?.addOnFailureListener { e ->
-                            showLoading(false)
-                            Log.e("SignupActivity", "Failed to send email verification", e)
-                            showToast("Failed to send verification email.")
-                        }
-                } else {
-                    showLoading(false)
-                    Log.e("SignupActivity", "Signup failed", task.exception)
-                    showToast("Signup failed: ${task.exception?.message}")
+                    )
                 }
             }
-    }
-
-    private fun saveUserToFirestore(userId: String, fullName: String, email: String, initials: String) {
-        val userMap = hashMapOf(
-            "fullName" to fullName,
-            "email" to email,
-            "profileInitials" to initials,
-            "createdAt" to FieldValue.serverTimestamp()
-        )
-
-        db.collection("users").document(userId)
-            .set(userMap)
-            .addOnSuccessListener {
-                generateAndUploadProfileImage(userId, initials)
-            }
-            .addOnFailureListener { e ->
-                Log.e("SignupActivity", "Firestore save failed", e)
-                showToast("Account created but failed to save user data")
-            }
-    }
-
-    private fun saveUserToRealtimeDatabase(userId: String, fullName: String, email: String, profileImageUrl: String) {
-        val userMap = hashMapOf(
-            "fullName" to fullName,
-            "username" to fullName,
-            "email" to email,
-            "profileImage" to profileImageUrl,
-            "rating" to 0.0, // default rating
-            "phoneNumber" to "",
-            "bio" to "",
-            "address" to "",
-            "updatedAt" to System.currentTimeMillis()
-        )
-
-        val database = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/").getReference("users")
-        database.child(userId).setValue(userMap)
-            .addOnSuccessListener { Log.d("SignupActivity", "User saved to Realtime DB") }
-            .addOnFailureListener { e -> Log.e("SignupActivity", "Failed to save user to Realtime DB", e) }
-    }
-
-    private fun generateAndUploadProfileImage(userId: String, initials: String) {
-        try {
-            val bitmap = generateProfileImage(initials)
-            val baos = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
-            val data = baos.toByteArray()
-
-            val storageRef = storage.reference
-            val profileImageRef = storageRef.child("profile_images/$userId.png")
-
-            profileImageRef.putBytes(data)
-                .addOnSuccessListener {
-                    Log.d("SignupActivity", "Profile image uploaded successfully")
-                }
-                .addOnFailureListener { e ->
-                    Log.e("SignupActivity", "Profile image upload failed", e)
-                }
-        } catch (e: Exception) {
-            Log.e("SignupActivity", "Profile image generation failed", e)
         }
     }
 
-    private fun generateInitials(fullName: String): String {
-        val names = fullName.split(" ")
-        return when {
-            names.size >= 2 -> "${names[0].first().uppercase()}${names[1].first().uppercase()}"
-            names.size == 1 -> names[0].take(2).uppercase()
-            else -> "US"
-        }
-    }
-
-    private fun generateProfileImage(initials: String): Bitmap {
-        val size = 200
-        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-
-        // Draw background circle
-        val paint = Paint().apply {
-            color = "#4A148C".toColorInt() // Fixed color parsing
-            isAntiAlias = true
-        }
-
-        val radius = size / 2f
-        canvas.drawCircle(radius, radius, radius, paint)
-
-        // Draw text (initials)
-        val textPaint = Paint().apply {
-            color = Color.WHITE
-            textSize = size * 0.4f
-            isAntiAlias = true
-            textAlign = Paint.Align.CENTER
-            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        }
-
-        val yPos = radius - (textPaint.descent() + textPaint.ascent()) / 2
-        canvas.drawText(initials, radius, yPos, textPaint)
-
-        return bitmap
-    }
-
-
-    private fun showLoading(show: Boolean) {
-        progressBar.visibility = if (show) View.VISIBLE else View.GONE
-        btnSignUp.isEnabled = !show
-    }
-
-    private fun showToast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    private fun toast(msg: String) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
 }

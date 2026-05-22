@@ -10,8 +10,12 @@ import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.barterhub.R
-import com.facebook.*
+import com.facebook.AccessToken
+import com.facebook.CallbackManager
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -20,8 +24,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
-import com.google.firebase.auth.*
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.google.firebase.auth.FacebookAuthProvider
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.GoogleAuthProvider
 
 class LoginActivity : AppCompatActivity() {
 
@@ -43,14 +49,15 @@ class LoginActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "FB_AUTH"
+        private const val EMAIL_HINT = "delacruz@gmail.com"
+        private const val PASSWORD_HINT = "password"
     }
 
     override fun onStart() {
         super.onStart()
         val currentUser = auth.currentUser
         if (currentUser != null && currentUser.isEmailVerified) {
-            startActivity(Intent(this, HomeActivity::class.java))
-            finish()
+            handlePostLoginNavigation()
         }
     }
 
@@ -59,11 +66,8 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        setContentView(R.layout.activity_login)
-
         auth = FirebaseAuth.getInstance()
 
-        // Views
         progressBar = findViewById(R.id.progressBar)
         emailEditText = findViewById(R.id.emailEditText)
         passwordEditText = findViewById(R.id.passwordEditText)
@@ -76,23 +80,29 @@ class LoginActivity : AppCompatActivity() {
 
         callbackManager = CallbackManager.Factory.create()
 
-        LoginManager.getInstance().registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
-            override fun onSuccess(result: LoginResult) {
-                Log.d(TAG, "FB onSuccess userId=${result.accessToken.userId}")
-                handleFacebookAccessToken(result.accessToken)
-            }
+        setupHintBehavior(emailEditText, EMAIL_HINT)
+        setupHintBehavior(passwordEditText, PASSWORD_HINT)
 
-            override fun onCancel() {
-                showProgress(false)
-                showSnack("Facebook login cancelled")
-            }
+        LoginManager.getInstance().registerCallback(
+            callbackManager,
+            object : FacebookCallback<LoginResult> {
+                override fun onSuccess(result: LoginResult) {
+                    Log.d(TAG, "FB onSuccess userId=${result.accessToken.userId}")
+                    handleFacebookAccessToken(result.accessToken)
+                }
 
-            override fun onError(error: FacebookException) {
-                showProgress(false)
-                Log.e(TAG, "Facebook SDK error", error)
-                showSnack("Facebook error: ${error.message}")
+                override fun onCancel() {
+                    showProgress(false)
+                    showSnack("Facebook login cancelled")
+                }
+
+                override fun onError(error: FacebookException) {
+                    showProgress(false)
+                    Log.e(TAG, "Facebook SDK error", error)
+                    showSnack("Facebook error: ${error.message}")
+                }
             }
-        })
+        )
 
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
@@ -101,40 +111,35 @@ class LoginActivity : AppCompatActivity() {
 
         googleSignInClient = GoogleSignIn.getClient(this, gso)
 
-        // Email/password login
         loginButton.setOnClickListener { loginWithEmailPassword() }
 
-        // Signup
         signupTextView.setOnClickListener {
             startActivity(Intent(this, SignupActivity::class.java))
         }
 
-        // Forgot password
         forgotPasswordText.setOnClickListener { resetPassword() }
 
-        // Google login
         googleLoginCard.setOnClickListener {
             showProgress(true)
             startActivityForResult(googleSignInClient.signInIntent, RC_SIGN_IN)
         }
 
-        // ✅ Facebook login (CLICK ONLY starts login)
         facebookLoginCard.setOnClickListener {
             showProgress(true)
-            LoginManager.getInstance().logInWithReadPermissions(this, listOf("public_profile", "email"))
+            LoginManager.getInstance().logInWithReadPermissions(
+                this,
+                listOf("public_profile", "email")
+            )
         }
 
-        // Resend verification
         tvResendVerification.setOnClickListener { resendVerificationEmail() }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        // ✅ Facebook
         callbackManager.onActivityResult(requestCode, resultCode, data)
 
-        // ✅ Google
         if (requestCode == RC_SIGN_IN) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             try {
@@ -148,6 +153,22 @@ class LoginActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 showProgress(false)
                 showSnack("Google sign in failed: ${e.message}")
+            }
+        }
+    }
+
+    private fun setupHintBehavior(editText: TextInputEditText, defaultHint: String) {
+        editText.hint = defaultHint
+
+        editText.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                editText.hint = ""
+            } else {
+                editText.hint = if (editText.text.isNullOrEmpty()) {
+                    defaultHint
+                } else {
+                    ""
+                }
             }
         }
     }
@@ -168,8 +189,7 @@ class LoginActivity : AppCompatActivity() {
                 if (task.isSuccessful) {
                     val user = auth.currentUser
                     if (user != null && user.isEmailVerified) {
-                        startActivity(Intent(this, HomeActivity::class.java))
-                        finish()
+                        handlePostLoginNavigation()
                     } else {
                         auth.signOut()
                         tvResendVerification.visibility = View.VISIBLE
@@ -183,20 +203,28 @@ class LoginActivity : AppCompatActivity() {
 
     private fun resetPassword() {
         val email = emailEditText.text?.toString()?.trim().orEmpty()
+
         if (email.isBlank()) {
             showSnack("Please enter your email address first")
             return
         }
 
         showProgress(true)
-        auth.sendPasswordResetEmail(email)
-            .addOnCompleteListener { task ->
+
+        val data = hashMapOf(
+            "email" to email
+        )
+
+        com.google.firebase.functions.FirebaseFunctions.getInstance()
+            .getHttpsCallable("sendPasswordResetEmail")
+            .call(data)
+            .addOnSuccessListener {
                 showProgress(false)
-                if (task.isSuccessful) {
-                    showSnack("Password reset email sent to $email")
-                } else {
-                    showSnack("Reset failed: ${task.exception?.message}")
-                }
+                showSnack("Password reset email sent to $email")
+            }
+            .addOnFailureListener { e ->
+                showProgress(false)
+                showSnack("Reset failed: ${e.message}")
             }
     }
 
@@ -223,12 +251,10 @@ class LoginActivity : AppCompatActivity() {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         auth.signInWithCredential(credential)
             .addOnCompleteListener { task ->
+                showProgress(false)
                 if (task.isSuccessful) {
-                    showProgress(false)
-                    startActivity(Intent(this, HomeActivity::class.java))
-                    finish()
+                    handlePostLoginNavigation()
                 } else {
-                    showProgress(false)
                     showSnack("Google Authentication Failed: ${task.exception?.message}")
                 }
             }
@@ -242,13 +268,11 @@ class LoginActivity : AppCompatActivity() {
                 showProgress(false)
 
                 if (task.isSuccessful) {
-                    startActivity(Intent(this, HomeActivity::class.java))
-                    finish()
+                    handlePostLoginNavigation()
                 } else {
                     val e = task.exception
                     Log.e(TAG, "FB->Firebase FAILED", e)
 
-                    // ✅ Helpful message for the most common case
                     if (e is FirebaseAuthUserCollisionException) {
                         showSnack(
                             "Account exists with another sign-in method. " +
@@ -259,6 +283,51 @@ class LoginActivity : AppCompatActivity() {
                     }
                 }
             }
+    }
+
+    private fun handlePostLoginNavigation() {
+        val openAfterLogin = intent?.getStringExtra("open_after_login")
+
+        if (openAfterLogin == "chat_message") {
+            val chatId = intent.getStringExtra("chatId")
+            val partnerId = intent.getStringExtra("partnerId")
+            val partnerName = intent.getStringExtra("partnerName")
+            val partnerProfilePic = intent.getStringExtra("partnerProfilePic")
+
+            val homeIntent = Intent(this, HomeActivity::class.java).apply {
+                putExtra("notification_type", "chat_message")
+                putExtra("chatId", chatId)
+                putExtra("partnerId", partnerId)
+                putExtra("partnerName", partnerName)
+                putExtra("partnerProfilePic", partnerProfilePic)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+
+            startActivity(homeIntent)
+            finish()
+            return
+        }
+
+        if (openAfterLogin == "friend_request") {
+            val fromUserId = intent.getStringExtra("fromUserId")
+            val fromUserName = intent.getStringExtra("fromUserName")
+            val fromUserProfilePic = intent.getStringExtra("fromUserProfilePic")
+
+            val homeIntent = Intent(this, HomeActivity::class.java).apply {
+                putExtra("notification_type", "friend_request")
+                putExtra("fromUserId", fromUserId)
+                putExtra("fromUserName", fromUserName)
+                putExtra("fromUserProfilePic", fromUserProfilePic)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+
+            startActivity(homeIntent)
+            finish()
+            return
+        }
+
+        startActivity(Intent(this, HomeActivity::class.java))
+        finish()
     }
 
     private fun showProgress(show: Boolean) {
@@ -274,4 +343,3 @@ class LoginActivity : AppCompatActivity() {
         Snackbar.make(findViewById(R.id.btnLogin), message, Snackbar.LENGTH_LONG).show()
     }
 }
-

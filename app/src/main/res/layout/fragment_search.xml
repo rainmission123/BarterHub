@@ -5,15 +5,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/backgroundlogin"
-    android:fitsSystemWindows="true">
+    android:background="?attr/colorSurface">
 
-    <!-- Scrollable Content -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/searchScrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        android:clipToPadding="false"
+        android:paddingBottom="20dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -21,159 +21,161 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Modern Search Bar -->
+            <!-- Search Bar -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                app:cardCornerRadius="28dp"
-                app:cardElevation="4dp"
-                app:strokeColor="@color/colorAccent"
+                android:layout_height="54dp"
+                android:layout_marginBottom="22dp"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="?attr/colorOutlineVariant"
                 app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:background="?attr/colorSurface"
-                    android:padding="12dp"
-                    android:gravity="center_vertical">
+                    android:paddingStart="14dp"
+                    android:paddingEnd="10dp">
 
                     <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_marginStart="8dp"
-                        android:layout_marginEnd="12dp"
-                        android:src="@drawable/ic_search"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
                         android:contentDescription="@string/search_icon"
-                        app:tint="@color/gray_600" />
+                        android:src="@drawable/ic_search"
+                        app:tint="?attr/colorOnSurfaceVariant" />
 
                     <EditText
                         android:id="@+id/searchEditText"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
                         android:layout_weight="1"
                         android:background="@android:color/transparent"
                         android:hint="@string/search_for_items_to_barter"
                         android:imeOptions="actionSearch"
                         android:inputType="text"
                         android:maxLines="1"
+                        android:padding="0dp"
                         android:textColor="?attr/colorOnSurface"
-                        android:textColorHint="@color/gray_500"
-                        android:textSize="16sp"
+                        android:textColorHint="?attr/colorOnSurfaceVariant"
+                        android:textSize="15sp"
                         tools:ignore="TouchTargetSizeCheck" />
 
                     <ImageButton
                         android:id="@+id/btnClearSearch"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_marginStart="8dp"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:background="?attr/selectableItemBackgroundBorderless"
-                        android:src="@drawable/ic_close"
                         android:contentDescription="@string/clear_search"
+                        android:src="@drawable/ic_close"
                         android:visibility="gone"
-                        app:tint="@color/gray_500" />
+                        app:tint="?attr/colorOnSurfaceVariant" />
+
                 </LinearLayout>
+
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Recent Searches Section -->
+            <!-- Recent Searches -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="8dp"
-                android:gravity="center_vertical">
+                android:layout_marginBottom="10dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/recent_searches"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/White"
-                    android:drawablePadding="8dp" />
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvClearRecent"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="?attr/selectableItemBackground"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     android:clickable="true"
                     android:focusable="true"
                     android:padding="8dp"
                     android:text="@string/clear_all"
-                    android:textColor="@color/White"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="14sp"
                     tools:ignore="TouchTargetSizeCheck" />
+
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recentSearchesRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="32dp"
+                android:layout_marginBottom="26dp"
                 android:visibility="gone" />
 
             <TextView
                 android:id="@+id/tvNoRecent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/no_recent_searches"
-                android:textSize="14sp"
-                android:textColor="@color/White"
+                android:layout_marginBottom="26dp"
                 android:gravity="center"
-                android:layout_marginBottom="32dp"
-                android:padding="16dp" />
+                android:padding="14dp"
+                android:text="@string/no_recent_searches"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="14sp" />
 
-            <!-- Popular Categories Section -->
+            <!-- Popular Categories -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
                 android:text="@string/popular_categories"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="@color/White"
-                android:layout_marginBottom="16dp" />
+                android:textStyle="bold" />
 
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/categoryChipGroup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:chipSpacing="8dp"
+                app:chipSpacingHorizontal="8dp"
+                app:chipSpacingVertical="8dp"
                 app:singleLine="false" />
 
-            <!-- Trending Now Section -->
+            <!-- Trending Now -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:layout_marginBottom="14dp"
                 android:text="@string/trending_now"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="@color/White"
-                android:layout_marginTop="32dp"
-                android:layout_marginBottom="16dp" />
+                android:textStyle="bold" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/trendingRecyclerView"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:minHeight="240dp"
                 android:nestedScrollingEnabled="false"
                 android:layout_marginBottom="70dp" />
 
         </LinearLayout>
+
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Centered Loading Indicator -->
     <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/searchProgressBar"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_gravity="center"
         android:visibility="gone"
-        app:indicatorColor="@color/primary_500"
-        app:trackColor="@color/gray_200" />
-
+        app:indicatorColor="?attr/colorPrimary"
+        app:trackColor="?attr/colorOutlineVariant" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

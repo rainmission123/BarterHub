@@ -2,7 +2,7 @@ package com.example.barterhub.ui
 
 import android.widget.ImageView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
 
 class LuckySpinManager {
 
@@ -24,11 +24,8 @@ class LuckySpinManager {
         val slices = rewards.size
         val sliceAngle = 360 / slices
 
-        // Random index with probability weights
         val randomIndex = getWeightedRandomIndex()
         val landingAngle = randomIndex * sliceAngle
-
-        // Multiple rotations for realistic effect
         val rotation = (360 * 5 + landingAngle).toFloat()
 
         wheel.animate()
@@ -41,7 +38,7 @@ class LuckySpinManager {
     }
 
     private fun getWeightedRandomIndex(): Int {
-        val weights = listOf(20, 10, 5, 20, 25, 10, 15, 5) // Probability weights
+        val weights = listOf(20, 10, 5, 20, 25, 10, 15, 5)
         val total = weights.sum()
         val random = (0 until total).random()
 
@@ -50,82 +47,153 @@ class LuckySpinManager {
             current += weights[i]
             if (random < current) return i
         }
+
         return weights.size - 1
     }
 
-    fun applyReward(reward: Reward, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
+    fun applyReward(
+        reward: Reward,
+        onSuccess: (String) -> Unit,
+        onError: (String) -> Unit
+    ) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: run {
             onError("User not logged in")
             return
         }
 
-        val ref = FirebaseDatabase.getInstance().getReference("users/$userId")
+        val userRef = FirebaseDatabase.getInstance()
+            .getReference("users")
+            .child(userId)
 
-        ref.child("coins").get().addOnSuccessListener { snapshot ->
-            val currentCoins = snapshot.getValue(Int::class.java) ?: 0
+        val coinsRef = userRef.child("wallet").child("coins")
 
-            when (reward.type) {
-                RewardType.COINS -> {
-                    val newCoins = currentCoins + reward.value
-                    ref.child("coins").setValue(newCoins)
-                        .addOnSuccessListener {
-                            onSuccess("You won ${reward.value} coins!")
+        when (reward.type) {
+            RewardType.COINS -> {
+                coinsRef.runTransaction(object : Transaction.Handler {
+                    override fun doTransaction(currentData: MutableData): Transaction.Result {
+                        val currentCoins = when (val value = currentData.value) {
+                            is Long -> value.toInt()
+                            is Int -> value
+                            is Double -> value.toInt()
+                            else -> 0
                         }
-                        .addOnFailureListener {
-                            onError("Failed to update coins")
-                        }
-                }
-                RewardType.MYSTERY_BOX -> {
-                    ref.child("mysteryBoxes").get().addOnSuccessListener { mysterySnapshot ->
-                        val currentBoxes = mysterySnapshot.getValue(Int::class.java) ?: 0
-                        ref.child("mysteryBoxes").setValue(currentBoxes + 1)
-                            .addOnSuccessListener {
-                                onSuccess("You won a Mystery Box!")
-                            }
-                            .addOnFailureListener {
-                                onError("Failed to add mystery box")
-                            }
+
+                        currentData.value = currentCoins + reward.value
+                        return Transaction.success(currentData)
                     }
-                }
-                RewardType.BADGE -> {
-                    ref.child("badges").child("special").setValue(true)
-                        .addOnSuccessListener {
-                            onSuccess("You won a Special Badge!")
+
+                    override fun onComplete(
+                        error: DatabaseError?,
+                        committed: Boolean,
+                        snapshot: DataSnapshot?
+                    ) {
+                        if (error != null || !committed) {
+                            onError("Failed to update coins")
+                            return
                         }
-                        .addOnFailureListener {
-                            onError("Failed to add badge")
-                        }
-                }
-                RewardType.NOTHING -> {
-                    onSuccess("Better luck next time!")
-                }
+
+                        onSuccess("You won ${reward.value} coins!")
+                    }
+                })
             }
-        }.addOnFailureListener {
-            onError("Failed to get user data")
+
+            RewardType.MYSTERY_BOX -> {
+                val mysteryRef = userRef.child("mysteryBoxes")
+
+                mysteryRef.runTransaction(object : Transaction.Handler {
+                    override fun doTransaction(currentData: MutableData): Transaction.Result {
+                        val currentBoxes = when (val value = currentData.value) {
+                            is Long -> value.toInt()
+                            is Int -> value
+                            is Double -> value.toInt()
+                            else -> 0
+                        }
+
+                        currentData.value = currentBoxes + 1
+                        return Transaction.success(currentData)
+                    }
+
+                    override fun onComplete(
+                        error: DatabaseError?,
+                        committed: Boolean,
+                        snapshot: DataSnapshot?
+                    ) {
+                        if (error != null || !committed) {
+                            onError("Failed to add mystery box")
+                            return
+                        }
+
+                        onSuccess("You won a Mystery Box!")
+                    }
+                })
+            }
+
+            RewardType.BADGE -> {
+                userRef.child("badges").child("special").setValue(true)
+                    .addOnSuccessListener {
+                        onSuccess("You won a Special Badge!")
+                    }
+                    .addOnFailureListener {
+                        onError("Failed to add badge")
+                    }
+            }
+
+            RewardType.NOTHING -> {
+                onSuccess("Better luck next time!")
+            }
         }
     }
 
-    fun deductSpinCost(onSuccess: () -> Unit, onError: (String) -> Unit) {
+    fun deductSpinCost(
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: run {
             onError("User not logged in")
             return
         }
 
-        val ref = FirebaseDatabase.getInstance().getReference("users/$userId")
+        val coinsRef = FirebaseDatabase.getInstance()
+            .getReference("users")
+            .child(userId)
+            .child("wallet")
+            .child("coins")
 
-        ref.child("coins").get().addOnSuccessListener { snapshot ->
-            val currentCoins = snapshot.getValue(Int::class.java) ?: 0
+        coinsRef.runTransaction(object : Transaction.Handler {
+            override fun doTransaction(currentData: MutableData): Transaction.Result {
+                val currentCoins = when (val value = currentData.value) {
+                    is Long -> value.toInt()
+                    is Int -> value
+                    is Double -> value.toInt()
+                    else -> 0
+                }
 
-            if (currentCoins >= 10) {
-                ref.child("coins").setValue(currentCoins - 10)
-                    .addOnSuccessListener { onSuccess() }
-                    .addOnFailureListener { onError("Failed to deduct coins") }
-            } else {
-                onError("Not enough coins")
+                if (currentCoins < 10) {
+                    return Transaction.abort()
+                }
+
+                currentData.value = currentCoins - 10
+                return Transaction.success(currentData)
             }
-        }.addOnFailureListener {
-            onError("Failed to get coins")
-        }
+
+            override fun onComplete(
+                error: DatabaseError?,
+                committed: Boolean,
+                snapshot: DataSnapshot?
+            ) {
+                if (error != null) {
+                    onError("Failed to deduct coins")
+                    return
+                }
+
+                if (!committed) {
+                    onError("Not enough coins")
+                    return
+                }
+
+                onSuccess()
+            }
+        })
     }
 }
 
@@ -136,5 +204,8 @@ data class Reward(
 )
 
 enum class RewardType {
-    COINS, MYSTERY_BOX, BADGE, NOTHING
+    COINS,
+    MYSTERY_BOX,
+    BADGE,
+    NOTHING
 }

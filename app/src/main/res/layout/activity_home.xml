@@ -1,25 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.drawerlayout.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:layout_height="match_parent">
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/backgroundlogin"
-        android:fitsSystemWindows="true">
+        android:layout_height="match_parent">
 
-        <!-- Fragment Container - With bottom margin for navigation -->
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/nav_host_fragment"
             android:name="androidx.navigation.fragment.NavHostFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:defaultNavHost="true"
-            app:navGraph="@navigation/nav_graph"/>
+            app:navGraph="@navigation/nav_graph" />
 
         <LinearLayout
             android:id="@+id/bottomNavCard"
@@ -27,52 +24,21 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:orientation="vertical"
-            android:background="@color/background_dark">
+            android:background="?attr/colorSurface">
 
             <com.google.android.material.bottomnavigation.BottomNavigationView
                 android:id="@+id/bottomNavigation"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@android:color/transparent"
-                app:menu="@menu/bottom_navigation_menu"
-                app:labelVisibilityMode="labeled"
                 app:itemIconSize="18dp"
+                app:itemIconTint="@color/bottom_nav_icon_selector"
                 app:itemRippleColor="@color/White"
                 app:itemTextAppearanceActive="@style/BottomNavTextActive"
                 app:itemTextAppearanceInactive="@style/BottomNavTextInactive"
-                app:itemIconTint="@color/bottom_nav_icon_selector"
-                app:itemTextColor="@color/bottom_nav_text_selector" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/swipe_indicator"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:scaleX="0.8"
-            android:scaleY="0.8"
-            android:layout_gravity="start|center_vertical"
-            android:layout_marginStart="1dp"
-            android:layout_marginTop="@dimen/_80dp"
-            android:background="@drawable/rounded_background"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="10dp"
-            android:visibility="visible">
-
-            <!-- Unang linya -->
-            <View
-                android:layout_width="2dp"
-                android:layout_height="40dp"
-                android:background="@color/card_background"
-                android:layout_marginEnd="2dp" />
-
-            <!-- Pangalawang linya -->
-            <View
-                android:layout_width="2dp"
-                android:layout_height="25dp"
-                android:background="@color/card_background" />
+                app:itemTextColor="@color/bottom_nav_text_selector"
+                app:labelVisibilityMode="labeled"
+                app:menu="@menu/bottom_navigation_menu" />
 
         </LinearLayout>
 

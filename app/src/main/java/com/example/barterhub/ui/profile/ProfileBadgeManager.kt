@@ -173,6 +173,15 @@ class ProfileBadgeManager(private val fragment: Fragment) {
             badgeIcon.setImageResource(badge.iconResId)
             badgeText.text = badge.name
 
+            // 🔥 FIX SIZE ISSUE
+            if (badge.id.startsWith("top_")) {
+                badgeIcon.scaleX = 1.5f
+                badgeIcon.scaleY = 1.5f
+            } else {
+                badgeIcon.scaleX = 1.0f
+                badgeIcon.scaleY = 1.0f
+            }
+
             badgeIcon.alpha = if (badge.achieved) 1.0f else 0.4f
             badgeText.alpha = if (badge.achieved) 1.0f else 0.4f
 

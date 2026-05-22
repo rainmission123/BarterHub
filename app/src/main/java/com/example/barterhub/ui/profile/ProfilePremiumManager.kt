@@ -3,32 +3,31 @@ package com.example.barterhub.ui.profile
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.Button
-import android.widget.RadioButton
-import android.widget.RadioGroup
-import android.widget.TextView
-import android.widget.Toast
+import android.view.ViewGroup
+import android.widget.*
 import androidx.fragment.app.Fragment
 import com.example.barterhub.R
 import com.example.barterhub.ads.AppOpenAdManager
 import com.example.barterhub.utils.PremiumHelper
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 
 class ProfilePremiumManager(private val fragment: Fragment) {
+
     private var premiumListener: ValueEventListener? = null
     private var premiumRef: DatabaseReference? = null
     private val auth = FirebaseAuth.getInstance()
     private val database: DatabaseReference = FirebaseDatabase.getInstance().reference
 
+    // ===========================
+    // PREMIUM STATUS CHECK
+    // ===========================
     fun checkPremiumStatus(tvPremiumStatus: TextView, btnGetPremium: Button) {
         val userId = auth.currentUser?.uid ?: return
 
-        premiumListener?.let { l ->
-            premiumRef?.removeEventListener(l)
-        }
-
+        premiumListener?.let { premiumRef?.removeEventListener(it) }
         premiumRef = database.child("users").child(userId)
 
         premiumListener = object : ValueEventListener {
@@ -48,14 +47,14 @@ class ProfilePremiumManager(private val fragment: Fragment) {
                     ).format(java.util.Date(expiry))
 
                     tvPremiumStatus.text = "Premium Active • Until $date"
-
-                    btnGetPremium.visibility = View.VISIBLE
                     btnGetPremium.text = "Manage Premium"
+
                 } else {
                     tvPremiumStatus.visibility = View.GONE
-                    btnGetPremium.visibility = View.VISIBLE
                     btnGetPremium.text = "Get Premium"
                 }
+
+                btnGetPremium.visibility = View.VISIBLE
             }
 
             override fun onCancelled(error: DatabaseError) {}
@@ -64,54 +63,84 @@ class ProfilePremiumManager(private val fragment: Fragment) {
         premiumRef?.addValueEventListener(premiumListener!!)
     }
 
+    // ===========================
+    // SHOW BOTTOM SHEET (FIXED FULL HEIGHT)
+    // ===========================
     fun showPremiumBottomSheet(btnGetPremium: Button) {
         btnGetPremium.setOnClickListener {
-            val bottomSheetDialog = BottomSheetDialog(fragment.requireContext())
+
+            val dialog = BottomSheetDialog(fragment.requireContext())
             val view = LayoutInflater.from(fragment.requireContext())
                 .inflate(R.layout.bottom_sheet_premium, null)
 
-            setupPremiumBottomSheet(view, bottomSheetDialog)
-            bottomSheetDialog.setContentView(view)
-            bottomSheetDialog.show()
+            setupPremiumBottomSheet(view, dialog)
+
+            dialog.setContentView(view)
+
+            // 🔥 FULL HEIGHT FIX
+            dialog.setOnShowListener {
+                val bottomSheet = dialog.findViewById<View>(
+                    com.google.android.material.R.id.design_bottom_sheet
+                )
+
+                bottomSheet?.let {
+                    it.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+
+                    val behavior = BottomSheetBehavior.from(it)
+                    behavior.state = BottomSheetBehavior.STATE_EXPANDED
+                    behavior.skipCollapsed = true
+                }
+            }
+
+            dialog.show()
         }
     }
 
+    // ===========================
+    // SETUP UI
+    // ===========================
     private fun setupPremiumBottomSheet(view: View, dialog: BottomSheetDialog) {
+
         val tvCurrentBalance = view.findViewById<TextView>(R.id.tvCurrentBalance)
         val rgPremiumOptions = view.findViewById<RadioGroup>(R.id.rgPremiumOptions)
-        val rb50Coins = view.findViewById<RadioButton>(R.id.rb50Coins)
-        val rb100Coins = view.findViewById<RadioButton>(R.id.rb100Coins)
-        val rb200Coins = view.findViewById<RadioButton>(R.id.rb200Coins)
-        val btnConfirmPremium = view.findViewById<Button>(R.id.btnConfirmPremium)
-        val btnCancelPremium = view.findViewById<TextView>(R.id.btnCancelPremium)
+        val rb50 = view.findViewById<RadioButton>(R.id.rb50Coins)
+        val rb100 = view.findViewById<RadioButton>(R.id.rb100Coins)
+        val rb200 = view.findViewById<RadioButton>(R.id.rb200Coins)
+        val btnConfirm = view.findViewById<Button>(R.id.btnConfirmPremium)
+        val btnCancel = view.findViewById<TextView>(R.id.btnCancelPremium)
 
         val userId = auth.currentUser?.uid ?: return
 
-        setupCardViewClicks(view, rb50Coins, rb100Coins, rb200Coins)
+        val selector = PremiumOptionSelector(
+            view,
+            rgPremiumOptions,
+            rb50,
+            rb100,
+            rb200
+        )
 
+        selector.setup()
+
+        // ===========================
+        // LOAD COINS
+        // ===========================
         database.child("users").child(userId).child("coins")
             .addListenerForSingleValueEvent(object : ValueEventListener {
+
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    val currentCoins = snapshot.getValue(Int::class.java) ?: 0
-                    tvCurrentBalance.text = currentCoins.toString()
+
+                    val coins = snapshot.getValue(Int::class.java) ?: 0
+                    tvCurrentBalance.text = coins.toString()
 
                     when {
-                        currentCoins >= 200 -> {
-                            rb200Coins.isChecked = true
-                            rgPremiumOptions.check(R.id.rb200Coins)
-                        }
-                        currentCoins >= 100 -> {
-                            rb100Coins.isChecked = true
-                            rgPremiumOptions.check(R.id.rb100Coins)
-                        }
-                        currentCoins >= 50 -> {
-                            rb50Coins.isChecked = true
-                            rgPremiumOptions.check(R.id.rb50Coins)
-                        }
+                        coins >= 200 -> selector.select200()
+                        coins >= 100 -> selector.select100()
+                        coins >= 50 -> selector.select50()
                         else -> {
-                            rb50Coins.isEnabled = false
-                            rb100Coins.isEnabled = false
-                            rb200Coins.isEnabled = false
+                            rb50.isEnabled = false
+                            rb100.isEnabled = false
+                            rb200.isEnabled = false
+
                             Toast.makeText(
                                 fragment.requireContext(),
                                 fragment.getString(R.string.not_enough_coins_for_premium),
@@ -120,9 +149,14 @@ class ProfilePremiumManager(private val fragment: Fragment) {
                         }
                     }
 
-                    btnConfirmPremium.setOnClickListener {
+                    // ===========================
+                    // CONFIRM BUTTON
+                    // ===========================
+                    btnConfirm.setOnClickListener {
+
                         val selectedId = rgPremiumOptions.checkedRadioButtonId
-                        val (coinsRequired, planId, durationText) = when (selectedId) {
+
+                        val (cost, planId, durationText) = when (selectedId) {
                             R.id.rb50Coins -> Triple(50, "1_month", "1 month")
                             R.id.rb100Coins -> Triple(100, "5_months", "5 months")
                             R.id.rb200Coins -> Triple(200, "1_year", "1 year")
@@ -136,7 +170,7 @@ class ProfilePremiumManager(private val fragment: Fragment) {
                             }
                         }
 
-                        if (currentCoins < coinsRequired) {
+                        if (coins < cost) {
                             Toast.makeText(
                                 fragment.requireContext(),
                                 fragment.getString(R.string.not_enough_coins),
@@ -145,7 +179,7 @@ class ProfilePremiumManager(private val fragment: Fragment) {
                             return@setOnClickListener
                         }
 
-                        activatePremium(coinsRequired, planId, durationText)
+                        activatePremium(cost, planId, durationText)
                         dialog.dismiss()
                     }
                 }
@@ -159,73 +193,37 @@ class ProfilePremiumManager(private val fragment: Fragment) {
                 }
             })
 
-        btnCancelPremium.setOnClickListener { dialog.dismiss() }
+        btnCancel.setOnClickListener { dialog.dismiss() }
     }
 
-    fun clear() {
-        premiumListener?.let { l ->
-            premiumRef?.removeEventListener(l)
-        }
-        premiumListener = null
-        premiumRef = null
-    }
+    // ===========================
+    // ACTIVATE PREMIUM
+    // ===========================
+    private fun activatePremium(cost: Int, planId: String, duration: String) {
 
-    private fun setupCardViewClicks(
-        view: View,
-        rb50Coins: RadioButton,
-        rb100Coins: RadioButton,
-        rb200Coins: RadioButton
-    ) {
-        val cardView50 = rb50Coins.parent?.parent as? View
-        val cardView100 = rb100Coins.parent?.parent as? View
-        val cardView200 = rb200Coins.parent?.parent as? View
-
-        cardView50?.setOnClickListener {
-            rb50Coins.isChecked = true
-            view.findViewById<RadioGroup>(R.id.rgPremiumOptions)?.check(R.id.rb50Coins)
-        }
-
-        cardView100?.setOnClickListener {
-            rb100Coins.isChecked = true
-            view.findViewById<RadioGroup>(R.id.rgPremiumOptions)?.check(R.id.rb100Coins)
-        }
-
-        cardView200?.setOnClickListener {
-            rb200Coins.isChecked = true
-            view.findViewById<RadioGroup>(R.id.rgPremiumOptions)?.check(R.id.rb200Coins)
-        }
-    }
-
-    private fun activatePremium(coinsRequired: Int, planId: String, durationText: String) {
         val userId = auth.currentUser?.uid ?: return
         val userRef = database.child("users").child(userId)
 
         userRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val currentCoins = snapshot.child("coins").getValue(Int::class.java) ?: 0
-                val currentIsPremium = snapshot.child("isPremium").getValue(Boolean::class.java) ?: false
-                val currentExpiry = snapshot.child("premiumExpiry").getValue(Long::class.java) ?: 0L
 
-                if (currentCoins < coinsRequired) {
-                    Toast.makeText(
-                        fragment.requireContext(),
-                        fragment.getString(R.string.insufficient_coins),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    return
-                }
+            override fun onDataChange(snapshot: DataSnapshot) {
+
+                val coins = snapshot.child("coins").getValue(Int::class.java) ?: 0
+                val isPremium = snapshot.child("isPremium").getValue(Boolean::class.java) ?: false
+                val expiry = snapshot.child("premiumExpiry").getValue(Long::class.java) ?: 0L
+
+                if (coins < cost) return
 
                 val durationMillis = PremiumHelper.getPlanExpiry(planId) - System.currentTimeMillis()
-                val newExpiry = if (
-                    PremiumHelper.isPremiumActive(currentIsPremium, currentExpiry)
-                ) {
-                    currentExpiry + durationMillis
+
+                val newExpiry = if (PremiumHelper.isPremiumActive(isPremium, expiry)) {
+                    expiry + durationMillis
                 } else {
                     System.currentTimeMillis() + durationMillis
                 }
 
-                val updates = mapOf<String, Any>(
-                    "coins" to (currentCoins - coinsRequired),
+                val updates = mapOf(
+                    "coins" to (coins - cost),
                     "isPremium" to true,
                     "premiumExpiry" to newExpiry
                 )
@@ -235,26 +233,49 @@ class ProfilePremiumManager(private val fragment: Fragment) {
                         AppOpenAdManager.onPremiumStateChanged()
                         Toast.makeText(
                             fragment.requireContext(),
-                            fragment.getString(R.string.premium_activated_for, durationText),
+                            fragment.getString(R.string.premium_activated_for, duration),
                             Toast.LENGTH_SHORT
                         ).show()
                     }
-                    .addOnFailureListener { e ->
+                    .addOnFailureListener {
                         Toast.makeText(
                             fragment.requireContext(),
-                            fragment.getString(R.string.failed_to_activate_premium, e.message),
+                            fragment.getString(R.string.failed_to_activate_premium),
                             Toast.LENGTH_SHORT
                         ).show()
                     }
             }
 
-            override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(
-                    fragment.requireContext(),
-                    fragment.getString(R.string.error, error.message),
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
+            override fun onCancelled(error: DatabaseError) {}
         })
+    }
+
+    fun clear() {
+        premiumListener?.let { premiumRef?.removeEventListener(it) }
+    }
+
+    fun showPremiumDirect() {
+        val dialog = BottomSheetDialog(fragment.requireContext())
+        val view = LayoutInflater.from(fragment.requireContext())
+            .inflate(R.layout.bottom_sheet_premium, null)
+
+        setupPremiumBottomSheet(view, dialog)
+        dialog.setContentView(view)
+
+        dialog.setOnShowListener {
+            val bottomSheet = dialog.findViewById<View>(
+                com.google.android.material.R.id.design_bottom_sheet
+            )
+
+            bottomSheet?.let {
+                it.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+
+                val behavior = BottomSheetBehavior.from(it)
+                behavior.state = BottomSheetBehavior.STATE_EXPANDED
+                behavior.skipCollapsed = true
+            }
+        }
+
+        dialog.show()
     }
 }

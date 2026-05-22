@@ -20,9 +20,10 @@ class HomeViewModel : ViewModel() {
     val isLoading: LiveData<Boolean> get() = _isLoading
 
     // ---------------------------------------------------------
-    // 🔥 LOAD ALL ITEMS WITH SAFE CLEANING + USER INFO MERGE
+    // 🔥 LOAD ALL ITEMS WITH SAFE CLEANING + PUBLIC USER MERGE
     // ---------------------------------------------------------
     fun loadAllItems() {
+
         _isLoading.value = true
         Log.d("HomeViewModel", "🔄 loadAllItems() called")
 
@@ -36,55 +37,102 @@ class HomeViewModel : ViewModel() {
 
             val sortedItems = rawItems.sortedByDescending { it.timestamp }
 
+            // ✅ FIXED → USE PUBLIC_USERS INSTEAD OF USERS
             val db = FirebaseDatabase.getInstance(
                 "https://barterhub-3c947-default-rtdb.firebaseio.com/"
-            ).getReference("users")
+            ).getReference("public_users")
 
             val processed = MutableList(sortedItems.size) { sortedItems[0] }
+
             var done = 0
 
             sortedItems.forEachIndexed { index, item ->
 
                 val cleaned = cleanItemDescription(item)
 
+                // ✅ ownerId check
                 if (item.ownerId.isNotBlank()) {
-                    db.child(item.ownerId).get().addOnSuccessListener { snap ->
 
-                        val username = when {
-                            snap.child("username").exists() ->
-                                snap.child("username").getValue(String::class.java) ?: "Unknown"
+                    db.child(item.ownerId)
+                        .get()
+                        .addOnSuccessListener { snap ->
 
-                            snap.child("name").exists() ->
-                                snap.child("name").getValue(String::class.java) ?: "Unknown"
+                            // ✅ SAFE OWNER NAME FALLBACKS
+                            val ownerName = when {
 
-                            snap.child("displayName").exists() ->
-                                snap.child("displayName").getValue(String::class.java) ?: "Unknown"
+                                snap.child("fullName").exists() ->
+                                    snap.child("fullName")
+                                        .getValue(String::class.java)
+                                        ?: "Unknown"
 
-                            else -> "Unknown"
+                                snap.child("username").exists() ->
+                                    snap.child("username")
+                                        .getValue(String::class.java)
+                                        ?: "Unknown"
+
+                                snap.child("name").exists() ->
+                                    snap.child("name")
+                                        .getValue(String::class.java)
+                                        ?: "Unknown"
+
+                                snap.child("displayName").exists() ->
+                                    snap.child("displayName")
+                                        .getValue(String::class.java)
+                                        ?: "Unknown"
+
+                                else -> "Unknown"
+                            }
+
+                            // ✅ SAFE PROFILE IMAGE FALLBACKS
+                            val profileImage = snap.child("profileImageUrl")
+                                .getValue(String::class.java)
+                                ?: snap.child("profileImage")
+                                    .getValue(String::class.java)
+                                ?: ""
+
+                            processed[index] = cleaned.copy(
+                                ownerName = ownerName,
+                                ownerProfileImage = profileImage
+                            )
+
+                            done++
+
+                            if (done == sortedItems.size) {
+                                finishProcessing(processed)
+                            }
                         }
 
-                        val profile = snap.child("profileImageUrl")
-                            .getValue(String::class.java) ?: ""
+                        .addOnFailureListener { error ->
 
-                        processed[index] =
-                            cleaned.copy(ownerName = username, ownerProfileImage = profile)
+                            Log.e(
+                                "HomeViewModel",
+                                "Failed loading public user: ${error.message}"
+                            )
 
-                        done++
-                        if (done == sortedItems.size) finishProcessing(processed)
+                            processed[index] = cleaned.copy(
+                                ownerName = "Unknown",
+                                ownerProfileImage = ""
+                            )
 
-                    }.addOnFailureListener {
-                        processed[index] =
-                            cleaned.copy(ownerName = "Unknown", ownerProfileImage = "")
-                        done++
-                        if (done == sortedItems.size) finishProcessing(processed)
-                    }
+                            done++
+
+                            if (done == sortedItems.size) {
+                                finishProcessing(processed)
+                            }
+                        }
 
                 } else {
-                    processed[index] =
-                        cleaned.copy(ownerName = "Unknown", ownerProfileImage = "")
+
+                    processed[index] = cleaned.copy(
+                        ownerName = "Unknown",
+                        ownerProfileImage = ""
+                    )
 
                     done++
-                    if (done == sortedItems.size) finishProcessing(processed)
+
+                    if (done == sortedItems.size) {
+                        finishProcessing(processed)
+                    }
                 }
             }
         }
@@ -94,6 +142,7 @@ class HomeViewModel : ViewModel() {
     // 🔥 CATEGORY FILTER WITH ROTATION
     // ---------------------------------------------------------
     fun loadItemsByCategory(category: String) {
+
         _isLoading.value = true
 
         repository.fetchItemsByCategory(category) { result ->
@@ -101,10 +150,16 @@ class HomeViewModel : ViewModel() {
             val cleaned = result.map { cleanItemDescription(it) }
 
             if (cleaned.size > 1) {
+
                 rotateIndex = (rotateIndex + 1) % cleaned.size
-                val rotated = cleaned.drop(rotateIndex) + cleaned.take(rotateIndex)
+
+                val rotated =
+                    cleaned.drop(rotateIndex) + cleaned.take(rotateIndex)
+
                 _items.value = rotated
+
             } else {
+
                 _items.value = cleaned
             }
 
@@ -119,53 +174,64 @@ class HomeViewModel : ViewModel() {
 
         var desc = item.description ?: ""
 
-        // Strip invisible control characters
+        // Remove invisible chars
         desc = desc.replace(Regex("[\\p{C}]"), "").trim()
 
-        // Remove weird unicode symbols
+        // Remove weird unicode
         desc = desc.replace(
             Regex("[^\\x20-\\x7E\\p{L}\\p{N}\\s.,!?-]"),
             ""
         ).trim()
 
-        // Debug: detect corrupted data
+        // Debug
         if (desc.isBlank()) {
-            Log.e("DATA_CHECK",
-                "🚨 Empty/Corrupt Description → itemId=${item.itemId}, title=${item.title}")
+
+            Log.e(
+                "DATA_CHECK",
+                "🚨 Empty/Corrupt Description → itemId=${item.itemId}, title=${item.title}"
+            )
         }
 
-        if (desc.isBlank()) desc = "No description available"
+        if (desc.isBlank()) {
+            desc = "No description available"
+        }
 
         return item.copy(description = desc)
     }
 
     // ---------------------------------------------------------
-    // 🔥 ROTATION + FINAL SAFE APPLY
+    // 🔥 FINAL APPLY
     // ---------------------------------------------------------
     private fun finishProcessing(list: List<FeaturedItem>) {
 
         if (list.isEmpty()) {
+
             _items.value = emptyList()
             _isLoading.value = false
             return
         }
 
         if (list.size == 1) {
+
             _items.value = list
             _isLoading.value = false
             return
         }
 
         rotateIndex = (rotateIndex + 1) % list.size
-        val rotated = list.drop(rotateIndex) + list.take(rotateIndex)
+
+        val rotated =
+            list.drop(rotateIndex) + list.take(rotateIndex)
 
         rotated.forEachIndexed { i, it ->
-            Log.d("FinalDebug",
-                "Item $i → Title='${it.title}', Desc='${it.description.take(40)}'")
+
+            Log.d(
+                "FinalDebug",
+                "Item $i → Title='${it.title}', Owner='${it.ownerName}'"
+            )
         }
 
         _items.value = rotated
         _isLoading.value = false
     }
-
 }

@@ -5,12 +5,12 @@
 
     <!-- light blur illusion -->
     <gradient
-        android:startColor="#CCFFFFFF"
-        android:endColor="#B3FFFFFF"
+        android:startColor="#FFFFFF"
+        android:endColor="#FFFFFF"
         android:angle="90"/>
 
     <stroke
         android:width="1dp"
-        android:color="#80FFFFFF"/>
+        android:color="#FFFFFF"/>
 
 </shape>

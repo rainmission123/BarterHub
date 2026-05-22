@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_home_profile_logo"
     android:padding="16dp">
 
     <LinearLayout
@@ -15,8 +15,8 @@
             android:layout_height="wrap_content"
             android:text="@string/account_amp_profile_issues"
             android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="?attr/colorOnSurface"
+            android:textStyle="bold|italic"
+            android:textColor="@color/white"
             android:layout_marginBottom="16dp" />
 
         <TextView
@@ -25,7 +25,7 @@
             android:text="@string/profile_management"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:textColor="?attr/colorOnSurface"
+            android:textColor="@color/white"
             android:layout_marginBottom="12dp" />
 
         <TextView
@@ -34,7 +34,7 @@
             android:text="@string/updating_information"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:textColor="?attr/colorOnSurface"
+            android:textColor="@color/white"
             android:layout_marginBottom="4dp" />
 
         <TextView
@@ -42,7 +42,7 @@
             android:layout_height="wrap_content"
             android:text="@string/go_to_profile_edit_profile_n_update_photo_bio_and_preferences_n_save_changes"
             android:textSize="14sp"
-            android:textColor="?attr/colorOnSurface"
+            android:textColor="@color/white"
             android:lineSpacingExtra="4dp"
             android:layout_marginBottom="12dp" />
 
@@ -52,7 +52,7 @@
             android:text="@string/barter_karma"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:textColor="?attr/colorOnSurface"
+            android:textColor="@color/white"
             android:layout_marginBottom="4dp" />
 
         <TextView
@@ -60,7 +60,7 @@
             android:layout_height="wrap_content"
             android:text="@string/earned_through_successful_trades_n_positive_ratings_increase_karma_n_high_karma_builds_trust"
             android:textSize="14sp"
-            android:textColor="?attr/colorOnSurface"
+            android:textColor="@color/white"
             android:lineSpacingExtra="4dp"
             android:layout_marginBottom="12dp" />
 
@@ -70,7 +70,7 @@
             android:text="@string/account_security"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:textColor="?attr/colorOnSurface"
+            android:textColor="@color/white"
             android:layout_marginBottom="4dp" />
 
         <TextView
@@ -78,7 +78,7 @@
             android:layout_height="wrap_content"
             android:text="@string/use_strong_password_n_don_t_share_login_details_n_log_out_on_shared_devices"
             android:textSize="14sp"
-            android:textColor="?attr/colorOnSurface"
+            android:textColor="@color/white"
             android:lineSpacingExtra="4dp"
             android:layout_marginBottom="16dp" />
 
@@ -88,7 +88,7 @@
             android:text="@string/common_problems"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:textColor="?attr/colorOnSurface"
+            android:textColor="@color/white"
             android:layout_marginBottom="8dp" />
 
         <TextView
@@ -96,7 +96,7 @@
             android:layout_height="wrap_content"
             android:text="@string/forgot_password_use_reset_password_on_login_n_can_t_login_check_internet_connection_n_profile_not_loading_restart_the_app_n_notifications_off_check_app_settings"
             android:textSize="14sp"
-            android:textColor="?attr/colorOnSurface"
+            android:textColor="@color/white"
             android:lineSpacingExtra="4dp"
             android:layout_marginBottom="12dp" />
 
@@ -106,7 +106,7 @@
             android:text="@string/contact_support_if_problems_persist"
             android:textSize="14sp"
             android:textStyle="italic"
-            android:textColor="?attr/colorOnSurface" />
+            android:textColor="@color/white" />
 
     </LinearLayout>
 </ScrollView>

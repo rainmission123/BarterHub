@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="1dp"
-    android:background="@drawable/backgroundlogin"
+    android:background="?attr/colorSurface"
     android:fillViewport="true">
 
     <LinearLayout
@@ -31,7 +31,7 @@
                 android:src="@drawable/ic_settings"
                 android:layout_marginEnd="16dp"
                 android:contentDescription="@string/settings"
-                app:tint="@color/White" />
+                app:tint="?attr/colorOnSurface" />
 
             <TextView
                 android:id="@+id/settingsTitle"
@@ -40,7 +40,7 @@
                 android:text="@string/settings"
                 android:textSize="24sp"
                 android:textStyle="bold"
-                android:textColor="@color/White" />
+                android:textColor="?attr/colorOnSurface" />
 
         </LinearLayout>
 
@@ -58,7 +58,7 @@
                 android:text="Appearance"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="@color/White"
+                android:textColor="?attr/colorOnSurface"
                 android:layout_marginBottom="16dp" />
 
             <com.google.android.material.card.MaterialCardView
@@ -89,6 +89,7 @@
                             android:layout_height="24dp"
                             android:layout_marginEnd="16dp"
                             android:contentDescription="Dark Mode"
+                            android:tint="?attr/colorOnSurface"
                             android:src="@drawable/ic_dark_mode"/>
 
                         <LinearLayout
@@ -142,7 +143,7 @@
                 android:text="Security Enhancements"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="@color/White"
+                android:textColor="?attr/colorOnSurface"
                 android:layout_marginBottom="16dp" />
 
             <!-- Change Password -->
@@ -164,21 +165,21 @@
                     android:layout_marginEnd="16dp"
                     android:contentDescription="Change Password"
                     android:src="@drawable/ic_edit"
-                    app:tint="@color/White" />
+                    app:tint="?attr/colorOnSurface" />
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Change Password"
-                    android:textColor="@color/White"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="16sp" />
 
                 <ImageView
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:src="@drawable/ic_arrow_forward"
-                    app:tint="@color/colorAccent" />
+                    app:tint="?attr/colorOnSurface" />
             </LinearLayout>
         </LinearLayout>
 
@@ -233,7 +234,7 @@
                             android:layout_marginEnd="16dp"
                             android:contentDescription="@string/privacy_settings"
                             android:src="@drawable/ic_privacy"
-                            app:tint="?attr/colorPrimary" />
+                            app:tint="?attr/colorOnSurface" />
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -296,7 +297,7 @@
                             android:layout_marginEnd="16dp"
                             android:contentDescription="@string/location_settings"
                             android:src="@drawable/ic_location"
-                            app:tint="?attr/colorPrimary" />
+                            app:tint="?attr/colorOnSurface" />
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -358,7 +359,7 @@
                             android:layout_marginEnd="16dp"
                             android:contentDescription="@string/data_storage"
                             android:src="@drawable/ic_storage"
-                            app:tint="?attr/colorPrimary" />
+                            app:tint="?attr/colorOnSurface" />
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -413,7 +414,7 @@
                 android:text="@string/account"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="@color/White"
+                android:textColor="?attr/colorOnSurface"
                 android:layout_marginBottom="16dp" />
 
             <!-- Security Settings -->
@@ -434,14 +435,14 @@
                     android:layout_marginEnd="16dp"
                     android:contentDescription="@string/security"
                     android:src="@drawable/ic_secure"
-                    app:tint="@color/White" />
+                    app:tint="?attr/colorOnSurface" />
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/security"
-                    android:textColor="@color/White"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="16sp" />
 
                 <ImageView
@@ -449,7 +450,7 @@
                     android:layout_height="16dp"
                     android:contentDescription="@string/todo"
                     android:src="@drawable/ic_arrow_forward"
-                    app:tint="@color/colorAccent" />
+                    app:tint="?attr/colorOnSurface" />
 
             </LinearLayout>
 
@@ -481,14 +482,14 @@
                     android:layout_marginEnd="16dp"
                     android:contentDescription="@string/help_support"
                     android:src="@drawable/ic_menu_help"
-                    app:tint="@color/White" />
+                    app:tint="?attr/colorOnSurface" />
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/help_support"
-                    android:textColor="@color/White"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="16sp" />
 
                 <ImageView
@@ -496,7 +497,7 @@
                     android:layout_height="16dp"
                     android:contentDescription="@string/todo"
                     android:src="@drawable/ic_arrow_forward"
-                    app:tint="@color/colorAccent" />
+                    app:tint="?attr/colorOnSurface" />
 
             </LinearLayout>
 
@@ -519,14 +520,14 @@
                     android:layout_marginEnd="16dp"
                     android:contentDescription="@string/about"
                     android:src="@drawable/ic_info"
-                    app:tint="@color/White" />
+                    app:tint="?attr/colorOnSurface" />
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/about"
-                    android:textColor="@color/White"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="16sp" />
 
                 <ImageView
@@ -534,7 +535,7 @@
                     android:layout_height="16dp"
                     android:contentDescription="@string/todo"
                     android:src="@drawable/ic_arrow_forward"
-                    app:tint="@color/colorAccent" />
+                    app:tint="?attr/colorOnSurface" />
 
             </LinearLayout>
 

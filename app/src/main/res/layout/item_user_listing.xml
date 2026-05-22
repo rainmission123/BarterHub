@@ -15,7 +15,7 @@
         android:layout_height="0dp"
         android:scaleType="centerCrop"
         android:contentDescription="@string/item_image"
-        android:src="@drawable/backgroundlogin"
+        android:src="?attr/colorSurface"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

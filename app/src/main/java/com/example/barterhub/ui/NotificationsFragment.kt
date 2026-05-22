@@ -19,11 +19,11 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 
 class NotificationsFragment : Fragment(R.layout.fragment_notifications) {
+
     private lateinit var addFriendManager: AddFriendManager
     private lateinit var rvNotifications: RecyclerView
     private lateinit var swipeRefresh: SwipeRefreshLayout
     private lateinit var layoutEmpty: LinearLayout
-
     private lateinit var database: DatabaseReference
     private lateinit var auth: FirebaseAuth
     private val notificationsList = mutableListOf<NotificationModel>()
@@ -31,6 +31,7 @@ class NotificationsFragment : Fragment(R.layout.fragment_notifications) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         addFriendManager = AddFriendManager(this)
         rvNotifications = view.findViewById(R.id.rvNotifications)
         swipeRefresh = view.findViewById(R.id.swipeRefreshNotifications)
@@ -41,10 +42,38 @@ class NotificationsFragment : Fragment(R.layout.fragment_notifications) {
 
         setupRecyclerView()
         loadNotifications()
+        markAllNotificationsAsRead()
 
         swipeRefresh.setOnRefreshListener {
             loadNotifications()
+            markAllNotificationsAsRead()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        markAllNotificationsAsRead()
+    }
+
+    private fun markAllNotificationsAsRead() {
+        val uid = auth.currentUser?.uid ?: return
+
+        database.child("notifications")
+            .child(uid)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                for (notifSnapshot in snapshot.children) {
+                    val type = notifSnapshot.child("type").getValue(String::class.java)
+                    val isRead = notifSnapshot.child("read").getValue(Boolean::class.java) ?: false
+
+                    if (!isRead && type != "system" && type != "message" && type != "chat_message") {
+                        notifSnapshot.ref.child("read").setValue(true)
+                    }
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("NotificationsFragment", "❌ Failed to mark all notifications as read: ${e.message}")
+            }
     }
 
     private fun setupRecyclerView() {
@@ -52,16 +81,72 @@ class NotificationsFragment : Fragment(R.layout.fragment_notifications) {
 
         adapter.setOnNotificationActionListener(object : NotificationsAdapter.OnNotificationActionListener {
             override fun onAcceptFriend(notificationId: String?, fromUserId: String?, position: Int) {
-                if (fromUserId == null) return
-                addFriendManager.acceptFriendRequest(fromUserId)
-                loadNotifications()
+                if (fromUserId == null || notificationId.isNullOrBlank()) return
+
+                addFriendManager.acceptFriendRequest(
+                    fromUserId = fromUserId,
+                    onSuccess = {
+                        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+                        if (currentUserId != null) {
+                            val acceptEvent = mapOf(
+                                "timestamp" to ServerValue.TIMESTAMP
+                            )
+
+                            val eventRef = FirebaseDatabase.getInstance()
+                                .getReference("friend_accept_events")
+                                .child(fromUserId)
+                                .child(currentUserId)
+                                .push()
+
+                            eventRef.setValue(
+                                mapOf(
+                                    "timestamp" to ServerValue.TIMESTAMP
+                                )
+                            ).addOnSuccessListener {
+                                Log.d(
+                                    "FriendAcceptDebug",
+                                    "✅ friend_accept_events written: recipient=$fromUserId acceptor=$currentUserId key=${eventRef.key}"
+                                )
+                            }.addOnFailureListener { e ->
+                                Log.e(
+                                    "FriendAcceptDebug",
+                                    "❌ failed to write friend_accept_events: ${e.message}"
+                                )
+                            }
+                        }
+
+                        activity?.runOnUiThread {
+                            updateNotificationStatus(notificationId, "accepted")
+                            adapter.updateNotificationStatus(notificationId, "accepted", position)
+                        }
+                    },
+                    onError = {
+                        activity?.runOnUiThread {
+                            loadNotifications()
+                        }
+                    }
+                )
             }
 
             override fun onDeclineFriend(notificationId: String?, position: Int) {
                 val notification = notificationsList.getOrNull(position) ?: return
                 val fromUserId = notification.fromUserId ?: return
-                addFriendManager.rejectFriendRequest(fromUserId)
-                loadNotifications()
+                if (notificationId.isNullOrBlank()) return
+
+                addFriendManager.rejectFriendRequest(
+                    fromUserId = fromUserId,
+                    onSuccess = {
+                        activity?.runOnUiThread {
+                            updateNotificationStatus(notificationId, "declined")
+                            adapter.updateNotificationStatus(notificationId, "declined", position)
+                        }
+                    },
+                    onError = {
+                        activity?.runOnUiThread {
+                            loadNotifications()
+                        }
+                    }
+                )
             }
 
             override fun onDeleteNotification(notificationId: String?, position: Int) {
@@ -71,50 +156,104 @@ class NotificationsFragment : Fragment(R.layout.fragment_notifications) {
 
         adapter.setOnNotificationClickListener(object : NotificationsAdapter.OnNotificationClickListener {
             override fun onNotificationClick(notification: NotificationModel) {
+                markNotificationAsRead(notification.id)
 
                 val type = notification.type.orEmpty()
 
-                if (type == "receipt_created" || type == "trade_receipt") {
-
-                    val receiptId = notification.receiptId.orEmpty()
-                    if (receiptId.isBlank()) {
-                        Toast.makeText(requireContext(), "Receipt info missing", Toast.LENGTH_SHORT).show()
-                        return
-                    }
-
-                    val bundle = Bundle().apply {
-                        putString("receiptId", receiptId)
-                    }
-
-                    findNavController().navigate(R.id.receiptFragment, bundle)
-                    return
-                }
-
-                val itemId = notification.itemId
-                val fromUserId = notification.fromUserId
-
-                when {
-                    !itemId.isNullOrBlank() -> {
-                        val bundle = Bundle().apply {
-                            putString("itemId", itemId)
-                            putString("ownerId", fromUserId ?: "")
+                when (type) {
+                    "receipt_created", "trade_receipt" -> {
+                        val receiptId = notification.receiptId.orEmpty()
+                        if (receiptId.isBlank()) {
+                            Toast.makeText(requireContext(), "Receipt info missing", Toast.LENGTH_SHORT).show()
+                            return
                         }
-                        findNavController().navigate(R.id.nav_item_detail, bundle)
+
+                        val bundle = Bundle().apply {
+                            putString("receiptId", receiptId)
+                        }
+
+                        findNavController().navigate(R.id.receiptFragment, bundle)
                     }
-                    !fromUserId.isNullOrBlank() -> {
-                        val bundle = Bundle().apply { putString("ownerId", fromUserId) }
+
+                    "referral_reward" -> {
+                        val invitedUserId = notification.invitedUserId.orEmpty()
+
+                        if (invitedUserId.isBlank()) {
+                            Toast.makeText(requireContext(), "Referral details missing", Toast.LENGTH_SHORT).show()
+                            return
+                        }
+
+                        val bundle = Bundle().apply {
+                            putString("ownerId", invitedUserId)
+                        }
+
                         findNavController().navigate(R.id.ownerProfileFragment, bundle)
                     }
+
+                    "friend_accept" -> {
+                        val fromUserId = notification.fromUserId.orEmpty()
+                        if (fromUserId.isBlank()) {
+                            Toast.makeText(requireContext(), "Friend info missing", Toast.LENGTH_SHORT).show()
+                            return
+                        }
+
+                        val bundle = Bundle().apply {
+                            putString("ownerId", fromUserId)
+                        }
+                        findNavController().navigate(R.id.ownerProfileFragment, bundle)
+                    }
+
                     else -> {
-                        Toast.makeText(requireContext(), "No action for this notification", Toast.LENGTH_SHORT).show()
+                        val itemId = notification.itemId
+                        val fromUserId = notification.fromUserId
+
+                        when {
+                            !itemId.isNullOrBlank() -> {
+                                val bundle = Bundle().apply {
+                                    putString("itemId", itemId)
+                                    putString("ownerId", fromUserId ?: "")
+                                }
+                                findNavController().navigate(R.id.nav_item_detail, bundle)
+                            }
+
+                            !fromUserId.isNullOrBlank() -> {
+                                val bundle = Bundle().apply {
+                                    putString("ownerId", fromUserId)
+                                }
+                                findNavController().navigate(R.id.ownerProfileFragment, bundle)
+                            }
+
+                            else -> {
+                                Toast.makeText(requireContext(), "No action for this notification", Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     }
                 }
             }
         })
 
-
         rvNotifications.layoutManager = LinearLayoutManager(requireContext())
         rvNotifications.adapter = adapter
+    }
+
+    private fun updateNotificationStatus(notificationId: String, status: String) {
+        val uid = auth.currentUser?.uid ?: return
+
+        val updates = hashMapOf<String, Any>(
+            "status" to status,
+            "read" to true
+        )
+
+        database.child("notifications")
+            .child(uid)
+            .child(notificationId)
+            .updateChildren(updates)
+            .addOnSuccessListener {
+                Log.d("NotificationsFragment", "✅ Notification $notificationId updated to $status")
+            }
+            .addOnFailureListener { e ->
+                Log.e("NotificationsFragment", "❌ Failed to update notification status: ${e.message}")
+            }
     }
 
     private fun loadNotifications() {
@@ -131,10 +270,12 @@ class NotificationsFragment : Fragment(R.layout.fragment_notifications) {
                         for (notifSnapshot in snapshot.children) {
                             val notifKey = notifSnapshot.key
                             Log.d("NotificationsDebug", "📦 Processing notification: $notifKey")
+
                             val type = notifSnapshot.child("type").getValue(String::class.java)
                             val fromUserId = notifSnapshot.child("fromUserId").getValue(String::class.java)
                             val fromUserName = notifSnapshot.child("fromUserName").getValue(String::class.java)
                             val fromUserProfile = notifSnapshot.child("fromUserProfile").getValue(String::class.java)
+                                ?: notifSnapshot.child("fromUserProfilePic").getValue(String::class.java)
                             val itemId = notifSnapshot.child("itemId").getValue(String::class.java)
                             val read = notifSnapshot.child("read").getValue(Boolean::class.java) ?: false
                             val timestamp = notifSnapshot.child("timestamp").getValue(Long::class.java) ?: 0L
@@ -146,13 +287,7 @@ class NotificationsFragment : Fragment(R.layout.fragment_notifications) {
                             val partnerName = notifSnapshot.child("partnerName").getValue(String::class.java)
                             val requestId = notifSnapshot.child("requestId").getValue(String::class.java)
                             val receiptId = notifSnapshot.child("receiptId").getValue(String::class.java)
-
-
-                            // 🔍 DEBUG LOGS
-                            Log.d("NotificationsDebug", "   Type: $type")
-                            Log.d("NotificationsDebug", "   FromUserId: $fromUserId")
-                            Log.d("NotificationsDebug", "   FromUserName: $fromUserName")
-                            Log.d("NotificationsDebug", "   FromUserProfile: $fromUserProfile")
+                            val invitedUserId = notifSnapshot.child("invitedUserId").getValue(String::class.java)
 
                             val notif = NotificationModel(
                                 id = notifKey,
@@ -170,21 +305,26 @@ class NotificationsFragment : Fragment(R.layout.fragment_notifications) {
                                 partnerId = partnerId,
                                 partnerName = partnerName,
                                 requestId = requestId,
-                                receiptId = receiptId
+                                receiptId = receiptId,
+                                invitedUserId = invitedUserId
                             )
 
-                            if (type == "friend_request" && fromUserId != null &&
-                                (fromUserName.isNullOrEmpty() || fromUserProfile.isNullOrEmpty())) {
+                            // 🔥 FIX: SKIP CHAT NOTIFICATIONS
+                            if (type == "message" || type == "chat_message") {
+                                continue
+                            }
 
-                                Log.d("NotificationsDebug", "   ⚠️ Missing user details, fetching...")
+                            // 🔹 Handle friend request missing data
+                            if (type == "friend_request" &&
+                                fromUserId != null &&
+                                (fromUserName.isNullOrEmpty() || fromUserProfile.isNullOrEmpty())
+                            ) {
                                 fetchUserDetails(fromUserId) { user ->
-                                    // Update notification with fetched details
                                     val updatedNotif = notif.copy(
                                         fromUserName = user.username ?: user.fullName ?: "User",
                                         fromUserProfile = user.profileImageUrl
                                     )
 
-                                    // Update in list
                                     val index = notificationsList.indexOfFirst { it.id == notifKey }
                                     if (index != -1) {
                                         notificationsList[index] = updatedNotif
@@ -194,22 +334,16 @@ class NotificationsFragment : Fragment(R.layout.fragment_notifications) {
                             }
 
                             notificationsList.add(notif)
-                            Log.d("NotificationsDebug", "✅ Added notification: ${notif.type} from ${notif.fromUserName}")
                         }
-                    } else {
-                        Log.d("NotificationsDebug", "❌ No notifications found for user $userId")
                     }
 
-                    // Sort by latest first
                     notificationsList.sortByDescending { it.timestamp }
                     adapter.notifyDataSetChanged()
 
-                    layoutEmpty.visibility = if (notificationsList.isEmpty()) View.VISIBLE else View.GONE
-
-                    markAllNotificationsAsRead()
+                    layoutEmpty.visibility =
+                        if (notificationsList.isEmpty()) View.VISIBLE else View.GONE
 
                     swipeRefresh.isRefreshing = false
-
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -220,7 +354,6 @@ class NotificationsFragment : Fragment(R.layout.fragment_notifications) {
             })
     }
 
-    // 🔹 FETCH USER DETAILS FUNCTION
     private fun fetchUserDetails(userId: String, callback: (User) -> Unit) {
         database.child("users").child(userId).get()
             .addOnSuccessListener { snapshot ->
@@ -239,83 +372,48 @@ class NotificationsFragment : Fragment(R.layout.fragment_notifications) {
                             rating = (data?.get("rating") as? Double?) ?: (data?.get("rating") as? Int?)?.toDouble(),
                             coins = (data?.get("coins") as? Int?) ?: 0
                         )
-
-                        Log.d("NotificationsDebug", "   ✅ Fetched user: ${user.username}")
                         callback(user)
                     } catch (e: Exception) {
-                        Log.e("NotificationsDebug", "   ❌ Error parsing user: ${e.message}")
                         callback(User(userId = userId))
                     }
                 } else {
-                    Log.d("NotificationsDebug", "   ❌ User not found: $userId")
                     callback(User(userId = userId))
                 }
             }
-            .addOnFailureListener { e ->
-                Log.e("NotificationsDebug", "   ❌ Error fetching user: ${e.message}")
+            .addOnFailureListener {
                 callback(User(userId = userId))
             }
     }
 
-    private fun markAllNotificationsAsRead() {
+    private fun markNotificationAsRead(notificationId: String?) {
         val uid = auth.currentUser?.uid ?: return
+        if (notificationId.isNullOrBlank()) return
 
-        database.child("notifications").child(uid)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    if (!snapshot.exists()) return
-
-                    val updates = mutableMapOf<String, Any>()
-
-                    for (child in snapshot.children) {
-                        val read = child.child("read").getValue(Boolean::class.java) ?: false
-                        if (!read) {
-                            updates["${child.key}/read"] = true
-                        }
-                    }
-
-                    if (updates.isNotEmpty()) {
-                        database.child("notifications").child(uid)
-                            .updateChildren(updates)
-                            .addOnFailureListener { e ->
-                                Log.e("NotificationsFragment", "❌ markAllNotificationsAsRead failed: ${e.message}")
-                            }
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    Log.e("NotificationsFragment", "❌ markAllNotificationsAsRead cancelled: ${error.message}")
-                }
-            })
+        database.child("notifications")
+            .child(uid)
+            .child(notificationId)
+            .child("read")
+            .setValue(true)
+            .addOnFailureListener { e ->
+                Log.e("NotificationsFragment", "❌ Failed to mark notification as read: ${e.message}")
+            }
     }
 
     private fun deleteNotification(notificationId: String?, position: Int) {
         val uid = auth.currentUser?.uid ?: return
         if (notificationId == null) return
 
-        Log.d("NotificationsFragment", "🗑️ Deleting notification: $notificationId")
-
         database.child("notifications")
             .child(uid)
             .child(notificationId)
             .removeValue()
             .addOnSuccessListener {
-                // Remove from adapter locally
                 adapter.removeNotification(position)
-
-                Toast.makeText(
-                    requireContext(),
-                    "Notification deleted",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(requireContext(), "Notification deleted", Toast.LENGTH_SHORT).show()
             }
             .addOnFailureListener { e ->
                 Log.e("NotificationsFragment", "❌ Error deleting notification: ${e.message}")
-                Toast.makeText(
-                    requireContext(),
-                    "Failed to delete notification",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(requireContext(), "Failed to delete notification", Toast.LENGTH_SHORT).show()
             }
     }
 }

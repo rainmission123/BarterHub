@@ -5,136 +5,147 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/backgroundlogin"
+    android:background="?attr/colorSurface"
+    android:fitsSystemWindows="true"
     android:orientation="vertical">
 
-    <!-- Toolbar -->
+    <!-- ===== TOOLBAR ===== -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/bg_home_profile_logo"
+        android:elevation="0dp"
         app:title="Find Friends"
+        app:titleTextColor="#FFFFFF"
         app:navigationIcon="@drawable/ic_arrow_back"
-        app:titleTextColor="@color/White" />
+        app:navigationIconTint="#00C8D4" />
 
-    <!-- Search Bar -->
+    <!-- ===== SEARCH BAR ===== -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/searchCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         android:layout_marginTop="16dp"
+        app:cardBackgroundColor="#3D0060"
         app:cardCornerRadius="12dp"
-        app:cardElevation="2dp">
+        app:cardElevation="0dp"
+        app:strokeColor="@color/bh_primary"
+        app:strokeWidth="1dp">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?attr/colorSurface"
+            android:layout_height="48dp"
             android:orientation="horizontal"
-            android:padding="8dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:background="@drawable/rounded_corner"
             android:gravity="center_vertical">
 
             <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="12dp"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_marginEnd="10dp"
                 android:src="@drawable/ic_search"
-                app:tint="@color/black" />
+                app:tint="#B39DCA" />
 
             <EditText
                 android:id="@+id/searchEditText"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@null"
                 android:hint="@string/search_users_by_name_location"
                 android:imeOptions="actionSearch"
-                android:textColorHint="@color/black"
+                android:textColorHint="?attr/colorOnSurface"
                 android:maxLines="1"
-                android:textColor="@color/black"
+                android:textColor="#FFFFFF"
                 android:textSize="14sp"
                 tools:ignore="TouchTargetSizeCheck" />
 
-            <!-- Clear Search Button (visible when there's text) -->
             <ImageView
                 android:id="@+id/clearSearchButton"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:layout_marginStart="8dp"
                 android:src="@drawable/ic_close"
                 android:visibility="gone"
                 android:clickable="true"
                 android:focusable="true"
-                app:tint="?attr/colorOnSurfaceVariant" />
+                app:tint="#B39DCA" />
 
         </LinearLayout>
-
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Filter Tabs -->
+    <!-- ===== FILTER TABS ===== -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/filterCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         android:layout_marginTop="12dp"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="1dp">
+        app:cardCornerRadius="12dp"
+        app:cardElevation="0dp"
+        app:strokeColor="#6A0080"
+        app:strokeWidth="1dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/bg_home_profile_logo"
             android:orientation="horizontal"
-            android:padding="4dp">
+            android:padding="8dp">
 
             <!-- Add Friend Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/addFriendButton"
-                style="@style/Widget.Material3.Button.TonalButton"
+                style="@style/Widget.Material3.Button"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="40dp"
                 android:layout_weight="1"
-                android:layout_marginEnd="4dp"
+                android:layout_marginEnd="6dp"
                 android:text="Add Friend"
+                android:textAllCaps="false"
                 android:textSize="12sp"
-                android:textColor="?attr/postTextColor"
-                app:backgroundTint="@color/com_facebook_messenger_blue"
-                app:cornerRadius="6dp"
+                android:textColor="@color/black"
+                app:backgroundTint="@color/white"
+                app:cornerRadius="8dp"
                 app:icon="@drawable/ic_add_friend"
                 app:iconSize="16dp"
-                app:iconTint="@android:color/white" />
+                app:iconTint="@color/black" />
 
             <!-- Friends Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/friendsButton"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="40dp"
                 android:layout_weight="1"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="6dp"
                 android:text="@string/friends"
+                android:textAllCaps="false"
                 android:textSize="12sp"
-                android:textColor="?attr/postTextColor"
-                app:cornerRadius="6dp"
-                app:iconSize="16dp"
-                app:iconTint="?attr/colorOnSurface" />
+                android:textColor="@color/white"
+                app:cornerRadius="8dp"
+                app:strokeWidth="1dp"/>
 
         </LinearLayout>
-
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Loading Indicator -->
+    <!-- ===== LOADING INDICATOR ===== -->
     <ProgressBar
         android:id="@+id/loadingProgressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="20dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="24dp"
+        android:indeterminateTint="#00C8D4"
         android:visibility="gone" />
 
-    <!-- Empty State -->
+    <!-- ===== EMPTY STATE ===== -->
     <LinearLayout
         android:id="@+id/emptyStateLayout"
         android:layout_width="match_parent"
@@ -145,11 +156,11 @@
         android:visibility="gone">
 
         <ImageView
-            android:layout_width="100dp"
-            android:layout_height="100dp"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
             android:src="@drawable/ic_friends_empty"
-            android:layout_marginBottom="16dp"
-            app:tint="?attr/colorOnSurfaceVariant" />
+            android:layout_marginBottom="18dp"
+            app:tint="#6A0080" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -157,20 +168,20 @@
             android:text="@string/no_users_found"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:textColor="?attr/colorOnSurface"
+            android:textColor="#FFFFFF"
             android:layout_marginBottom="8dp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/try_searching_with_different_keywords"
-            android:textSize="14sp"
-            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="13sp"
+            android:textColor="#B39DCA"
             android:textAlignment="center" />
 
     </LinearLayout>
 
-    <!-- RecyclerView -->
+    <!-- ===== RECYCLERVIEW ===== -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/friendsRecyclerView"
         android:layout_width="match_parent"

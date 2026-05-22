@@ -22,6 +22,10 @@
         android:title="Messages"
         android:icon="@drawable/chatting"/>
 
+    <item
+        android:id="@+id/nav_how_to_earn"
+        android:title="Earn Coins"
+        android:icon="@drawable/ic_earn_coins"/>
 
     <item
         android:id="@+id/nav_settings"

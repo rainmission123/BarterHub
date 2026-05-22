@@ -23,9 +23,9 @@ class FullscreenImagePagerAdapter(
     override fun onBindViewHolder(holder: VH, position: Int) {
         Glide.with(holder.itemView.context)
             .load(urls[position])
-            .placeholder(R.drawable.backgroundlogin)
-            .error(R.drawable.backgroundlogin)
-            .into(holder.binding.photoView)   // ✅ matches XML id
+            .placeholder(R.drawable.bg_home_profile_logo)
+            .error(R.drawable.bg_home_profile_logo)
+            .into(holder.binding.photoView)
     }
 
     override fun getItemCount(): Int = urls.size

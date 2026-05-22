@@ -101,21 +101,32 @@ class GamesListFragment : Fragment() {
         val currentUser = auth.currentUser
 
         if (currentUser != null) {
-            // ✅ UPDATE: Load current coins from Firebase
-            database.getReference("users").child(currentUser.uid).child("coins")
+
+            database.getReference("users")
+                .child(currentUser.uid)
+                .child("wallet")
+                .child("coins")
                 .addListenerForSingleValueEvent(object : ValueEventListener {
+
                     override fun onDataChange(snapshot: DataSnapshot) {
-                        val coins = snapshot.getValue(Int::class.java) ?: 0
+
+                        val coins = when (val value = snapshot.value) {
+                            is Long -> value.toInt()
+                            is Int -> value
+                            is Double -> value.toInt()
+                            else -> 0
+                        }
 
                         val dialog = LuckySpinDialog(
                             context = requireContext(),
                             userCoins = coins.toDouble()
                         )
 
-                        // ✅ UPDATE: Set listener for real-time sync
-                        dialog.setOnCoinsUpdateListener { updatedCoins: Double ->
-                            // Auto-save to Firebase (handled by LuckySpinDialog)
-                            Log.d("GamesListFragment", "Coins updated to: $updatedCoins")
+                        dialog.setOnCoinsUpdateListener { updatedCoins ->
+                            Log.d(
+                                "GamesListFragment",
+                                "Coins updated to: $updatedCoins"
+                            )
                         }
 
                         dialog.show()
@@ -125,6 +136,7 @@ class GamesListFragment : Fragment() {
                         showErrorMessage("Failed to load coins from wallet")
                     }
                 })
+
         } else {
             showErrorMessage("Please login first")
         }
@@ -161,7 +173,7 @@ class GamesListFragment : Fragment() {
 
 
     private fun getUserCoins(onResult: (Int) -> Unit) {
-        onResult(50) // placeholder for Firebase coins
+        onResult(50)
     }
 
     private fun showRewardMessage(message: String) {

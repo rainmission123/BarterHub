@@ -15,11 +15,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "812276220118-juvr2c7trtn4v8kl14p9atoc1ltkh544.apps.googleusercontent.com",
+          "client_id": "812276220118-0sqa64hou4jnqu6tujqbvjql6cae5vfq.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.barterhub",
-            "certificate_hash": "ff2f30f737dc5417ce8926ed4350704cdfd28d36"
+            "certificate_hash": "3ad45f36789962a3d52844f32b1b3330ae126564"
           }
         },
         {

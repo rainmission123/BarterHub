@@ -73,8 +73,8 @@ class FavoritesAdapter : ListAdapter<FeaturedItem, FavoritesAdapter.FavoritesVie
 
         Glide.with(holder.itemView.context)
             .load(firstImage)
-            .placeholder(R.drawable.backgroundlogin)
-            .error(R.drawable.backgroundlogin)
+            .placeholder(R.drawable.bg_home_profile_logo)
+            .error(R.drawable.bg_home_profile_logo)
             .into(holder.image)
 
         // Navigate to item detail

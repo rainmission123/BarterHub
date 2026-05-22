@@ -4,9 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
     android:orientation="vertical"
-    android:padding="5dp"
-    android:background="@drawable/bottom_sheet_background">
+    android:padding="5dp">
 
     <!-- Header with Icon -->
     <LinearLayout
@@ -29,7 +29,7 @@
             android:text="@string/go_premium"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:textColor="@color/black"/>
+            android:textColor="?attr/colorOnSurface"/>
     </LinearLayout>
 
     <!-- Subtitle -->
@@ -38,7 +38,7 @@
         android:layout_height="wrap_content"
         android:text="@string/unlock_premium_features_using_barterhub_coins"
         android:textSize="14sp"
-        android:textColor="@color/black"
+        android:textColor="?attr/colorOnSurface"
         android:gravity="center"
         android:layout_marginBottom="20dp"/>
 
@@ -82,7 +82,7 @@
                     android:text="Featured"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    android:textColor="@color/black"
+                    android:textColor="?attr/colorOnSurface"
                     tools:ignore="HardcodedText" />
 
                 <TextView
@@ -90,7 +90,7 @@
                     android:layout_height="wrap_content"
                     android:text="Listings"
                     android:textSize="10sp"
-                    android:textColor="@color/black"
+                    android:textColor="?attr/colorOnSurface"
                     tools:ignore="HardcodedText,SmallSp" />
             </LinearLayout>
 
@@ -117,14 +117,14 @@
                     android:text="Priority"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    android:textColor="@color/black"/>
+                    android:textColor="?attr/colorOnSurface"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Visibility"
                     android:textSize="10sp"
-                    android:textColor="@color/black"/>
+                    android:textColor="?attr/colorOnSurface"/>
             </LinearLayout>
 
             <!-- Analytics -->
@@ -150,14 +150,14 @@
                     android:text="Advanced"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    android:textColor="@color/black"/>
+                    android:textColor="?attr/colorOnSurface"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Analytics"
                     android:textSize="10sp"
-                    android:textColor="@color/black"/>
+                    android:textColor="@color/white"/>
             </LinearLayout>
         </LinearLayout>
 
@@ -190,16 +190,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/no_ads"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"/>
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/cleaner_app"
                     android:textSize="10sp"
-                    android:textColor="@color/black"
+                    android:textColor="?attr/colorOnSurface"
                     tools:ignore="SmallSp" />
             </LinearLayout>
 
@@ -224,16 +224,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/top_barter"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"/>
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/user_badge"
                     android:textSize="10sp"
-                    android:textColor="@color/black"
+                    android:textColor="?attr/colorOnSurface"
                     tools:ignore="SmallSp" />
             </LinearLayout>
 
@@ -260,14 +260,14 @@
                     android:text="Premium"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    android:textColor="@color/black"/>
+                    android:textColor="?attr/colorOnSurface"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/badge"
                     android:textSize="10sp"
-                    android:textColor="@color/black"
+                    android:textColor="?attr/colorOnSurface"
                     tools:ignore="SmallSp" />
             </LinearLayout>
 
@@ -290,7 +290,7 @@
             android:layout_weight="1"
             android:text="@string/your_balance"
             android:textSize="14sp"
-            android:textColor="@color/black"/>
+            android:textColor="?attr/colorOnSurface"/>
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -323,7 +323,7 @@
         android:text="@string/select_plan"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         android:layout_marginBottom="12dp"/>
 
     <RadioGroup
@@ -332,61 +332,64 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Option 1 -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardElevation="2dp"
-            app:cardCornerRadius="8dp"
-            android:layout_marginBottom="8dp">
+            app:cardElevation="0dp"
+            app:cardCornerRadius="14dp"
+            app:cardUseCompatPadding="false"
+            android:layout_marginBottom="10dp">
 
             <RelativeLayout
+                android:id="@+id/cardPlan50"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:background="@drawable/selector_premium_option">
+                android:background="@drawable/selector_premium_option"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="16dp">
 
                 <RadioButton
                     android:id="@+id/rb50Coins"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentStart="true"
-                    android:layout_centerVertical="true"/>
+                    android:layout_centerVertical="true"
+                    android:buttonTint="@color/selector_radio" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
+                    android:layout_marginStart="12dp"
                     android:layout_toEndOf="@id/rb50Coins"
-                    android:layout_marginStart="12dp">
+                    android:orientation="vertical">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/_1_month_premium"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/black"/>
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
 
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="4dp">
+                        android:layout_marginTop="4dp"
+                        android:orientation="horizontal">
 
                         <ImageView
                             android:layout_width="16dp"
                             android:layout_height="16dp"
-                            android:src="@drawable/ic_barter_coins"/>
+                            android:src="@drawable/ic_barter_coins" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="50 Coins"
-                            android:textSize="13sp"
-                            android:textColor="@color/black"
                             android:layout_marginStart="4dp"
-                            tools:ignore="HardcodedText" />
+                            android:text="50 Coins"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="13sp" />
                     </LinearLayout>
                 </LinearLayout>
 
@@ -395,51 +398,54 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
-                    android:text="@string/most_popular"
-                    android:textSize="10sp"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="2dp"
                     android:background="@drawable/bg_save_badge"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="3dp"
+                    android:text="@string/most_popular"
                     android:textColor="@color/white"
-                    tools:ignore="SmallSp" />
+                    android:textSize="10sp" />
             </RelativeLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Option 2 -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardElevation="2dp"
-            app:cardCornerRadius="8dp"
-            android:layout_marginBottom="8dp">
+            app:cardElevation="0dp"
+            app:cardCornerRadius="14dp"
+            app:cardUseCompatPadding="false"
+            android:layout_marginBottom="10dp">
 
             <RelativeLayout
+                android:id="@+id/cardPlan100"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:background="@drawable/selector_premium_option">
+                android:background="@drawable/selector_premium_option"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="16dp">
 
                 <RadioButton
                     android:id="@+id/rb100Coins"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentStart="true"
-                    android:layout_centerVertical="true"/>
+                    android:layout_centerVertical="true"
+                    android:buttonTint="@color/selector_radio" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
                     android:layout_toEndOf="@id/rb100Coins"
-                    android:layout_marginStart="12dp">
+                    android:layout_marginStart="12dp"
+                    android:orientation="vertical">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/_5_months_premium"
-                        android:textSize="14sp"
+                        android:textSize="15sp"
                         android:textStyle="bold"
-                        android:textColor="@color/black"/>
+                        android:textColor="?attr/colorOnSurface"/>
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -457,7 +463,7 @@
                             android:layout_height="wrap_content"
                             android:text="@string/_100_coins"
                             android:textSize="13sp"
-                            android:textColor="@color/black"
+                            android:textColor="?attr/colorOnSurface"
                             android:layout_marginStart="4dp"/>
                     </LinearLayout>
                 </LinearLayout>
@@ -469,11 +475,10 @@
                     android:layout_centerVertical="true"
                     android:text="@string/save_60"
                     android:textSize="10sp"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="2dp"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="3dp"
                     android:background="@drawable/bg_save_badge"
-                    android:textColor="@color/white"
-                    tools:ignore="SmallSp" />
+                    android:textColor="@color/white"/>
             </RelativeLayout>
         </androidx.cardview.widget.CardView>
 
@@ -485,52 +490,53 @@
             app:cardCornerRadius="8dp">
 
             <RelativeLayout
+                android:id="@+id/cardPlan200"
+                android:background="@drawable/selector_premium_option"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:background="@drawable/selector_premium_option">
+                android:padding="16dp">
 
                 <RadioButton
                     android:id="@+id/rb200Coins"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentStart="true"
-                    android:layout_centerVertical="true"/>
+                    android:layout_centerVertical="true"
+                    android:buttonTint="@color/selector_radio" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
+                    android:layout_marginStart="12dp"
                     android:layout_toEndOf="@id/rb200Coins"
-                    android:layout_marginStart="12dp">
+                    android:orientation="vertical">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/_1_year_premium"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/black"/>
+                        android:textStyle="bold" />
 
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="4dp">
+                        android:layout_marginTop="4dp"
+                        android:orientation="horizontal">
 
                         <ImageView
                             android:layout_width="16dp"
                             android:layout_height="16dp"
-                            android:contentDescription="@string/todo"
-                            android:src="@drawable/ic_barter_coins"/>
+                            android:src="@drawable/ic_barter_coins" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
                             android:text="@string/_200_coins"
-                            android:textSize="13sp"
-                            android:textColor="@color/black"
-                            android:layout_marginStart="4dp"/>
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="13sp" />
                     </LinearLayout>
                 </LinearLayout>
 
@@ -539,15 +545,15 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
-                    android:text="@string/best_value"
-                    android:textSize="10sp"
+                    android:background="@drawable/bg_best_value_badge"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="2dp"
-                    android:background="@drawable/bg_best_value_badge"
+                    android:text="@string/best_value"
                     android:textColor="@color/white"
-                    tools:ignore="SmallSp" />
+                    android:textSize="10sp" />
             </RelativeLayout>
         </androidx.cardview.widget.CardView>
+
     </RadioGroup>
 
     <com.google.android.material.button.MaterialButton
@@ -561,7 +567,7 @@
         android:textSize="16sp"
         android:textColor="@color/white"
         android:paddingVertical="14dp"
-        app:backgroundTint="@color/com_facebook_messenger_blue"
+        app:backgroundTint="@color/bh_accent"
         app:cornerRadius="12dp"/>
 
     <TextView
@@ -570,7 +576,7 @@
         android:layout_height="wrap_content"
         android:text="Maybe Later"
         android:textSize="14sp"
-        android:textColor="@color/black"
+        android:textColor="?attr/colorOnSurface"
         android:gravity="center"
         android:paddingVertical="12dp"
         tools:ignore="HardcodedText" />

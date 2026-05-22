@@ -93,7 +93,7 @@ class CoinFlipDialog(context: Context) : Dialog(context) {
             // 1️⃣ Check user coins first (Realtime Database)
             val userRef = FirebaseDatabase.getInstance().getReference("users").child(userId)
             userRef.get().addOnSuccessListener { snapshot ->
-                val currentCoins = snapshot.child("coins").getValue(Int::class.java) ?: 0
+                val currentCoins = snapshot.child("wallet").child("coins").getValue(Int::class.java) ?: 0
                 if (currentCoins < BET_AMOUNT) {
                     tvResult.text = "😔 Not enough coins!"
                     isFlipping = false
@@ -133,7 +133,7 @@ class CoinFlipDialog(context: Context) : Dialog(context) {
                         val netChange = if (userWins) WIN_AMOUNT else -BET_AMOUNT
                         val newBalance = currentCoins + netChange
 
-                        userRef.child("coins").setValue(newBalance)
+                        userRef.child("wallet").child("coins").setValue(newBalance)
                             .addOnSuccessListener {
                                 val message = if (userWins) {
                                     "🎉 You won! It's $result!\nWallet: $newBalance coins"

@@ -8,10 +8,15 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.widget.NestedScrollView
 import com.bumptech.glide.Glide
 import com.example.barterhub.R
+import com.example.barterhub.managers.UsernameManager
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
@@ -26,9 +31,6 @@ import okhttp3.Response
 import org.json.JSONObject
 import java.io.IOException
 import java.io.InputStream
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.widget.NestedScrollView
 import kotlin.math.max
 
 class EditProfileActivity : AppCompatActivity() {
@@ -36,23 +38,24 @@ class EditProfileActivity : AppCompatActivity() {
     private lateinit var fabChangePhoto: FloatingActionButton
     private lateinit var ivProfileImage: ImageView
     private lateinit var etFullName: EditText
+    private lateinit var etUsername: EditText
     private lateinit var etBio: EditText
     private lateinit var etPhone: EditText
     private lateinit var etLocation: EditText
     private lateinit var btnSave: MaterialButton
-
     private var imageUri: Uri? = null
     private val PICK_IMAGE_REQUEST = 1001
     private val client = OkHttpClient()
-
     private lateinit var auth: FirebaseAuth
     private lateinit var database: DatabaseReference
+    private lateinit var usernameManager: UsernameManager
+    private var oldUsername: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit_profile)
 
-        val scroll = findViewById<NestedScrollView>(R.id.scrollRoot)
+        val scroll = requireView<NestedScrollView>(R.id.scrollRoot, "scrollRoot")
 
         ViewCompat.setOnApplyWindowInsetsListener(scroll) { v, insets ->
             val ime = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
@@ -61,26 +64,27 @@ class EditProfileActivity : AppCompatActivity() {
             insets
         }
 
-        // Firebase
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance().reference
+        usernameManager = UsernameManager()
 
-        // Initialize views - FIXED ID REFERENCES
-        ivProfileImage = findViewById(R.id.ivProfileImage)
-        fabChangePhoto = findViewById(R.id.fabChangePhoto)
-        etFullName = findViewById(R.id.editFullName)
-        etBio = findViewById(R.id.editBio)
-        etPhone = findViewById(R.id.editPhone)
-        etLocation = findViewById(R.id.editLocation)
-        btnSave = findViewById(R.id.btnSave)
-
-        // Listeners
+        ivProfileImage = requireView(R.id.ivProfileImage, "ivProfileImage")
+        fabChangePhoto = requireView(R.id.fabChangePhoto, "fabChangePhoto")
+        etFullName = requireView(R.id.editFullName, "editFullName")
+        etBio = requireView(R.id.editBio, "editBio")
+        etPhone = requireView(R.id.editPhone, "editPhone")
+        etLocation = requireView(R.id.editLocation, "editLocation")
+        btnSave = requireView(R.id.btnSave, "btnSave")
         ivProfileImage.setOnClickListener { openFileChooser() }
         fabChangePhoto.setOnClickListener { openFileChooser() }
         btnSave.setOnClickListener { saveProfile() }
 
-        // Load current user data from Firebase
         loadUserData()
+    }
+
+    private fun <T : android.view.View> requireView(id: Int, name: String): T {
+        return findViewById<T>(id)
+            ?: throw IllegalStateException("Missing view in activity_edit_profile.xml: $name")
     }
 
     private fun openFileChooser() {
@@ -99,43 +103,63 @@ class EditProfileActivity : AppCompatActivity() {
 
     private fun loadUserData() {
         val uid = auth.currentUser?.uid ?: return
-        database.child("users").child(uid).get().addOnSuccessListener { snapshot ->
-            if (snapshot.exists()) {
-                etFullName.setText(snapshot.child("username").getValue(String::class.java) ?: "")
-                etBio.setText(snapshot.child("bio").getValue(String::class.java) ?: "")
-                etPhone.setText(snapshot.child("phoneNumber").getValue(String::class.java) ?: "")
-                etLocation.setText(snapshot.child("address").getValue(String::class.java) ?: "")
 
-                val profileImageUrl = snapshot.child("profileImageUrl").getValue(String::class.java)
-                if (!profileImageUrl.isNullOrEmpty()) {
-                    Glide.with(this).load(profileImageUrl).into(ivProfileImage)
+        database.child("users").child(uid).get()
+            .addOnSuccessListener { snapshot ->
+                if (snapshot.exists()) {
+                    oldUsername = snapshot.child("username").getValue(String::class.java) ?: ""
+
+                    etFullName.setText(snapshot.child("fullName").getValue(String::class.java) ?: "")
+                    etUsername.setText(oldUsername)
+                    etBio.setText(snapshot.child("bio").getValue(String::class.java) ?: "")
+                    etPhone.setText(snapshot.child("phoneNumber").getValue(String::class.java) ?: "")
+                    etLocation.setText(snapshot.child("address").getValue(String::class.java) ?: "")
+
+                    val profileImageUrl = snapshot.child("profileImageUrl").getValue(String::class.java)
+                    if (!profileImageUrl.isNullOrEmpty()) {
+                        Glide.with(this).load(profileImageUrl).into(ivProfileImage)
+                    }
                 }
             }
-        }.addOnFailureListener {
-            Toast.makeText(this, "Failed to load user data", Toast.LENGTH_SHORT).show()
-        }
+            .addOnFailureListener {
+                Toast.makeText(this, "Failed to load user data", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun saveProfile() {
         val uid = auth.currentUser?.uid ?: return
+
         val fullName = etFullName.text.toString().trim()
+        val newUsername = oldUsername.trim().lowercase()
         val bio = etBio.text.toString().trim()
-        val phone = etPhone.text.toString().trim() // CHANGED: etPhone
+        val phone = etPhone.text.toString().trim()
         val location = etLocation.text.toString().trim()
 
         if (fullName.isEmpty()) {
-            Toast.makeText(this, "Name cannot be empty", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Full name cannot be empty", Toast.LENGTH_SHORT).show()
             return
         }
 
+        if (newUsername.isEmpty()) {
+            Toast.makeText(this, "Username cannot be empty", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        btnSave.isEnabled = false
+
         if (imageUri != null) {
-            uploadToCloudinary(imageUri!!, { imageUrl ->
-                saveProfileToDatabase(uid, fullName, bio, phone, location, imageUrl)
-            }, { errorMsg ->
-                Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show()
-            })
+            uploadToCloudinary(
+                imageUri = imageUri!!,
+                onSuccess = { imageUrl ->
+                    saveProfileToDatabase(uid, fullName, newUsername, bio, phone, location, imageUrl)
+                },
+                onError = { errorMsg ->
+                    btnSave.isEnabled = true
+                    Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show()
+                }
+            )
         } else {
-            saveProfileToDatabase(uid, fullName, bio, phone, location, null)
+            saveProfileToDatabase(uid, fullName, newUsername, bio, phone, location, null)
         }
     }
 
@@ -162,15 +186,14 @@ class EditProfileActivity : AppCompatActivity() {
             val fileName = "profile_${System.currentTimeMillis()}.jpg"
             val requestBody = imageBytes.toRequestBody("image/*".toMediaTypeOrNull())
 
-            // Use YOUR existing unsigned preset
             val multipartBody = MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("file", fileName, requestBody)
-                .addFormDataPart("upload_preset", "barterhub_ids") // CHANGE THIS TO YOUR PRESET
+                .addFormDataPart("upload_preset", "barterhub_ids")
                 .build()
 
             val request = Request.Builder()
-                .url("https://api.cloudinary.com/v1_1/dtccox0s0/image/upload") // CHANGE CLOUD NAME
+                .url("https://api.cloudinary.com/v1_1/dtccox0s0/image/upload")
                 .post(multipartBody)
                 .build()
 
@@ -189,7 +212,7 @@ class EditProfileActivity : AppCompatActivity() {
                         if (!response.isSuccessful) {
                             Log.e("Cloudinary", "Upload failed: ${response.code} - $responseBody")
                             runOnUiThread {
-                                onError("Upload failed: ${response.code} - $responseBody")
+                                onError("Upload failed: ${response.code}")
                             }
                             return
                         }
@@ -205,8 +228,8 @@ class EditProfileActivity : AppCompatActivity() {
                             val url = json.getString("secure_url")
                             runOnUiThread { onSuccess(url) }
                         } catch (e: Exception) {
-                            Log.e("Cloudinary", "Parse error: ${e.message} - Response: $responseBody")
-                            runOnUiThread { onError("Failed to parse response: ${e.message}") }
+                            Log.e("Cloudinary", "Parse error: ${e.message}")
+                            runOnUiThread { onError("Failed to parse response") }
                         }
                     }
                 }
@@ -220,13 +243,14 @@ class EditProfileActivity : AppCompatActivity() {
     private fun saveProfileToDatabase(
         uid: String,
         fullName: String,
+        newUsername: String,
         bio: String,
         phone: String,
         location: String,
         imageUrl: String?
     ) {
         val userUpdates = hashMapOf<String, Any>(
-            "username" to fullName,
+            "fullName" to fullName,
             "bio" to bio,
             "address" to location,
             "phoneNumber" to phone,
@@ -235,15 +259,57 @@ class EditProfileActivity : AppCompatActivity() {
 
         if (imageUrl != null) {
             userUpdates["profileImageUrl"] = imageUrl
+            userUpdates["profileImage"] = imageUrl
+        }
+
+        val publicUpdates = hashMapOf<String, Any>(
+            "fullName" to fullName,
+            "updatedAt" to System.currentTimeMillis()
+        )
+
+        if (imageUrl != null) {
+            publicUpdates["profileImageUrl"] = imageUrl
+            publicUpdates["profileImage"] = imageUrl
         }
 
         database.child("users").child(uid).updateChildren(userUpdates)
             .addOnSuccessListener {
+                database.child("public_users").child(uid).updateChildren(publicUpdates)
+                    .addOnSuccessListener {
+                        updateUsernameIfNeeded(uid, newUsername)
+                    }
+                    .addOnFailureListener { e ->
+                        btnSave.isEnabled = true
+                        Toast.makeText(this, e.message ?: "Failed to update public profile", Toast.LENGTH_SHORT).show()
+                    }
+            }
+            .addOnFailureListener { e ->
+                btnSave.isEnabled = true
+                Toast.makeText(this, e.message ?: "Failed to update profile", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun updateUsernameIfNeeded(uid: String, newUsername: String) {
+        if (newUsername == oldUsername.trim().lowercase()) {
+            btnSave.isEnabled = true
+            Toast.makeText(this, "Profile updated", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+
+        usernameManager.updateUsername(
+            uid = uid,
+            oldUsername = oldUsername,
+            newUsernameInput = newUsername,
+            onSuccess = {
+                btnSave.isEnabled = true
                 Toast.makeText(this, "Profile updated", Toast.LENGTH_SHORT).show()
                 finish()
+            },
+            onError = { error ->
+                btnSave.isEnabled = true
+                Toast.makeText(this, error, Toast.LENGTH_LONG).show()
             }
-            .addOnFailureListener {
-                Toast.makeText(this, "Failed to update profile", Toast.LENGTH_SHORT).show()
-            }
+        )
     }
 }

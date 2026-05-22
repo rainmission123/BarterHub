@@ -29,8 +29,6 @@ import com.mapbox.maps.plugin.gestures.gestures
 import com.mapbox.maps.plugin.locationcomponent.location
 import java.util.Locale
 
-
-
 class AddLocationFragment : Fragment() {
 
     private var _binding: FragmentAddLocationBinding? = null
@@ -41,7 +39,11 @@ class AddLocationFragment : Fragment() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var selectedPoint: Point? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentAddLocationBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -52,24 +54,48 @@ class AddLocationFragment : Fragment() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
         setupMapboxMap()
+        restoreExistingLocationData()
 
         binding.detectLocationButton.setOnClickListener {
             detectCurrentLocation()
         }
 
         binding.nextButton.setOnClickListener {
-            if (binding.addressInput.text.toString().isEmpty()) {
+            val fullLocation = binding.addressInput.text?.toString()?.trim().orEmpty()
+
+            if (fullLocation.isBlank()) {
                 Snackbar.make(requireView(), "Please enter/set location", Snackbar.LENGTH_SHORT).show()
-            } else {
-                listingViewModel.location = binding.addressInput.text.toString()
-
-                selectedPoint?.let {
-                    listingViewModel.latitude = it.latitude()
-                    listingViewModel.longitude = it.longitude()
-                }
-
-                findNavController().navigate(R.id.action_addLocation_to_preview)
+                return@setOnClickListener
             }
+
+            val parsed = extractLocationParts(fullLocation)
+
+            if (parsed.province.isBlank()) {
+                Snackbar.make(
+                    requireView(),
+                    "Unable to detect province. Please use a more complete address.",
+                    Snackbar.LENGTH_LONG
+                ).show()
+                return@setOnClickListener
+            }
+
+            listingViewModel.location = fullLocation
+            listingViewModel.addressText = parsed.addressText
+            listingViewModel.cityMunicipality = parsed.cityMunicipality
+            listingViewModel.province = parsed.province
+
+            selectedPoint?.let {
+                listingViewModel.latitude = it.latitude()
+                listingViewModel.longitude = it.longitude()
+            }
+
+            findNavController().navigate(R.id.action_addLocation_to_preview)
+        }
+    }
+
+    private fun restoreExistingLocationData() {
+        if (listingViewModel.location.isNotBlank()) {
+            binding.addressInput.setText(listingViewModel.location)
         }
     }
 
@@ -77,8 +103,6 @@ class AddLocationFragment : Fragment() {
         val mapView: MapView = binding.mapView
 
         mapView.getMapboxMap().loadStyleUri(Style.SATELLITE_STREETS) {
-
-            // Enable gestures
             mapView.gestures.addOnMapClickListener { point ->
                 selectedPoint = point
                 addMarker(point)
@@ -87,7 +111,6 @@ class AddLocationFragment : Fragment() {
             }
 
             val locationPlugin = mapView.location
-
             locationPlugin.updateSettings {
                 enabled = true
                 pulsingEnabled = true
@@ -98,22 +121,18 @@ class AddLocationFragment : Fragment() {
                 )
             }
 
-
-            // Button para i-zoom sa current location
             binding.detectLocationButton.setOnClickListener {
                 detectCurrentLocationAndZoom()
             }
         }
     }
 
-
-
-
-
-    // Gumamit ng FusedLocationProviderClient para sa current location
     private fun detectCurrentLocationAndZoom() {
-        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 100)
             return
         }
@@ -125,7 +144,6 @@ class AddLocationFragment : Fragment() {
                 addMarker(point)
                 reverseGeocode(point)
 
-                // Zoom sa location
                 binding.mapView.getMapboxMap().setCamera(
                     com.mapbox.maps.CameraOptions.Builder()
                         .center(point)
@@ -149,8 +167,11 @@ class AddLocationFragment : Fragment() {
     }
 
     private fun detectCurrentLocation() {
-        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 100)
             return
         }
@@ -175,10 +196,88 @@ class AddLocationFragment : Fragment() {
             val addresses = geocoder.getFromLocation(point.latitude(), point.longitude(), 1)
 
             if (!addresses.isNullOrEmpty()) {
-                binding.addressInput.setText(addresses[0].getAddressLine(0))
+                val addressLine = addresses[0].getAddressLine(0).orEmpty()
+                binding.addressInput.setText(addressLine)
+
+                val parsed = extractLocationParts(addressLine)
+                listingViewModel.addressText = parsed.addressText
+                listingViewModel.cityMunicipality = parsed.cityMunicipality
+                listingViewModel.province = parsed.province
             }
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
     }
+
+    private fun extractLocationParts(fullLocation: String): ParsedLocation {
+        val parts = fullLocation.split(",")
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
+
+        var cityMunicipality = ""
+        var province = ""
+
+        // 🔥 FIXED LOGIC
+        when {
+            parts.size >= 5 -> {
+                // ex: [code, brgy, city, province, country]
+                cityMunicipality = parts[2]
+                province = parts[3]
+            }
+            parts.size == 4 -> {
+                // ex: [brgy, city, province, country]
+                cityMunicipality = parts[1]
+                province = parts[2]
+            }
+            parts.size == 3 -> {
+                // ex: [city, province, country]
+                cityMunicipality = parts[0]
+                province = parts[1]
+            }
+            parts.size == 2 -> {
+                cityMunicipality = parts[0]
+                province = parts[1]
+            }
+            else -> {
+                province = parts.lastOrNull() ?: ""
+            }
+        }
+
+        cityMunicipality = normalizeLocationValue(cityMunicipality)
+        province = normalizeLocationValue(province)
+
+        val addressText = listOf(cityMunicipality, province)
+            .filter { it.isNotBlank() }
+            .joinToString(", ")
+
+        return ParsedLocation(
+            fullLocation = fullLocation,
+            addressText = addressText,
+            cityMunicipality = cityMunicipality,
+            province = province
+        )
+    }
+
+    private fun normalizeLocationValue(value: String): String {
+        return value.lowercase(Locale.getDefault())
+            .split(" ")
+            .filter { it.isNotBlank() }
+            .joinToString(" ") { word ->
+                word.replaceFirstChar { char ->
+                    if (char.isLowerCase()) {
+                        char.titlecase(Locale.getDefault())
+                    } else {
+                        char.toString()
+                    }
+                }
+            }
+    }
+
+    data class ParsedLocation(
+        val fullLocation: String,
+        val addressText: String,
+        val cityMunicipality: String,
+        val province: String
+    )
 
     override fun onStart() {
         super.onStart()

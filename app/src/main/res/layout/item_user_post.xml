@@ -7,32 +7,43 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <!-- Image Section with Rounded Corners -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="190dp"
         android:layout_margin="5dp">
 
-        <!-- Main Item Image with Rounded Corners -->
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/itemImage"
+        <!-- IMAGE CARD -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_laptop"
-            app:shapeAppearanceOverlay="@style/RoundedCornerImage"
-            tools:ignore="ContentDescription" />
+            app:cardBackgroundColor="?attr/colorSurfaceVariant"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="1dp"
+            app:strokeColor="?attr/colorOnSurface"
+            app:strokeWidth="0.2dp">
+
+            <ImageView
+                android:id="@+id/itemImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_laptop"
+                tools:ignore="ContentDescription" />
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Three Dots Menu Button -->
         <ImageButton
             android:id="@+id/btnThreeDots"
             android:layout_width="20dp"
-            android:layout_margin="2dp"
             android:layout_height="20dp"
             android:layout_gravity="top|end"
+            android:layout_margin="6dp"
             android:background="@drawable/circle_background_white"
             android:contentDescription="Menu"
             android:src="@drawable/ic_three_dots"
+            android:scaleType="centerInside"
+            android:visibility="visible"
+            android:elevation="8dp"
             tools:ignore="TouchTargetSizeCheck" />
 
         <!-- Days Posted Badge -->
@@ -41,12 +52,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="top|start"
-            android:layout_margin="2dp"
+            android:layout_margin="6dp"
             android:background="@drawable/days_posted_background"
+            android:elevation="8dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingHorizontal="8dp"
-            android:paddingVertical="4dp">
+            android:paddingVertical="4dp"
+            android:visibility="visible">
 
             <ImageView
                 android:layout_width="12dp"
@@ -88,7 +101,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:ellipsize="end"
-                android:textColor="@color/white"
+                android:textColor="?attr/colorOnSurface"
                 android:lineSpacingExtra="2dp"
                 android:maxLines="1"
                 android:scrollHorizontally="false"
@@ -123,7 +136,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="0"
-                android:textColor="@color/white"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="11sp"
                 android:textStyle="bold"
                 tools:ignore="HardcodedText,SmallSp" />
@@ -142,7 +155,7 @@
             android:breakStrategy="simple"
             android:scrollHorizontally="false"
             android:text="16-core CPU, 40-core GPU, 48GB RAM"
-            android:textColor="@color/white"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="11sp"
             tools:ignore="HardcodedText" />
 
@@ -153,7 +166,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:text="Condition: Brand New"
-            android:textColor="@color/white"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="9sp"
             android:textStyle="italic"
             tools:ignore="HardcodedText,SmallSp" />
@@ -216,7 +229,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/posted_by_unknown"
-                        android:textColor="@color/white"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="10sp"
                         android:textStyle="italic"
                         tools:ignore="SmallSp" />
@@ -232,7 +245,8 @@
                 android:contentDescription="@string/todo"
                 android:focusable="true"
                 android:scaleType="centerInside"
-                android:src="@drawable/ic_heart_selector"
+                android:src="@drawable/ic_heart"
+                android:tint="?attr/colorOnSurface"
                 tools:ignore="TouchTargetSizeCheck,ImageContrastCheck" />
 
         </LinearLayout>

@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
@@ -38,12 +37,13 @@ import com.google.android.material.snackbar.Snackbar
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Looper
+import android.widget.ImageView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.barterhub.ads.AppOpenAdManager
 import androidx.appcompat.app.AppCompatDelegate
 import com.example.barterhub.utils.BottomNavBadgeManager
-
+import com.example.barterhub.managers.PublicUserSyncManager
 
 @Suppress("DEPRECATION")
 class HomeActivity : AppCompatActivity() {
@@ -57,7 +57,12 @@ class HomeActivity : AppCompatActivity() {
         val prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE)
         val isDark = prefs.getBoolean("dark_mode", false)
 
-        val desiredMode = if (isDark) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
+        val desiredMode = if (isDark) {
+            AppCompatDelegate.MODE_NIGHT_YES
+        } else {
+            AppCompatDelegate.MODE_NIGHT_NO
+        }
+
         if (AppCompatDelegate.getDefaultNightMode() != desiredMode) {
             AppCompatDelegate.setDefaultNightMode(desiredMode)
         }
@@ -79,55 +84,10 @@ class HomeActivity : AppCompatActivity() {
             ContextCompat.getColorStateList(this, R.color.bottom_nav_text_selector)
 
         drawerLayout = binding.drawerLayout
-        val navigationView = binding.navigationView
-        val swipeIndicator = binding.swipeIndicator
-
-        // 👉 Swipe indicator click - toggle drawer
-        swipeIndicator.setOnClickListener {
-            if (drawerLayout.isDrawerOpen(navigationView)) {
-                drawerLayout.closeDrawer(navigationView)
-            } else {
-                drawerLayout.openDrawer(navigationView)
-            }
-        }
-
-        drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
-            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
-                val translationX = drawerView.width * slideOffset
-                swipeIndicator.translationX = translationX
-            }
-
-            override fun onDrawerOpened(drawerView: View) {
-                swipeIndicator.translationX = drawerView.width.toFloat()
-            }
-
-            override fun onDrawerClosed(drawerView: View) {
-                swipeIndicator.translationX = 0f
-            }
-
-            override fun onDrawerStateChanged(newState: Int) {}
-        })
-
-        swipeIndicator.setOnTouchListener(object : View.OnTouchListener {
-            private var startX = 0f
-            private val SWIPE_THRESHOLD = 50
-            override fun onTouch(v: View?, event: MotionEvent?): Boolean {
-                when (event?.action) {
-                    MotionEvent.ACTION_DOWN -> startX = event.x
-                    MotionEvent.ACTION_UP -> {
-                        val diffX = event.x - startX
-                        if (diffX > SWIPE_THRESHOLD && !drawerLayout.isDrawerOpen(navigationView)) {
-                            drawerLayout.openDrawer(navigationView)
-                        } else if (diffX < -SWIPE_THRESHOLD && drawerLayout.isDrawerOpen(navigationView)) {
-                            drawerLayout.closeDrawer(navigationView)
-                        }
-                    }
-                }
-                return false
-            }
-        })
+        binding.navigationView
 
         setupNavController()
+        handleNotificationIntent(intent)
         initializeAds()
         setupAppOpenAd()
         AppOpenAdManager.loadAd(application)
@@ -137,16 +97,24 @@ class HomeActivity : AppCompatActivity() {
         saveFcmToken()
         showSwipeTutorial()
         requestNotificationPermission()
+        // ✅ Auto-create missing public_users for old accounts
+        PublicUserSyncManager.ensurePublicUserExists()
+    }
+
+    fun toggleDrawer() {
+        val navigationView = binding.navigationView
+
+        if (drawerLayout.isDrawerOpen(navigationView)) {
+            drawerLayout.closeDrawer(navigationView)
+        } else {
+            drawerLayout.openDrawer(navigationView)
+        }
     }
 
     private fun setupAppOpenAd() {
-        // Initialize ads first
         MobileAds.initialize(this) {}
-
-        // Load the ad
         AppOpenAdManager.loadAd(application)
 
-        // Show ad after a short delay to ensure activity is ready
         android.os.Handler(Looper.getMainLooper()).postDelayed({
             AppOpenAdManager.showAdIfAvailable(this@HomeActivity)
         }, 500)
@@ -155,17 +123,15 @@ class HomeActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
-        // Check if we need to show ad (only if not shown yet)
         val uid = FirebaseAuth.getInstance().currentUser?.uid
         if (uid == null) {
-            // Non-logged in user - show ad
             android.os.Handler(Looper.getMainLooper()).postDelayed({
                 AppOpenAdManager.forceShowAd(this@HomeActivity)
             }, 300)
         } else {
-            // Check if premium
             checkUserPremiumBeforeShowingAd(uid)
         }
+
     }
 
     private fun checkUserPremiumBeforeShowingAd(uid: String) {
@@ -182,12 +148,13 @@ class HomeActivity : AppCompatActivity() {
                 val premiumActive = isPremium && expiry > now
 
                 if (!premiumActive) {
-                    // Non-premium user - show ad
                     android.os.Handler(Looper.getMainLooper()).postDelayed({
                         AppOpenAdManager.forceShowAd(this@HomeActivity)
                     }, 300)
+
                 } else {
                     Log.d("HOME_ACTIVITY", "👑 Premium user - no ads")
+
                 }
             }
     }
@@ -277,7 +244,6 @@ class HomeActivity : AppCompatActivity() {
             .start()
     }
 
-
     private fun navigateToAddItem() {
         try {
             navController.navigate(R.id.addPhotosFragment)
@@ -322,6 +288,11 @@ class HomeActivity : AppCompatActivity() {
         val usernameText = headerView.findViewById<TextView>(R.id.userName)
         val emailText = headerView.findViewById<TextView>(R.id.userEmail)
         val uid = FirebaseAuth.getInstance().currentUser?.uid
+        val btnCloseDrawer = headerView.findViewById<ImageView>(R.id.btnCloseDrawer)
+
+        btnCloseDrawer.setOnClickListener {
+            drawerLayout.closeDrawer(binding.navigationView)
+        }
 
         if (uid != null) {
             FirebaseDatabase.getInstance().getReference("users").child(uid)
@@ -371,6 +342,10 @@ class HomeActivity : AppCompatActivity() {
                     if (navController.currentDestination?.id != R.id.tradeRequestsFragment)
                         navController.navigate(R.id.tradeRequestsFragment)
                 }
+                R.id.nav_how_to_earn -> {
+                    if (navController.currentDestination?.id != R.id.howToEarnFragment)
+                        navController.navigate(R.id.howToEarnFragment)
+                }
                 R.id.nav_settings -> {
                     if (navController.currentDestination?.id != R.id.nav_settings)
                         navController.navigate(R.id.nav_settings)
@@ -419,7 +394,6 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-
     private fun requestNotificationPermission() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
@@ -432,6 +406,113 @@ class HomeActivity : AppCompatActivity() {
                     arrayOf(Manifest.permission.POST_NOTIFICATIONS),
                     1001
                 )
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleNotificationIntent(intent)
+    }
+
+    private fun handleNotificationIntent(intent: Intent?) {
+        val type = intent?.getStringExtra("notification_type")
+
+        val chatId = intent?.getStringExtra("chatId")
+        val partnerId = intent?.getStringExtra("partnerId")
+        val partnerName = intent?.getStringExtra("partnerName")
+        val partnerProfilePic = intent?.getStringExtra("partnerProfilePic")
+
+        val fromUserId = intent?.getStringExtra("fromUserId")
+        val fromUserName = intent?.getStringExtra("fromUserName")
+        val fromUserProfilePic = intent?.getStringExtra("fromUserProfilePic")
+
+        Log.d("HOME_NOTIFICATION", "type=$type")
+
+        val currentUser = FirebaseAuth.getInstance().currentUser
+
+        if (currentUser == null) {
+            when (type) {
+                "chat_message" -> {
+                    if (!chatId.isNullOrEmpty() && !partnerId.isNullOrEmpty()) {
+                        val loginIntent = Intent(this, LoginActivity::class.java).apply {
+                            putExtra("open_after_login", "chat_message")
+                            putExtra("chatId", chatId)
+                            putExtra("partnerId", partnerId)
+                            putExtra("partnerName", partnerName ?: "Chat Partner")
+                            putExtra("partnerProfilePic", partnerProfilePic)
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        }
+                        startActivity(loginIntent)
+                        finish()
+                        return
+                    }
+                }
+
+                "friend_request" -> {
+                    val loginIntent = Intent(this, LoginActivity::class.java).apply {
+                        putExtra("open_after_login", "friend_request")
+                        putExtra("fromUserId", fromUserId)
+                        putExtra("fromUserName", fromUserName)
+                        putExtra("fromUserProfilePic", fromUserProfilePic)
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    }
+                    startActivity(loginIntent)
+                    finish()
+                    return
+                }
+            }
+        }
+
+        when (type) {
+            "chat_message" -> {
+                if (!chatId.isNullOrEmpty() && !partnerId.isNullOrEmpty()) {
+                    val bundle = Bundle().apply {
+                        putString("chatId", chatId)
+                        putString("partnerId", partnerId)
+                        putString("partnerName", partnerName ?: "Chat Partner")
+                        putString("partnerProfilePic", partnerProfilePic)
+                    }
+
+                    binding.root.post {
+                        try {
+                            navController.navigate(R.id.nav_messages, bundle)
+                        } catch (e: Exception) {
+                            Log.e("HOME_NOTIFICATION", "Chat navigation error: ${e.message}")
+                        }
+                    }
+                }
+            }
+
+            "friend_request" -> {
+                binding.root.post {
+                    try {
+                        navController.navigate(R.id.notificationsFragment)
+                    } catch (e: Exception) {
+                        Log.e("HOME_NOTIFICATION", "Friend request navigation error: ${e.message}")
+                    }
+                }
+            }
+
+            "premium_matched_item" -> {
+                val itemId = intent?.getStringExtra("itemId")
+                val ownerId = intent?.getStringExtra("ownerId")
+
+                if (!itemId.isNullOrEmpty()) {
+                    val bundle = Bundle().apply {
+                        putString("itemId", itemId)
+                        putString("ownerId", ownerId ?: "")
+                    }
+
+                    binding.root.post {
+                        try {
+                            navController.navigate(R.id.nav_item_detail, bundle)
+                        } catch (e: Exception) {
+                            Log.e("HOME_NOTIFICATION", "Item navigation error: ${e.message}")
+                        }
+                    }
+                }
             }
         }
     }

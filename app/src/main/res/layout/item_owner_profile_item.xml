@@ -18,13 +18,14 @@
             android:layout_width="match_parent"
             android:layout_height="130dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/backgroundlogin" />
+            android:src="@color/white" />
 
         <TextView
             android:id="@+id/itemTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="10dp"
+            android:textColor="@color/black"
             android:textStyle="bold"
             android:maxLines="1"
             android:ellipsize="end"
@@ -38,7 +39,7 @@
             android:paddingEnd="10dp"
             android:paddingBottom="10dp"
             android:text="₱0"
-            android:textColor="?attr/colorOnSurfaceVariant" />
+            android:textColor="@color/red" />
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

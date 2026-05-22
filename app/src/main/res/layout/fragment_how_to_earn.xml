@@ -5,7 +5,8 @@
     android:id="@+id/scroll_how_to_earn"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/backgroundlogin">
+    android:fitsSystemWindows="true"
+    android:background="@drawable/bg_home_profile_logo">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -22,14 +23,6 @@
             android:layout_marginBottom="24dp"
             tools:ignore="UseCompoundDrawables">
 
-            <ImageView
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginEnd="12dp"
-                android:contentDescription="@string/how_to_earn"
-                android:src="@drawable/ic_barter_coins"
-                tools:ignore="ImageContrastCheck" />
-
             <TextView
                 android:id="@+id/tvHowToEarnHeader"
                 android:layout_width="0dp"
@@ -37,8 +30,8 @@
                 android:layout_weight="1"
                 android:text="@string/how_to_earn_on_barterhub"
                 android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="@color/White" />
+                android:textStyle="bold|italic"
+                android:textColor="@color/white" />
 
         </LinearLayout>
 
@@ -56,6 +49,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="?attr/colorSurface"
                 android:orientation="horizontal"
                 android:padding="16dp">
 
@@ -65,7 +59,6 @@
                     android:layout_marginEnd="16dp"
                     android:background="@drawable/playingcards"
                     android:gravity="center"
-                    android:text="4"
                     android:textColor="@color/white"
                     android:textSize="18sp"
                     android:textStyle="bold"/>
@@ -102,11 +95,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        app:strokeColor="@color/white"
                         android:text="@string/play_games"
                         android:textColor="@color/White"
                         android:textSize="12sp"
-                        app:backgroundTint="@color/com_facebook_messenger_blue"
+                        app:backgroundTint="@color/bh_primary"
                         app:cornerRadius="8dp" />
 
                 </LinearLayout>
@@ -127,6 +119,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="?attr/colorSurface"
                 android:orientation="horizontal"
                 android:padding="16dp">
 
@@ -136,7 +129,6 @@
                     android:layout_marginEnd="16dp"
                     android:background="@drawable/referral"
                     android:gravity="center"
-                    android:text="4"
                     android:textColor="@color/white"
                     android:textSize="18sp"
                     android:textStyle="bold"/>
@@ -174,9 +166,9 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:text="@string/invite_friends"
-                        android:textColor="@android:color/white"
+                        android:textColor="@color/White"
                         android:textSize="12sp"
-                        app:backgroundTint="@color/com_facebook_messenger_blue"
+                        app:backgroundTint="@color/bh_primary"
                         app:cornerRadius="8dp" />
 
                 </LinearLayout>
@@ -196,6 +188,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="?attr/colorSurface"
                 android:orientation="horizontal"
                 android:padding="16dp">
 
@@ -205,7 +198,6 @@
                     android:layout_marginEnd="16dp"
                     android:background="@drawable/deal"
                     android:gravity="center"
-                    android:text="4"
                     android:textColor="@color/white"
                     android:textSize="18sp"
                     android:textStyle="bold"/>
@@ -230,7 +222,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="@string/post_items_for_sale_or_barter_you_earn_coins_when_a_transaction_completes"
+                        android:text="@string/post_items_for_sale_or_barter_you_earn_coins_when_posting"
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="14sp"
                         android:lineSpacingExtra="4dp" />
@@ -243,9 +235,9 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:text="@string/post_item"
-                        android:textColor="@android:color/white"
+                        android:textColor="@color/White"
                         android:textSize="12sp"
-                        app:backgroundTint="@color/com_facebook_messenger_blue"
+                        app:backgroundTint="@color/bh_primary"
                         app:cornerRadius="8dp" />
 
                 </LinearLayout>
@@ -265,6 +257,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="?attr/colorSurface"
                 android:orientation="horizontal"
                 android:padding="16dp">
 
@@ -274,7 +267,6 @@
                     android:layout_marginEnd="16dp"
                     android:background="@drawable/reach"
                     android:gravity="center"
-                    android:text="4"
                     android:textColor="@color/white"
                     android:textSize="18sp"
                     android:textStyle="bold"/>
@@ -346,55 +338,11 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:text="@string/view_challenges"
-                        android:textColor="@android:color/white"
+                        android:textColor="@color/White"
                         android:textSize="12sp"
-                        app:backgroundTint="@color/com_facebook_messenger_blue"
+                        app:backgroundTint="@color/bh_primary"
                         app:cornerRadius="8dp" />
 
-                </LinearLayout>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Synergy Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp"
-            app:strokeWidth="1dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="16dp">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/tvSynergyTitle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/synergy"
-                        android:textStyle="bold"
-                        android:textSize="18sp"
-                        android:textColor="?attr/colorOnSurface" />
-
-                    <TextView
-                        android:id="@+id/tvSynergyDesc"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="@string/referral_transactions_daily_challenges_coins_accumulate_cash_out_or_spend_in_app_more_activity_more_earnings_and_retention"
-                        android:textColor="?attr/colorOnSurface"
-                        android:textSize="14sp"
-                        android:lineSpacingExtra="4dp"
-                        tools:ignore="VisualLintLongText" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

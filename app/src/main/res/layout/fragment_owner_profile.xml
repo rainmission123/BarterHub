@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="@drawable/backgroundlogin">
+    android:background="@drawable/bg_home_profile_logo">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -83,7 +83,7 @@
                                 android:text="@string/user_name"
                                 android:textSize="18sp"
                                 android:textStyle="bold"
-                                android:textColor="@color/White"
+                                android:textColor="@color/white"
                                 android:layout_marginBottom="4dp" />
 
                             <!-- Rating -->
@@ -113,14 +113,14 @@
                                     android:layout_height="wrap_content"
                                     android:text="@string/_4_5"
                                     android:textSize="12sp"
-                                    android:textColor="@color/White" />
+                                    android:textColor="@color/white" />
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="•"
                                     android:textSize="12sp"
-                                    android:textColor="?attr/postTextColor"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
                                     android:layout_marginStart="8dp"
                                     android:layout_marginEnd="8dp"
                                     tools:ignore="HardcodedText" />
@@ -131,7 +131,7 @@
                                     android:layout_height="wrap_content"
                                     android:text="128 reviews"
                                     android:textSize="12sp"
-                                    android:textColor="@color/White"
+                                    android:textColor="@color/white"
                                     tools:ignore="HardcodedText" />
                             </LinearLayout>
 
@@ -140,243 +140,48 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/member_since_jan_2023"
-                                android:textColor="@color/White"
+                                android:textColor="@color/white"
                                 android:textSize="12sp" />
                         </LinearLayout>
                     </LinearLayout>
 
                 </LinearLayout>
 
-            <!-- User Info Section (Read-Only) -->
+            <!-- Location Only -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:orientation="horizontal"
                 android:padding="16dp">
 
-                <!-- Row 1: Name & Phone -->
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginEnd="6dp"
+                    android:tint="@color/red"
+                    android:src="@drawable/location" />
+
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:baselineAligned="false"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="8dp">
+                    android:orientation="vertical">
 
-                    <!-- Name -->
-                    <LinearLayout
-                        android:layout_width="0dp"
+                    <TextView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="horizontal"
-                        android:paddingVertical="2dp"
-                        android:layout_marginEnd="4dp">
+                        android:text="Location"
+                        android:textSize="12sp"
+                        android:textColor="@color/white" />
 
-                        <ImageView
-                            android:layout_width="14dp"
-                            android:layout_height="14dp"
-                            android:layout_marginEnd="6dp"
-                            android:contentDescription="@string/todo"
-                            android:src="@drawable/user" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            tools:ignore="NestedWeights">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/name"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
-
-                            <TextView
-                                android:id="@+id/nameTextView"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="User Name"
-                                android:textSize="14sp"
-                                android:textColor="@color/White"
-                                tools:ignore="HardcodedText" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <!-- Phone -->
-                    <LinearLayout
-                        android:layout_width="0dp"
+                    <TextView
+                        android:id="@+id/locationTextView"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="horizontal"
-                        android:paddingVertical="2dp"
-                        android:layout_marginStart="4dp">
-
-                        <ImageView
-                            android:layout_width="14dp"
-                            android:layout_height="14dp"
-                            android:layout_marginEnd="6dp"
-                            android:src="@drawable/phone" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Phone"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
-
-                            <TextView
-                                android:id="@+id/phoneTextView"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="+63 912 345 6789"
-                                android:textSize="14sp"
-                                android:textColor="@color/White" />
-                        </LinearLayout>
-                    </LinearLayout>
+                        android:text="Manila, PH"
+                        android:textSize="14sp"
+                        android:textColor="@color/white" />
                 </LinearLayout>
 
-                <!-- Row 2: Email & Location -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="8dp">
-
-                    <!-- Email -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="horizontal"
-                        android:paddingVertical="2dp"
-                        android:layout_marginEnd="4dp">
-
-                        <ImageView
-                            android:layout_width="14dp"
-                            android:layout_height="14dp"
-                            android:layout_marginEnd="6dp"
-                            android:src="@drawable/mail" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Email"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
-
-                            <TextView
-                                android:id="@+id/emailTextView"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="user@email.com"
-                                android:textSize="14sp"
-                                android:textColor="@color/White"
-                                android:maxLines="1"
-                                android:ellipsize="end" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <!-- Location -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="horizontal"
-                        android:paddingVertical="2dp"
-                        android:layout_marginStart="4dp">
-
-                        <ImageView
-                            android:layout_width="14dp"
-                            android:layout_height="14dp"
-                            android:layout_marginEnd="6dp"
-                            android:src="@drawable/location" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Location"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
-
-                            <TextView
-                                android:id="@+id/locationTextView"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Manila, PH"
-                                android:textSize="14sp"
-                                android:textColor="@color/White" />
-                        </LinearLayout>
-                    </LinearLayout>
-                </LinearLayout>
-
-                <!-- Bio -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingVertical="2dp">
-
-                    <ImageView
-                        android:layout_width="14dp"
-                        android:layout_height="14dp"
-                        android:layout_marginEnd="6dp"
-                        android:src="@drawable/information" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:paddingVertical="2dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Bio"
-                            android:textSize="12sp"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
-
-                        <TextView
-                            android:id="@+id/bioTextView"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/short_bio_description"
-                            android:textSize="14sp"
-                            android:textColor="@color/White"
-                            android:maxLines="2"
-                            android:ellipsize="end" />
-
-                        <TextView
-                            android:id="@+id/viewAllTextView"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:paddingTop="2dp"
-                            android:text="View All"
-                            android:textColor="@color/colorAccent"
-                            android:textSize="12sp"
-                            tools:ignore="TouchTargetSizeCheck" />
-                    </LinearLayout>
-                </LinearLayout>
             </LinearLayout>
 
             <!-- Owner Items Listed -->

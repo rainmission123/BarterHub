@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/backgroundlogin">
+    android:background="?attr/colorSurface">
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/fullscreenViewPager"
@@ -21,7 +21,7 @@
         android:minHeight="0dp"
         android:padding="0dp"
         app:icon="@drawable/ic_close"
-        app:iconTint="@color/White"
+        app:iconTint="?attr/colorOnSurface"
         app:iconGravity="textStart"
         app:iconPadding="0dp"
         app:strokeWidth="0dp" />
@@ -33,7 +33,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="top|end"
         android:layout_margin="16dp"
-        android:textColor="@color/White"
+        android:textColor="?attr/colorOnSurface"
         android:textStyle="bold"
         android:textSize="14sp"
         android:text="@string/_1_10" />

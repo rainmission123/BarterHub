@@ -41,8 +41,8 @@ class OwnerProfileItemsAdapter(
 
         Glide.with(holder.itemView.context)
             .load(item.imageUrl)
-            .placeholder(R.drawable.backgroundlogin)
-            .error(R.drawable.backgroundlogin)
+            .placeholder(R.drawable.bg_home_profile_logo)
+            .error(R.drawable.bg_home_profile_logo)
             .centerCrop()
             .into(holder.img)
 

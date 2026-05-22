@@ -65,7 +65,7 @@ class ItemDetailFragment : Fragment() {
             .getReference("items")
         userDatabase = FirebaseDatabase
             .getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
-            .getReference("users")
+            .getReference("public_users")
 
         setupClickListeners()
         loadItemDetails()
@@ -525,14 +525,14 @@ class ItemDetailFragment : Fragment() {
         val context = requireContext()
         if (isLiked) {
             binding.btnLike.apply {
-                icon = ContextCompat.getDrawable(context, R.drawable.ic_favorite_filled)
+                icon = ContextCompat.getDrawable(context, R.drawable.ic_like)
                 setIconTintResource(R.color.red_500)
                 strokeColor = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.red_500))
                 setTextColor(ContextCompat.getColor(context, R.color.red_500))
             }
         } else {
             binding.btnLike.apply {
-                icon = ContextCompat.getDrawable(context, R.drawable.ic_favorite_border)
+                icon = ContextCompat.getDrawable(context, R.drawable.ic_like_border)
                 setIconTintResource(R.color.teal_700)
                 strokeColor = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.teal_700))
                 setTextColor(ContextCompat.getColor(context, R.color.teal_700))

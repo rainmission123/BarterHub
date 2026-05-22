@@ -17,6 +17,7 @@ data class NotificationModel(
     val partnerName: String? = null,
     val requestId: String? = null,
     val receiptId: String? = null,
-    val tradeRequestId: String? = null
+    val tradeRequestId: String? = null,
+    val invitedUserId: String? = null
 
 )

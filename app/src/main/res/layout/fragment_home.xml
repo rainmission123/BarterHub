@@ -4,6 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:background="?attr/colorSurface"
     android:layout_height="match_parent"
     android:id="@+id/rootLayout">
 
@@ -19,8 +20,8 @@
 
     <LinearLayout
         android:id="@+id/mainContent"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:orientation="vertical"
         android:visibility="visible"
         app:layout_constraintTop_toTopOf="parent"
@@ -31,41 +32,41 @@
         <LinearLayout
             android:id="@+id/topBar"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="wrap_content"
+            android:minHeight="60dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingHorizontal="8dp">
 
-            <!-- Wishlist Icon -->
+            <!-- Menu Icon -->
             <FrameLayout
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
                 android:layout_marginEnd="8dp">
 
                 <ImageView
-                    android:id="@+id/itemWishlistIcon"
-                    android:layout_width="30dp"
-                    android:layout_height="40dp"
-                    android:src="@drawable/ic_heart"
-                    app:tint="@color/white"/>
+                    android:id="@+id/btnMenu"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_menu"
+                    app:tint="?attr/colorOnSurface"/>
             </FrameLayout>
 
-            <!-- Search Bar -->
             <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="35dp"
                 android:layout_weight="1"
                 android:background="@drawable/rounded_corner"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:padding="7dp">
+                android:padding="4dp">
 
                 <ImageView
                     android:id="@+id/searchIcon"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
                     android:src="@drawable/ic_search"
-                    app:tint="@color/gray_500"/>
+                    app:tint="?attr/colorOnSurfaceVariant"/>
 
                 <EditText
                     android:id="@+id/searchInput"
@@ -76,42 +77,73 @@
                     android:hint="@string/search_hint"
                     android:imeOptions="actionSearch"
                     android:inputType="text"
-                    android:textColor="@color/gray_700"
-                    android:textColorHint="#616161"
-                    android:textSize="14sp"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textColorHint="?attr/colorOnSurfaceVariant"
+                    android:textSize="13sp"
                     tools:ignore="TouchTargetSizeCheck" />
 
                 <ImageView
                     android:id="@+id/Toolcamera"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
                     android:src="@drawable/camera"
-                    app:tint="@color/gray_700"/>
+                    app:tint="?attr/colorOnSurfaceVariant"/>
             </LinearLayout>
+
+            <Space
+                android:layout_width="8dp"
+                android:layout_height="match_parent"/>
 
             <!-- Trade Request Icon -->
             <FrameLayout
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginStart="8dp">
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="2dp">
 
                 <ImageView
                     android:id="@+id/tradeRequestIcon"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
                     android:src="@drawable/handshake2"
-                    app:tint="@color/white"/>
+                    app:tint="?attr/colorOnSurface"/>
 
                 <TextView
                     android:id="@+id/tradeRequestBadge"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
                     android:layout_gravity="end|top"
                     android:background="@drawable/badge_background"
                     android:gravity="center"
                     android:text="1"
                     android:textColor="@color/colorAccent"
-                    android:textSize="15sp"
+                    android:textSize="10sp"
+                    android:visibility="gone"/>
+            </FrameLayout>
+
+            <!-- Wishlist Icon with Badge -->
+            <FrameLayout
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_margin="8dp">
+
+                <ImageView
+                    android:id="@+id/itemWishlistIcon"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_heart"
+                    app:tint="?attr/colorOnSurface"/>
+
+                <!-- 🔥 BADGE -->
+                <TextView
+                    android:id="@+id/wishlistBadge"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="end|top"
+                    android:background="@drawable/badge_background"
+                    android:gravity="center"
+                    android:text="0"
+                    android:textColor="@color/colorAccent"
+                    android:textSize="10sp"
                     android:visibility="gone"/>
             </FrameLayout>
 
@@ -124,316 +156,431 @@
             android:layout_weight="1"
             android:fillViewport="true">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/_90dp"
-                android:orientation="vertical">
-
-                <LinearLayout
-                    android:id="@+id/trendingSliderContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="5dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="4dp"
-                    android:orientation="vertical"
-                    android:padding="0dp"
-                    android:background="@android:color/transparent">
-
-                <!-- Header with Trending Icon -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="6dp"
-                    android:paddingHorizontal="4dp">
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_trending"
-                        app:tint="@color/trending_icon_color" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Trending Now"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/trending_text_color"
-                        android:layout_marginStart="6dp"
-                        android:layout_marginEnd="2dp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🔥"
-                        android:textSize="16sp" />
-
-                    <Space
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1" />
-
-                    <TextView
-                        android:id="@+id/trendingViewAll"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="View All"
-                        android:textSize="10sp"
-                        android:textColor="@color/trending_view_all"
-                        android:padding="2dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:background="?attr/selectableItemBackgroundBorderless" />
-                </LinearLayout>
-
-                <androidx.viewpager2.widget.ViewPager2
-                    android:id="@+id/trendingViewPager"
-                    android:layout_width="match_parent"
-                    android:layout_height="120dp"
-                    android:clipToPadding="false"
-                    android:layout_marginBottom="8dp"
-                    android:paddingHorizontal="0dp" />
-
-            </LinearLayout>
-
-                <!-- Categories Section -->
-                <HorizontalScrollView
-                    android:id="@+id/categoriesScroll"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="1dp"
-                    android:overScrollMode="never">
+                    android:layout_marginBottom="@dimen/_90dp"
+                    android:orientation="vertical">
 
                     <LinearLayout
-                        android:layout_width="wrap_content"
+                        android:id="@+id/trendingSliderContainer"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="8dp">
+                        android:layout_marginHorizontal="5dp"
+                        android:layout_marginBottom="4dp"
+                        android:orientation="vertical"
+                        android:padding="5dp">
 
-                        <!-- Electronics -->
-                        <LinearLayout
-                            android:id="@+id/categoryElectronics"
-                            android:layout_width="110dp"
-                            android:layout_height="match_parent"
-                            android:orientation="vertical"
-                            android:layout_marginEnd="12dp"
-                            android:gravity="center_horizontal">
-
-                            <androidx.cardview.widget.CardView
-                                android:layout_width="match_parent"
-                                android:layout_height="110dp"
-                                app:cardCornerRadius="16dp"
-                                app:cardElevation="0dp">
-
-                                <ImageView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:contentDescription="@string/electronics"
-                                    android:scaleType="centerCrop"
-                                    android:src="@drawable/electronics"/>
-                            </androidx.cardview.widget.CardView>
-
-                            <TextView
-                                android:id="@+id/tvCategoryElectronics"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="6dp"
-                                android:text="@string/electronics"
-                                android:textColor="@color/white"
-                                android:textSize="16sp"
-                                android:gravity="center"
-                                android:ellipsize="end"
-                                android:maxLines="1"/>
-                        </LinearLayout>
-
-                        <!-- Clothing -->
-                        <LinearLayout
-                            android:id="@+id/categoryClothing"
-                            android:layout_width="110dp"
+                        <FrameLayout
+                            android:id="@+id/dailyChallengeBanner"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:layout_marginEnd="12dp"
-                            android:gravity="center_horizontal">
-
-                            <androidx.cardview.widget.CardView
-                                android:layout_width="match_parent"
-                                android:layout_height="110dp"
-                                app:cardCornerRadius="16dp"
-                                app:cardElevation="0dp">
-
-                                <ImageView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:contentDescription="@string/clothing"
-                                    android:scaleType="centerCrop"
-                                    android:src="@drawable/clothing"/>
-                            </androidx.cardview.widget.CardView>
-
-                            <TextView
-                                android:id="@+id/tvCategoryClothing"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="6dp"
-                                android:text="@string/clothing"
-                                android:textColor="@color/white"
-                                android:textSize="16sp"
-                                android:gravity="center"
-                                android:ellipsize="end"
-                                android:maxLines="1"/>
-                        </LinearLayout>
-
-                        <!-- Home & Kitchen -->
-                        <LinearLayout
-                            android:id="@+id/categoryHomeKitchen"
-                            android:layout_width="110dp"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:layout_marginEnd="12dp"
-                            android:gravity="center_horizontal">
-
-                            <androidx.cardview.widget.CardView
-                                android:layout_width="match_parent"
-                                android:layout_height="110dp"
-                                app:cardCornerRadius="16dp"
-                                app:cardElevation="0dp">
-
-                                <ImageView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:contentDescription="@string/home_kitchen"
-                                    android:scaleType="centerCrop"
-                                    android:src="@drawable/appliance"/>
-                            </androidx.cardview.widget.CardView>
-
-                            <TextView
-                                android:id="@+id/tvCategoryKitchen"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="6dp"
-                                android:text="@string/home_kitchen"
-                                android:textColor="@color/white"
-                                android:textSize="16sp"
-                                android:gravity="center"
-                                android:ellipsize="end"
-                                android:maxLines="1"/>
-                        </LinearLayout>
-
-                        <!-- Books & Education -->
-                        <LinearLayout
-                            android:id="@+id/categoryBooks"
-                            android:layout_width="110dp"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:layout_marginEnd="12dp"
-                            android:gravity="center_horizontal">
-
-                            <androidx.cardview.widget.CardView
-                                android:layout_width="match_parent"
-                                android:layout_height="110dp"
-                                app:cardCornerRadius="16dp"
-                                app:cardElevation="0dp">
-
-                                <ImageView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:contentDescription="@string/books_educational"
-                                    android:scaleType="centerCrop"
-                                    android:src="@drawable/bookshelf"/>
-                            </androidx.cardview.widget.CardView>
-
-                            <TextView
-                                android:id="@+id/tvCategoryBooks"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="6dp"
-                                android:text="@string/books_educational"
-                                android:textColor="@color/white"
-                                android:textSize="16sp"
-                                android:gravity="center"
-                                android:ellipsize="end"
-                                android:maxLines="1"/>
-                        </LinearLayout>
-
-                        <!-- Sports -->
-                        <LinearLayout
-                            android:id="@+id/categorySports"
-                            android:layout_width="110dp"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:layout_marginEnd="12dp"
-                            android:gravity="center_horizontal">
-
-                            <androidx.cardview.widget.CardView
-                                android:layout_width="match_parent"
-                                android:layout_height="110dp"
-                                app:cardCornerRadius="16dp"
-                                app:cardElevation="0dp">
-
-                                <ImageView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:contentDescription="@string/sports_outdoors"
-                                    android:scaleType="centerCrop"
-                                    android:src="@drawable/basketball"/>
-                            </androidx.cardview.widget.CardView>
-
-                            <TextView
-                                android:id="@+id/tvCategorySportsOutdoor"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="6dp"
-                                android:text="@string/sports_outdoors"
-                                android:textColor="@color/white"
-                                android:textSize="16sp"
-                                android:gravity="center"
-                                android:ellipsize="end"
-                                android:maxLines="1"/>
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:id="@+id/viewAllCategories"
-                            android:layout_width="110dp"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:gravity="center_horizontal"
-                            android:layout_marginEnd="12dp"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginEnd="16dp"
+                            android:layout_marginBottom="10dp"
+                            android:background="@drawable/bg_daily_challenge_banner"
                             android:clickable="true"
                             android:focusable="true"
-                            android:foreground="?attr/selectableItemBackground">
+                            android:clipToOutline="true">
 
-
+                            <!-- MAIN CONTENT -->
                             <LinearLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:orientation="vertical"
-                                android:gravity="center"
-                                android:padding="16dp"
-                                tools:ignore="UseCompoundDrawables">
-
-                                <ImageView
-                                    android:layout_width="48dp"
-                                    android:layout_height="48dp"
-                                    android:src="@drawable/ic_view_all"
-                                    android:contentDescription="@string/view_all_icon"/>
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:padding="5dp">
 
                                 <TextView
+                                    android:layout_width="56dp"
+                                    android:layout_height="56dp"
+                                    android:gravity="center"
+                                    android:text="🏆"
+                                    android:textSize="38sp" />
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="14dp"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:id="@+id/tvDailyBannerTitle"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Daily Challenges"
+                                        android:textColor="#3A2100"
+                                        android:textSize="20sp"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+                                        android:id="@+id/tvDailyBannerSubtitle"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="4dp"
+                                        android:text="@string/claim_rewards_and_earn_coins_daily"
+                                        android:textColor="#5C3B00"
+                                        android:textSize="13sp" />
+                                </LinearLayout>
+
+                                <FrameLayout
+                                    android:layout_width="70dp"
+                                    android:layout_height="70dp"
+                                    android:layout_gravity="center">
+
+                                    <!-- Glow -->
+                                    <View
+                                        android:id="@+id/coinGlow"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:layout_gravity="center"
+                                        android:background="@drawable/bg_coin_glow" />
+
+                                    <ImageView
+                                        android:id="@+id/ivCoin"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="36dp"
+                                        android:layout_gravity="center"
+                                        android:src="@drawable/ic_barter_coins" />
+                                </FrameLayout>
+
+                            </LinearLayout>
+
+                            <!-- 🔥 SHIMMER EFFECT -->
+                            <View
+                                android:id="@+id/shimmerView"
+                                android:layout_width="80dp"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="start"
+                                android:alpha="0.6"
+                                android:background="@drawable/bg_shimmer"
+                                android:translationX="-200dp" />
+
+                        </FrameLayout>
+
+                    <!-- Header with Trending Icon -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="6dp"
+                        android:paddingHorizontal="4dp">
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_trending"
+                            app:tint="@color/trending_icon_color" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Trending Now"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurface"
+                            android:layout_marginStart="6dp"
+                            android:layout_marginEnd="2dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🔥"
+                            android:textSize="16sp" />
+
+                        <Space
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:id="@+id/trendingViewAll"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="View All"
+                            android:textSize="10sp"
+                            android:textColor="?attr/colorOnSurface"
+                            android:padding="2dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackgroundBorderless" />
+                    </LinearLayout>
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="match_parent"
+                            android:layout_height="160dp"
+                            android:layout_marginBottom="8dp"
+                            app:cardBackgroundColor="?attr/colorSurface"
+                            app:cardCornerRadius="8dp"
+                            app:cardElevation="0dp"
+                            app:strokeColor="#D0D0D0"
+                            app:strokeWidth="1dp">
+
+                            <androidx.viewpager2.widget.ViewPager2
+                                android:id="@+id/trendingViewPager"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:clipToPadding="false"
+                                android:paddingHorizontal="0dp" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
+
+                    <!-- Categories Section -->
+                    <HorizontalScrollView
+                        android:id="@+id/categoriesScroll"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:overScrollMode="never">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingStart="10dp"
+                            android:paddingEnd="10dp">
+
+                            <!-- Electronics -->
+                            <LinearLayout
+                                android:id="@+id/categoryElectronics"
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="16dp"
+                                android:gravity="center_horizontal"
+                                android:orientation="vertical">
+
+                                <com.google.android.material.card.MaterialCardView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="100dp"
+                                    app:cardCornerRadius="16dp"
+                                    app:cardElevation="1dp"
+                                    app:strokeWidth="0.2dp"
+                                    app:strokeColor="?attr/colorOnSurface"
+                                    app:cardBackgroundColor="?attr/colorSurfaceVariant">
+
+                                    <ImageView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:contentDescription="@string/electronics"
+                                        android:scaleType="centerCrop"
+                                        android:src="@drawable/electronics"/>
+                                </com.google.android.material.card.MaterialCardView>
+
+                                <TextView
+                                    android:id="@+id/tvCategoryElectronics"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="@string/view_all"
-                                    android:textColor="@color/white"
-                                    android:textSize="16sp"
-                                    android:textStyle="bold"
-                                    android:layout_marginTop="8dp"
-                                    android:gravity="center"/>
+                                    android:layout_marginTop="6dp"
+                                    android:gravity="center"
+                                    android:maxLines="1"
+                                    android:text="@string/electronics"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="14sp" />
+                            </LinearLayout>
+
+                            <!-- Clothing -->
+                            <LinearLayout
+                                android:id="@+id/categoryClothing"
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="16dp"
+                                android:gravity="center_horizontal"
+                                android:orientation="vertical">
+
+                                <com.google.android.material.card.MaterialCardView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="100dp"
+                                    app:cardBackgroundColor="?attr/colorSurface"
+                                    app:cardCornerRadius="16dp"
+                                    app:cardElevation="1dp"
+                                    app:strokeColor="?attr/colorOnSurface"
+                                    app:strokeWidth="0.2dp">
+
+                                    <ImageView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:contentDescription="@string/clothing"
+                                        android:scaleType="centerCrop"
+                                        android:src="@drawable/clothing" />
+                                </com.google.android.material.card.MaterialCardView>
+
+                                <TextView
+                                    android:id="@+id/tvCategoryClothing"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="6dp"
+                                    android:gravity="center"
+                                    android:maxLines="1"
+                                    android:text="@string/clothing"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="14sp" />
+                            </LinearLayout>
+
+                            <!-- Home & Kitchen -->
+                            <LinearLayout
+                                android:id="@+id/categoryHomeKitchen"
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="16dp"
+                                android:gravity="center_horizontal"
+                                android:orientation="vertical">
+
+                                <com.google.android.material.card.MaterialCardView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="100dp"
+                                    app:cardBackgroundColor="?attr/colorSurface"
+                                    app:cardCornerRadius="16dp"
+                                    app:cardElevation="1dp"
+                                    app:strokeColor="?attr/colorOnSurface"
+                                    app:strokeWidth="0.2dp">
+
+                                    <ImageView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:contentDescription="@string/home_kitchen"
+                                        android:scaleType="centerCrop"
+                                        android:src="@drawable/appliance" />
+                                </com.google.android.material.card.MaterialCardView>
+
+                                <TextView
+                                    android:id="@+id/tvCategoryKitchen"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="6dp"
+                                    android:gravity="center"
+                                    android:maxLines="1"
+                                    android:text="@string/home_kitchen"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="14sp" />
+                            </LinearLayout>
+
+                            <!-- Books & Education -->
+                            <LinearLayout
+                                android:id="@+id/categoryBooks"
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="16dp"
+                                android:gravity="center_horizontal"
+                                android:orientation="vertical">
+
+                                <com.google.android.material.card.MaterialCardView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="100dp"
+                                    app:cardBackgroundColor="?attr/colorSurface"
+                                    app:cardCornerRadius="16dp"
+                                    app:strokeColor="?attr/colorOnSurface"
+                                    app:cardElevation="1dp"
+                                    app:strokeWidth="0.2dp">
+
+                                    <ImageView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:contentDescription="@string/books_educational"
+                                        android:scaleType="centerCrop"
+                                        android:src="@drawable/bookshelf" />
+                                </com.google.android.material.card.MaterialCardView>
+
+                                <TextView
+                                    android:id="@+id/tvCategoryBooks"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="6dp"
+                                    android:gravity="center"
+                                    android:maxLines="1"
+                                    android:text="@string/books_educational"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="14sp" />
+                            </LinearLayout>
+
+                            <!-- Sports -->
+                            <LinearLayout
+                                android:id="@+id/categorySports"
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="16dp"
+                                android:gravity="center_horizontal"
+                                android:orientation="vertical">
+
+                                <com.google.android.material.card.MaterialCardView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="100dp"
+                                    app:cardBackgroundColor="?attr/colorSurface"
+                                    app:cardCornerRadius="16dp"
+                                    app:cardElevation="1dp"
+                                    app:strokeColor="?attr/colorOnSurface"
+                                    app:strokeWidth="0.2dp">
+
+                                    <ImageView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:contentDescription="@string/sports_outdoors"
+                                        android:scaleType="centerCrop"
+                                        android:src="@drawable/basketball" />
+                                </com.google.android.material.card.MaterialCardView>
+
+                                <TextView
+                                    android:id="@+id/tvCategorySportsOutdoor"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="6dp"
+                                    android:gravity="center"
+                                    android:maxLines="1"
+                                    android:text="@string/sports_outdoors"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="14sp" />
+                            </LinearLayout>
+
+                            <!-- View All -->
+                            <LinearLayout
+                                android:id="@+id/viewAllCategories"
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="16dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:foreground="?attr/selectableItemBackground"
+                                android:gravity="center_horizontal"
+                                android:orientation="vertical">
+
+                                <com.google.android.material.card.MaterialCardView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="100dp"
+                                    app:cardBackgroundColor="?attr/colorSurface"
+                                    app:cardCornerRadius="16dp"
+                                    app:cardElevation="1dp"
+                                    app:strokeColor="?attr/colorOnSurface"
+                                    app:strokeWidth="0.2dp">
+
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:gravity="center"
+                                        android:orientation="vertical"
+                                        android:padding="12dp">
+
+                                        <ImageView
+                                            android:layout_width="40dp"
+                                            android:layout_height="40dp"
+                                            android:contentDescription="@string/view_all_icon"
+                                            android:src="@drawable/ic_view_all" />
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginTop="6dp"
+                                            android:gravity="center"
+                                            android:text="@string/view_all"
+                                            android:textColor="?attr/colorOnSurface"
+                                            android:textSize="13sp"
+                                            android:textStyle="bold" />
+                                    </LinearLayout>
+                                </com.google.android.material.card.MaterialCardView>
                             </LinearLayout>
 
                         </LinearLayout>
-                    </LinearLayout>
-                </HorizontalScrollView>
+                    </HorizontalScrollView>
 
                 <!-- 🟠 Filter Button -->
                 <LinearLayout
@@ -453,7 +600,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@drawable/filter"
-                        app:tint="@color/white" />
+                        app:tint="?attr/colorOnSurface" />
 
                     <TextView
                         android:id="@+id/filterButtonText"

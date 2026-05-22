@@ -11,23 +11,20 @@
     android:paddingStart="8dp"
     android:paddingEnd="8dp">
 
-    <!-- Profile Picture -->
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/ivProfileReceived"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:layout_marginEnd="8dp"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
         android:src="@drawable/ic_profile_placeholder" />
 
-    <!-- Message Content -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:orientation="vertical">
 
-        <!-- Sender Name -->
         <TextView
             android:id="@+id/tvSenderReceived"
             android:layout_width="wrap_content"
@@ -35,24 +32,24 @@
             android:layout_marginStart="4dp"
             android:layout_marginBottom="2dp"
             android:text="Partner Name"
-            android:textColor="@color/White"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="12sp"
             android:textStyle="bold"
             tools:ignore="HardcodedText" />
 
-        <!-- Bubble + 3-dot container -->
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="start|top"
+            android:orientation="horizontal">
 
-            <!-- Message Bubble -->
             <LinearLayout
                 android:id="@+id/messageBubbleContainer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
                 android:background="@drawable/message_background_received"
+                android:maxWidth="260dp"
                 android:orientation="vertical"
                 android:padding="12dp">
 
@@ -60,8 +57,9 @@
                     android:id="@+id/tvMessageReceived"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:maxWidth="236dp"
                     android:text="Partner message here"
-                    android:textColor="@color/white"
+                    android:textColor="@android:color/white"
                     android:textSize="14sp"
                     tools:ignore="HardcodedText" />
 
@@ -75,49 +73,44 @@
                     android:visibility="gone" />
             </LinearLayout>
 
-            <!-- 3-dot menu at the end of bubble -->
             <ImageView
                 android:id="@+id/ivMoreReceived"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginStart="4dp"
-                android:padding="2dp"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginTop="4dp"
+                android:padding="4dp"
                 android:src="@drawable/ic_more_vert"
-                app:tint="@color/White" />
+                app:tint="?attr/colorOnSurface" />
 
         </LinearLayout>
 
-        <!-- 🔥 REACTIONS CONTAINER - ADD THIS -->
         <LinearLayout
             android:id="@+id/reactionsContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="4dp"
+            android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:visibility="gone"
-            android:gravity="center_vertical">
+            android:visibility="gone">
 
-            <!-- Example reaction items will be added programmatically -->
             <TextView
                 android:id="@+id/tvReactionSummary"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="10sp"
-                android:textColor="?attr/postTextColor"
-                android:visibility="gone"/>
-
+                android:visibility="gone" />
         </LinearLayout>
 
-        <!-- Timestamp -->
         <TextView
             android:id="@+id/tvTimestampReceived"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="4dp"
             android:text="10:30 AM"
-            android:textColor="@color/White"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="10sp"
             tools:ignore="HardcodedText,SmallSp" />
 

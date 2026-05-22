@@ -86,8 +86,8 @@ class UserListingsAdapter(
             Glide.with(context)
                 .load(firstImage)
                 .override(cardWidth, (cardWidth * 0.75).toInt())
-                .placeholder(R.drawable.backgroundlogin)
-                .error(R.drawable.backgroundlogin)
+                .placeholder(R.drawable.bg_home_profile_logo)
+                .error(R.drawable.bg_home_profile_logo)
                 .into(holder.itemImage)
 
             // ✅ CRITICAL FIX: Button click listeners - MUST BE SET EVERY TIME

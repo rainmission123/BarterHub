@@ -5,8 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="8dp"
-    android:background="?attr/colorSurface">
+    android:padding="8dp">
 
     <!-- Item Image -->
     <ImageView
@@ -30,7 +29,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Item Title"
-            android:textColor="?attr/colorOnSurface"
+            android:textColor="@color/White"
             android:textStyle="bold"
             android:textSize="14sp"
             tools:ignore="HardcodedText" />
@@ -41,7 +40,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Posted by: Unknown"
-            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textColor="@color/White"
             android:textSize="10sp"
             android:textStyle="italic"
             android:layout_marginTop="2dp"
@@ -50,7 +49,7 @@
         <!-- Item Price -->
         <TextView
             android:id="@+id/itemPrice"
-            android:textColor="?attr/colorOnSurface"
+            android:textColor="@color/White"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/_0"
@@ -63,7 +62,7 @@
         android:id="@+id/removeFavoriteButton"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:src="@drawable/ic_remove"
+        android:src="@drawable/ic_close"
         android:contentDescription="@string/remove_from_favorites"
-        android:layout_gravity="center"/>
+        android:layout_gravity="top"/>
 </LinearLayout>

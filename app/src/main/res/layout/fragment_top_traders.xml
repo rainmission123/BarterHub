@@ -4,41 +4,42 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/backgroundlogin">
+    android:background="?attr/colorSurface">
 
+    <!-- APP BAR -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar">
+        android:background="?attr/colorSurface"
+        android:elevation="0dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="12dp"
-            android:paddingTop="6dp"
-            android:paddingEnd="12dp"
-            android:paddingBottom="10dp">
+            android:padding="12dp">
 
+            <!-- Toolbar -->
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:background="@android:color/transparent"
                 app:navigationIcon="@drawable/ic_arrow_back"
+                app:navigationIconTint="?attr/colorOnSurface"
                 app:title="Top Traders"
-                app:titleTextColor="@color/white" />
+                app:titleTextColor="?attr/colorOnSurface" />
 
+            <!-- Search -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/searchCard"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:layout_marginTop="6dp"
-                app:cardBackgroundColor="#1FFFFFFF"
-                app:cardCornerRadius="26dp"
+                android:layout_height="54dp"
+                android:layout_marginTop="8dp"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#33FFFFFF"
+                app:strokeColor="?attr/colorOutlineVariant"
                 app:strokeWidth="1dp">
 
                 <LinearLayout
@@ -54,7 +55,7 @@
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:src="@drawable/ic_search"
-                        app:tint="#CCFFFFFF" />
+                        app:tint="?attr/colorOnSurfaceVariant" />
 
                     <EditText
                         android:id="@+id/searchTopTradersEditText"
@@ -68,8 +69,8 @@
                         android:inputType="text"
                         android:maxLines="1"
                         android:padding="0dp"
-                        android:textColor="@color/white"
-                        android:textColorHint="#B3FFFFFF"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textColorHint="?attr/colorOnSurfaceVariant"
                         android:textSize="15sp" />
 
                     <ImageView
@@ -78,7 +79,7 @@
                         android:layout_height="18dp"
                         android:src="@drawable/ic_close"
                         android:visibility="gone"
-                        app:tint="#CCFFFFFF" />
+                        app:tint="?attr/colorOnSurfaceVariant" />
 
                 </LinearLayout>
 
@@ -88,6 +89,7 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- LIST -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/topTradersRecyclerView"
         android:layout_width="match_parent"
@@ -96,7 +98,7 @@
         android:paddingStart="8dp"
         android:paddingTop="8dp"
         android:paddingEnd="8dp"
-        android:paddingBottom="8dp"
+        android:paddingBottom="10dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

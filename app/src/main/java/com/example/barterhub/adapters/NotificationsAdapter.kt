@@ -263,7 +263,27 @@ class NotificationsAdapter(
         private val ivDelete = itemView.findViewById<ImageView>(R.id.ivDeleteNotification)
 
         fun bind(notification: NotificationModel, position: Int) {
-            tvMessage.text = notification.message ?: ""
+            // 🔹 Fallback message logic
+            val displayMessage = notification.message.takeIf { !it.isNullOrBlank() } ?: run {
+                when (notification.type) {
+                    "like" -> "${notification.fromUserName ?: "Someone"} liked your item"
+                    "message" -> "${notification.fromUserName ?: "Someone"} sent you a message"
+                    "trade_request" -> "${notification.fromUserName ?: "Someone"} sent you a trade request"
+                    "trade_accepted" -> "Your trade request was accepted"
+                    "trade_rejected" -> "Your trade request was rejected"
+                    "coins" -> {
+                        val coinsAmount = notification.coins ?: 0
+                        val fromUser = notification.fromUserName ?: "Someone"
+                        "🎉 $fromUser sent you $coinsAmount coins!"
+                    }
+                    "referral_reward" -> "You received referral reward"
+                    "receipt_created" -> "Your receipt is ready"
+                    "trade_receipt" -> "Your trade receipt is ready"
+                    else -> "You have a new notification"
+                }
+            }
+
+            tvMessage.text = displayMessage
             tvTime.text = getTimeAgo(notification.timestamp)
 
             val iconRes = when (notification.type) {
@@ -272,10 +292,13 @@ class NotificationsAdapter(
                 "trade_request" -> R.drawable.ic_trade
                 "trade_accepted" -> R.drawable.ic_check
                 "trade_rejected" -> R.drawable.ic_close
-                "coins" -> R.drawable.ic_barter_coins
+                "coins" -> R.drawable.ic_coin
+                "referral_reward" -> R.drawable.ic_bonus
+                "receipt_created", "trade_receipt" -> R.drawable.ic_notifications
                 else -> R.drawable.ic_notifications
             }
             ivIcon.setImageResource(iconRes)
+
             itemView.setOnClickListener {
                 onNotificationClickListener?.onNotificationClick(notification)
             }

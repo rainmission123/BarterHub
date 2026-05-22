@@ -2,7 +2,6 @@ package com.example.barterhub.adapters
 
 import android.annotation.SuppressLint
 import android.util.Log
-import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,12 +20,10 @@ import com.google.firebase.database.FirebaseDatabase
 
 class FeaturedAdapter(
     private val items: MutableList<FeaturedItem> = mutableListOf(),
-    private var onThreeDotsClick: ((FeaturedItem) -> Unit)? = null
+    private var onThreeDotsClick: ((View, FeaturedItem) -> Unit)? = null
 ) : RecyclerView.Adapter<FeaturedAdapter.FeaturedViewHolder>() {
 
-    constructor(items: List<FeaturedItem>) : this(items.toMutableList())
-
-    fun setOnThreeDotsClickListener(listener: (FeaturedItem) -> Unit) {
+    fun setOnThreeDotsClickListener(listener: (View, FeaturedItem) -> Unit) {
         onThreeDotsClick = listener
     }
 
@@ -62,14 +59,6 @@ class FeaturedAdapter(
         try {
             Log.d("AdapterBinding", "Binding item at pos=$position safeIndex=$safeIndex id=${item.itemId}")
 
-            // ❌❌❌ REMOVED: CARD SIZE CALCULATION - HINDI NA KAILANGAN
-            // val displayMetrics = holder.itemView.context.resources.displayMetrics
-            // val screenWidth = displayMetrics.widthPixels
-            // val cardWidth = (screenWidth / 2) - 8
-            // holder.image.layoutParams.width = cardWidth
-            // holder.image.layoutParams.height = (cardWidth * 1.0).toInt()
-
-            // 🔹 Clear previous texts/images first
             holder.title.text = ""
             holder.description.text = ""
             holder.itemCondition.text = ""
@@ -128,9 +117,9 @@ class FeaturedAdapter(
 
             Glide.with(holder.itemView.context)
                 .load(firstImage)
-                .placeholder(R.drawable.backgroundlogin)
-                .error(R.drawable.backgroundlogin)
-                .centerCrop()  // ✅ ADDED: Magfit ng maayos sa ImageView
+                .placeholder(R.drawable.bg_home_profile_logo)
+                .error(R.drawable.bg_home_profile_logo)
+                .centerCrop()
                 .into(holder.image)
 
             // 🔹 Owner Image
@@ -146,9 +135,8 @@ class FeaturedAdapter(
                 holder.ownerImage.setImageResource(R.drawable.ic_profile)
             }
 
-            // 🔹 Three dots click
-            holder.btnThreeDots.setOnClickListener {
-                onThreeDotsClick?.invoke(item)
+            holder.btnThreeDots.setOnClickListener { view ->
+                onThreeDotsClick?.invoke(view, item)
             }
 
             // 🔹 Favorite button
@@ -172,25 +160,9 @@ class FeaturedAdapter(
             holder.description.text = "Please try again"
             holder.price.text = "N/A"
             holder.ownerName.text = "Posted by: Unknown"
-            holder.image.setImageResource(R.drawable.backgroundlogin)
+            holder.image.setImageResource(R.drawable.bg_home_profile_logo)
             holder.ownerImage.setImageResource(R.drawable.ic_profile)
         }
-    }
-
-    private fun applyThemeColors(holder: FeaturedViewHolder) {
-        val context = holder.itemView.context
-        val typedValue = TypedValue()
-
-        context.theme.resolveAttribute(R.attr.postTextColor, typedValue, true)
-        holder.title.setTextColor(typedValue.data)
-
-        context.theme.resolveAttribute(R.attr.postTextColorSecondary, typedValue, true)
-        holder.description.setTextColor(typedValue.data)
-        holder.ownerName.setTextColor(typedValue.data)
-        holder.itemCondition.setTextColor(typedValue.data)
-
-        context.theme.resolveAttribute(R.attr.postPriceColor, typedValue, true)
-        holder.price.setTextColor(typedValue.data)
     }
 
     private fun setupFavoriteButton(holder: FeaturedViewHolder, item: FeaturedItem) {

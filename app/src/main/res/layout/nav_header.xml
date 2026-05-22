@@ -1,21 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="192dp"
-    android:gravity="bottom"
+    android:background="@drawable/bg_home_profile_logo"
     android:padding="20dp"
-    android:background="@drawable/backgroundlogin"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
+
+    <ImageView
+        android:id="@+id/btnCloseDrawer"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_gravity="top|end"
+        android:src="@drawable/ic_close"
+        app:tint="@color/White"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="4dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Close menu"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:layout_marginTop="@dimen/_60dp"
+        android:gravity="bottom">
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/userProfileSection"
@@ -76,4 +88,4 @@
     </LinearLayout>
 
 
-</LinearLayout>
+</FrameLayout>

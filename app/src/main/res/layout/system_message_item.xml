@@ -24,7 +24,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="Barter Accepted!"
-            android:textColor="@color/White"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="14sp"
             android:textStyle="bold"
             tools:ignore="HardcodedText" />
@@ -37,7 +37,7 @@
             android:layout_marginTop="8dp"
             android:gravity="center"
             android:text="@string/juan_dela_cruz_accepted_your_trade_offer"
-            android:textColor="@color/White"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="11sp"
             android:textStyle="bold" />
 
@@ -54,7 +54,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/maria_santos"
-                android:textColor="@color/White"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="10sp"
                 android:textStyle="bold"
                 tools:ignore="SmallSp" />
@@ -63,7 +63,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=" ↔ "
-                android:textColor="@color/gray_500"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="10sp"
                 android:paddingHorizontal="4dp"
                 tools:ignore="HardcodedText,SmallSp" />
@@ -73,7 +73,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/juan_dela_cruz"
-                android:textColor="@color/White"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="10sp"
                 android:textStyle="bold"
                 tools:ignore="SmallSp" />
@@ -103,7 +103,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="@string/vintage_coffee_maker"
-                    android:textColor="@color/White"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="11sp"
                     android:textStyle="bold"
                     android:maxLines="2"
@@ -137,7 +137,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="@string/sony_wh_1000xm4"
-                    android:textColor="@color/White"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="11sp"
                     android:textStyle="bold"
                     android:maxLines="2"
@@ -154,7 +154,7 @@
             android:padding="10dp"
             android:gravity="center"
             android:text="⚠️ PAALALA\n\nHuwag pindutin ang Completed button hangga't hindi pa natitignan at nasusuri ang item.\n\nKapag na-mark na as Completed, FINAL na ang trade."
-            android:textColor="@color/White"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="14sp"
             app:autoSizeTextType="uniform"
             tools:ignore="HardcodedText" />
@@ -190,7 +190,7 @@
                 android:textStyle="bold"
                 android:textColor="@android:color/white"
                 app:cornerRadius="8dp"
-                app:backgroundTint="@color/com_facebook_messenger_blue" />
+                app:backgroundTint="@color/bh_accent" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnReportIssue"
@@ -200,9 +200,9 @@
                 android:layout_marginStart="8dp"
                 android:text="@string/incomplete"
                 android:textStyle="bold"
-                android:textColor="@color/white"
+                android:textColor="@color/red_500"
                 app:cornerRadius="8dp"
-                app:backgroundTint="@color/gray_600" />
+                app:backgroundTint="@color/colorOnBackground" />
         </LinearLayout>
 
         <!-- Rating Container -->
@@ -278,7 +278,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:text="Pag-usapan dito ang meet-up details o shipping arrangement."
-            android:textColor="@color/White"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="12sp"
             android:gravity="center"
             android:paddingHorizontal="8dp"

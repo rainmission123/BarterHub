@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/backgroundlogin"
+    android:background="@drawable/bg_home_profile_logo"
     android:padding="16dp">
 
     <!-- ✅ ADD: Back Button Row -->
@@ -64,7 +64,7 @@
             android:text="@string/no_favorites_yet"
             android:visibility="gone"
             android:textSize="16sp"
-            android:textColor="@color/gray"
+            android:textColor="@color/White"
             android:background="@android:color/white"/>
 
     </FrameLayout>

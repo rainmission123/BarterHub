@@ -47,8 +47,6 @@ class UploadIdFragment : Fragment() {
     private var backImageUri: Uri? = null
     private var isFront: Boolean = true
     private var currentPhotoPath: String? = null
-
-    // 🔥 DAGDAG: Fragment lifecycle tracking
     private var isFragmentActive = false
     private lateinit var verificationStatusListener: ValueEventListener
 
@@ -177,7 +175,6 @@ class UploadIdFragment : Fragment() {
         }
     }
 
-    // 🔥 FIXED: Real-time Status Listener with safety checks
     private fun setupRealTimeStatusListener() {
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
@@ -209,7 +206,6 @@ class UploadIdFragment : Fragment() {
             .addValueEventListener(verificationStatusListener)
     }
 
-    // 🔥 FIXED: Status Update Function with safety checks
     @SuppressLint("SetTextI18n")
     private fun updateVerificationStatusUI(status: String?) {
         // 🔥 SAFETY CHECK: Double-check if fragment is still attached

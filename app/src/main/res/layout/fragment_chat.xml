@@ -3,14 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:background="@drawable/backgroundlogin"
-    android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:layout_height="match_parent">
 
     <!-- App Bar with Custom Chat Header -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
+        android:background="?attr/colorSurface"
         android:layout_height="wrap_content"
         android:elevation="16dp">
 
@@ -18,8 +17,8 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            android:background="@drawable/bg_home_profile_logo"
             app:menu="@menu/chat_menu"
-            android:background="@color/com_facebook_messenger_blue"
             app:navigationIcon="@drawable/ic_arrow_back">
 
             <LinearLayout
@@ -72,7 +71,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginBottom="0dp"
-        android:background="@drawable/backgroundlogin"
+        android:background="?attr/colorSurface"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <androidx.recyclerview.widget.RecyclerView
@@ -206,23 +205,29 @@
 
                 </LinearLayout>
 
-                <!-- Send/Mic Button -->
                 <ImageButton
                     android:id="@+id/sendButton"
                     android:layout_width="44dp"
                     android:layout_height="44dp"
-                    android:background="@drawable/circle_accent_bg"
+                    android:background="@drawable/bg_send_button"
                     android:contentDescription="@string/send_message"
                     android:padding="10dp"
                     android:scaleType="centerInside"
                     android:src="@drawable/ic_send"
                     app:tint="@color/white"
                     tools:ignore="TouchTargetSizeCheck" />
-
             </LinearLayout>
-
         </LinearLayout>
 
+        <ImageButton
+            android:id="@+id/scrollToBottomButton"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_gravity="bottom|center_horizontal"
+            android:background="@drawable/bg_scroll_button"
+            android:src="@drawable/ic_arrow_downward"
+            android:elevation="6dp"
+            android:visibility="visible" />
     </FrameLayout>
 
     <!-- Typing Indicator -->

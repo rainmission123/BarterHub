@@ -2,175 +2,254 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="@drawable/backgroundlogin"
-    android:paddingBottom="125dp"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/messagesRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:paddingTop="160dp"
-        android:paddingBottom="16dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
-
-    <!-- Empty State -->
-    <LinearLayout
-        android:id="@+id/emptyState"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:visibility="visible"
-        android:paddingTop="160dp">
-
-        <ImageView
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:contentDescription="@string/no_messages"
-            android:src="@drawable/ic_message_empty"
-            app:tint="@color/White"
-            tools:ignore="ImageContrastCheck" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/no_messages_yet"
-            android:textColor="#FDFDFD"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:gravity="center"
-            android:text="@string/start_a_conversation_with_other_users"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp" />
-    </LinearLayout>
-
-    <!-- Fixed Top Area: Search + Chips -->
+    <!-- MAIN CONTENT -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <!-- Search Bar -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/searchCard"
+        <!-- ===== TOP HEADER ===== -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="@drawable/text_gradient_bg"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_home_profile_logo"
+            android:elevation="6dp"
+            android:paddingStart="16dp"
+            android:paddingTop="36dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="14dp">
+
+            <!-- Title -->
+            <TextView
+                android:id="@+id/messagesTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
+                android:text="Messages"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                tools:ignore="HardcodedText" />
+
+            <!-- Search Bar -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/searchCard"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                app:cardBackgroundColor="#2D0045"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="3dp"
+                app:strokeColor="#5E1A78"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginEnd="10dp"
+                        android:contentDescription="@string/search_messages"
+                        android:src="@drawable/ic_search"
+                        app:tint="#B39DCA" />
+
+                    <EditText
+                        android:id="@+id/searchEditText"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@null"
+                        android:gravity="center_vertical"
+                        android:hint="@string/search_messages"
+                        android:imeOptions="actionSearch"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:textColor="#FFFFFF"
+                        android:textColorHint="#8E6AA8"
+                        android:textSize="15sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Filter Chips -->
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:singleLine="true"
+                app:singleSelection="true">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/allChip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/all"
+                    android:textColor="@color/white"
+                    android:textSize="13sp"
+                    app:chipBackgroundColor="#2D0045"
+                    app:chipCornerRadius="22dp"
+                    app:chipMinHeight="44dp"
+                    app:chipStrokeColor="@color/bh_primary"
+                    app:chipStrokeWidth="1.2dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/unreadChip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/unread"
+                    android:textColor="#D3B6E6"
+                    android:textSize="13sp"
+                    app:chipBackgroundColor="#2D0045"
+                    app:chipCornerRadius="22dp"
+                    app:chipMinHeight="44dp"
+                    app:chipStrokeColor="@color/bh_primary"
+                    app:chipStrokeWidth="1dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/archivedChip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/archived"
+                    android:textColor="#D3B6E6"
+                    android:textSize="13sp"
+                    app:chipBackgroundColor="#2D0045"
+                    app:chipCornerRadius="22dp"
+                    app:chipMinHeight="44dp"
+                    app:chipStrokeColor="@color/bh_primary"
+                    app:chipStrokeWidth="1dp" />
+            </com.google.android.material.chip.ChipGroup>
+
+        </LinearLayout>
+
+        <!-- ===== CONTENT AREA ===== -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="?attr/colorSurface">
+
+            <!-- MESSAGES LIST -->
+
+            <!-- EMPTY STATE -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/messagesRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingBottom="120dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
             <LinearLayout
+                android:id="@+id/emptyState"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="12dp">
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:paddingBottom="110dp"
+                android:visibility="gone">
 
                 <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginEnd="8dp"
-                    android:contentDescription="@string/todo"
-                    android:src="@drawable/ic_search"
-                    app:tint="@color/gray_600" />
+                    android:layout_width="84dp"
+                    android:layout_height="84dp"
+                    android:contentDescription="@string/no_messages"
+                    android:src="@drawable/ic_message_empty"
+                    app:tint="#7C2BA3"
+                    tools:ignore="ImageContrastCheck" />
 
-                <EditText
-                    android:id="@+id/searchEditText"
-                    android:layout_width="0dp"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="@null"
-                    android:hint="@string/search_messages"
-                    android:imeOptions="actionSearch"
-                    android:importantForAutofill="no"
-                    android:inputType="text"
-                    android:maxLines="1"
-                    android:minHeight="48dp"
-                    android:textColor="@android:color/black"
-                    android:textColorHint="#546E7A"
-                    android:textSize="14sp"
-                    tools:ignore="VisualLintTextFieldSize,TouchTargetSizeCheck" />
+                    android:layout_marginTop="18dp"
+                    android:text="@string/no_messages_yet"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:text="@string/start_a_conversation_with_other_users"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="14sp" />
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
 
-        <!-- Chips -->
-        <com.google.android.material.chip.ChipGroup
-            android:id="@+id/chipGroup"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:singleSelection="true">
+            <!-- PROGRESS BAR -->
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:indeterminateTint="#00C8D4"
+                android:visibility="gone" />
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/allChip"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/black"
-                android:text="@string/all"
-                app:chipBackgroundColor="@color/background"
-                app:chipStrokeColor="@color/colorAccent"
-                app:chipStrokeWidth="1dp"
-                app:checkedIcon="@null" />
+        </FrameLayout>
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/unreadChip"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/unread"
-                android:textColor="@color/black"
-                app:chipBackgroundColor="@color/background"
-                app:chipStrokeColor="@color/colorAccent"
-                app:chipStrokeWidth="1dp"
-                app:checkedIcon="@null" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/archivedChip"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/black"
-                android:text="@string/archived"
-                app:chipBackgroundColor="@color/background"
-                app:chipStrokeColor="@color/colorAccent"
-                app:chipStrokeWidth="1dp"
-                app:checkedIcon="@null" />
-        </com.google.android.material.chip.ChipGroup>
-
-        <!-- ✅ Progress Bar -->
-        <ProgressBar
-            android:id="@+id/progressBar"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_gravity="center"
-            android:visibility="gone" />
     </LinearLayout>
 
-    <FrameLayout
-        android:id="@+id/botFabContainer"
-        android:layout_width="160dp"
-        android:layout_height="160dp"
+    <LinearLayout
+        android:id="@+id/chatMenuContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="6dp"
-        android:clickable="true"
-        android:focusable="true">
+        android:layout_marginEnd="26dp"
+        android:layout_marginBottom="148dp"
+        android:orientation="vertical"
+        android:gravity="end">
 
-        <com.airbnb.lottie.LottieAnimationView
-            android:id="@+id/fabLottie"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:lottie_rawRes="@raw/chat_bot"
-            app:lottie_autoPlay="true"
-            app:lottie_loop="true" />
-    </FrameLayout>
+        <!-- Chat Support -->
+        <TextView
+            android:id="@+id/tvChatSupport"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_chat_menu_label"
+            android:padding="10dp"
+            android:text="Chat Support"
+            android:textColor="@android:color/white"
+            android:visibility="gone" />
+
+        <!-- Chat Bot -->
+        <TextView
+            android:id="@+id/tvChatBot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_chat_menu_label"
+            android:padding="10dp"
+            android:text="Chat Bot"
+            android:textColor="@android:color/white"
+            android:visibility="gone" />
+
+        <!-- Floating Button -->
+        <FrameLayout
+            android:id="@+id/botFabContainer"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_round_fab"
+            android:elevation="8dp">
+
+            <ImageView
+                android:id="@+id/fabChatIcon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_chat" />
+        </FrameLayout>
+
+    </LinearLayout>
 
 </FrameLayout>

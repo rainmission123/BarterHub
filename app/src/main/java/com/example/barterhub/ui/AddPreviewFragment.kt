@@ -6,26 +6,27 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.appcompat.widget.AppCompatButton
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.barterhub.R
 import com.example.barterhub.ui.viewmodel.ListingViewModel
-import com.google.android.material.snackbar.Snackbar
-import android.widget.TextView
-import android.widget.ImageView
-import androidx.navigation.fragment.findNavController
-import androidx.appcompat.widget.AppCompatButton
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
+import com.example.barterhub.ui.earn.DailyChallengesManager
 
 class AddPreviewFragment : Fragment() {
 
@@ -39,15 +40,13 @@ class AddPreviewFragment : Fragment() {
     private lateinit var locationView: TextView
 
     private val listingViewModel: ListingViewModel by activityViewModels()
-    private val cloudinaryUploadUrl = "https://api.cloudinary.com/v1_1/dtccox0s0/image/upload"
-    private val cloudinaryPreset = "barterhub_unsigned"
 
-    // 🟢 Interstitial Ad
     private var interstitialAd: InterstitialAd? = null
     private val AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_add_preview, container, false)
@@ -61,36 +60,63 @@ class AddPreviewFragment : Fragment() {
         originalPriceView = view.findViewById(R.id.previewOriginalPrice)
         locationView = view.findViewById(R.id.previewLocation)
 
-        // Load Interstitial Ad
         loadInterstitialAd()
 
-        // Show Ad on button click before uploading
         listNowButton.setOnClickListener {
-            if (interstitialAd != null) {
-                interstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
-                    override fun onAdDismissedFullScreenContent() {
-                        // Ad dismissed, proceed to upload
-                        uploadToCloudinaryAndSaveToFirebase(view)
-                        loadInterstitialAd() // preload next ad
-                    }
-
-                    override fun onAdFailedToShowFullScreenContent(adError: com.google.android.gms.ads.AdError) {
-                        // Failed to show, fallback
-                        uploadToCloudinaryAndSaveToFirebase(view)
-                    }
-
-                    override fun onAdShowedFullScreenContent() {
-                        interstitialAd = null
-                    }
-                }
-                interstitialAd?.show(requireActivity())
-            } else {
-                // If ad not ready, just upload normally
-                uploadToCloudinaryAndSaveToFirebase(view)
-            }
+            checkPremiumThenPost(view)
         }
 
         return view
+    }
+
+    private fun checkPremiumThenPost(view: View) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+
+        if (uid == null) {
+            uploadToCloudinaryAndSaveToFirebase(view)
+            return
+        }
+
+        Firebase.database.reference
+            .child("users")
+            .child(uid)
+            .get()
+            .addOnSuccessListener { snap ->
+                val isPremium = snap.child("isPremium").getValue(Boolean::class.java) ?: false
+                val expiry = snap.child("premiumExpiry").getValue(Long::class.java) ?: 0L
+                val premiumActive = isPremium && expiry > System.currentTimeMillis()
+
+                if (premiumActive) {
+                    uploadToCloudinaryAndSaveToFirebase(view)
+                } else {
+                    showAdThenPost(view)
+                }
+            }
+            .addOnFailureListener {
+                showAdThenPost(view)
+            }
+    }
+
+    private fun showAdThenPost(view: View) {
+        if (interstitialAd != null) {
+            interstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
+                override fun onAdDismissedFullScreenContent() {
+                    uploadToCloudinaryAndSaveToFirebase(view)
+                    loadInterstitialAd()
+                }
+
+                override fun onAdFailedToShowFullScreenContent(adError: com.google.android.gms.ads.AdError) {
+                    uploadToCloudinaryAndSaveToFirebase(view)
+                }
+
+                override fun onAdShowedFullScreenContent() {
+                    interstitialAd = null
+                }
+            }
+            interstitialAd?.show(requireActivity())
+        } else {
+            uploadToCloudinaryAndSaveToFirebase(view)
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -142,7 +168,11 @@ class AddPreviewFragment : Fragment() {
 
         displayPriceWithOriginal()
 
-        locationView.text = listingViewModel.location.ifEmpty { "No location provided" }
+        locationView.text = when {
+            listingViewModel.addressText.isNotBlank() -> listingViewModel.addressText
+            listingViewModel.location.isNotBlank() -> listingViewModel.location
+            else -> "No location provided"
+        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -173,16 +203,22 @@ class AddPreviewFragment : Fragment() {
             originalPriceView.text = formattedOriginalPrice
             originalPriceView.visibility = View.VISIBLE
             priceView.text = formattedCurrentPrice
-            originalPriceView.paintFlags = originalPriceView.paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
+            originalPriceView.paintFlags =
+                originalPriceView.paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
             priceView.setTextColor(requireContext().getColor(R.color.red_500))
         } else {
             priceView.text = formattedCurrentPrice
             originalPriceView.visibility = View.GONE
-            priceView.setTextColor(if (currentPrice.isEmpty()) requireContext().getColor(R.color.gray_600)
-            else requireContext().getColor(R.color.colorAccent))
+            priceView.setTextColor(
+                if (currentPrice.isEmpty()) requireContext().getColor(R.color.gray_600)
+                else requireContext().getColor(R.color.colorAccent)
+            )
         }
 
-        Log.d("PreviewPrice", "💰 Current: $formattedCurrentPrice, Original: $formattedOriginalPrice, HasOriginal: $hasOriginalPrice")
+        Log.d(
+            "PreviewPrice",
+            "💰 Current: $formattedCurrentPrice, Original: $formattedOriginalPrice, HasOriginal: $hasOriginalPrice"
+        )
     }
 
     private fun uploadToCloudinaryAndSaveToFirebase(view: View) {
@@ -200,8 +236,34 @@ class AddPreviewFragment : Fragment() {
             return
         }
 
+        if (listingViewModel.category.isBlank()) {
+            Snackbar.make(view, "Category cannot be empty!", Snackbar.LENGTH_LONG).show()
+            return
+        }
+
+        if (listingViewModel.province.isBlank()) {
+            Snackbar.make(
+                view,
+                "Location province is missing. Please go back and set a valid location.",
+                Snackbar.LENGTH_LONG
+            ).show()
+            return
+        }
+
         val snackbar = Snackbar.make(view, "Listing item...", Snackbar.LENGTH_INDEFINITE)
         snackbar.show()
+
+        val latitude = if (listingViewModel.latitude != 0.0) {
+            listingViewModel.latitude
+        } else {
+            getLatitudeFromLocation()
+        }
+
+        val longitude = if (listingViewModel.longitude != 0.0) {
+            listingViewModel.longitude
+        } else {
+            getLongitudeFromLocation()
+        }
 
         val itemData = hashMapOf<String, Any>(
             "itemId" to itemId,
@@ -213,8 +275,11 @@ class AddPreviewFragment : Fragment() {
             "displayPrice" to listingViewModel.price,
             "imageUrls" to photoUrls.joinToString(","),
             "location" to listingViewModel.location,
-            "latitude" to getLatitudeFromLocation(),
-            "longitude" to getLongitudeFromLocation(),
+            "addressText" to listingViewModel.addressText,
+            "cityMunicipality" to listingViewModel.cityMunicipality,
+            "province" to listingViewModel.province,
+            "latitude" to latitude,
+            "longitude" to longitude,
             "ownerId" to (FirebaseAuth.getInstance().currentUser?.uid ?: ""),
             "timestamp" to System.currentTimeMillis(),
             "likeCount" to 0
@@ -222,6 +287,38 @@ class AddPreviewFragment : Fragment() {
 
         dbRef.child(itemId).setValue(itemData)
             .addOnSuccessListener {
+
+                val uid = FirebaseAuth.getInstance().currentUser?.uid
+
+                if (uid != null) {
+                    rewardPostCoinsOncePerDay(uid) { rewarded ->
+                        if (rewarded) {
+
+                            showCoinNotification() // 🔔 phone
+
+                            // 🔥 ADD THIS (Firebase notification)
+                            Firebase.database.reference
+                                .child("notifications")
+                                .child(uid)
+                                .push()
+                                .setValue(
+                                    mapOf(
+                                        "type" to "coins",
+                                        "coins" to 2,
+                                        "message" to "🎉 You earned +2 coins from posting an item!",
+                                        "timestamp" to System.currentTimeMillis(),
+                                        "read" to false
+                                    )
+                                )
+                        }
+                    }
+                }
+
+                DailyChallengesManager().incrementChallengeProgress(
+                    action = "post_item",
+                    step = 1
+                )
+
                 snackbar.dismiss()
                 Snackbar.make(view, "Item listed successfully!", Snackbar.LENGTH_LONG).show()
                 listingViewModel.clearData()
@@ -233,16 +330,97 @@ class AddPreviewFragment : Fragment() {
             }
     }
 
+    private fun rewardPostCoinsOncePerDay(
+        userId: String,
+        onResult: (Boolean) -> Unit
+    ) {
+        val database = Firebase.database
+        val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+            .format(java.util.Date())
+
+        val rewardRef = database.reference
+            .child("post_rewards")
+            .child(userId)
+            .child(today)
+
+        rewardRef.get().addOnSuccessListener { snapshot ->
+            val alreadyRewarded = snapshot.child("rewarded").getValue(Boolean::class.java) == true
+
+            if (alreadyRewarded) {
+                onResult(false) // ❌ no reward today
+                return@addOnSuccessListener
+            }
+
+            val coinsRef = database.reference
+                .child("users")
+                .child(userId)
+                .child("wallet")
+                .child("coins")
+
+            coinsRef.runTransaction(object : com.google.firebase.database.Transaction.Handler {
+                override fun doTransaction(currentData: com.google.firebase.database.MutableData): com.google.firebase.database.Transaction.Result {
+                    val currentCoins = currentData.getValue(Int::class.java) ?: 0
+                    currentData.value = currentCoins + 2
+                    return com.google.firebase.database.Transaction.success(currentData)
+                }
+
+                override fun onComplete(
+                    error: com.google.firebase.database.DatabaseError?,
+                    committed: Boolean,
+                    snapshot: com.google.firebase.database.DataSnapshot?
+                ) {
+                    if (error == null && committed) {
+                        rewardRef.setValue(
+                            mapOf(
+                                "rewarded" to true,
+                                "coins" to 2,
+                                "timestamp" to com.google.firebase.database.ServerValue.TIMESTAMP
+                            )
+                        )
+                        onResult(true) // ✅ rewarded
+                    } else {
+                        onResult(false)
+                    }
+                }
+            })
+        }
+    }
+
+    private fun showCoinNotification() {
+        val channelId = "coins_channel"
+
+        val manager = requireContext().getSystemService(android.content.Context.NOTIFICATION_SERVICE)
+                as android.app.NotificationManager
+
+        // Create channel (Android 8+)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            val channel = android.app.NotificationChannel(
+                channelId,
+                "Coin Rewards",
+                android.app.NotificationManager.IMPORTANCE_DEFAULT
+            )
+            manager.createNotificationChannel(channel)
+        }
+
+        val builder = androidx.core.app.NotificationCompat.Builder(requireContext(), channelId)
+            .setSmallIcon(R.drawable.ic_notification) // pwede mo palitan
+            .setContentTitle("Coins Earned 🎉")
+            .setContentText("You earned +2 coins from posting an item!")
+            .setPriority(androidx.core.app.NotificationCompat.PRIORITY_DEFAULT)
+
+        manager.notify(System.currentTimeMillis().toInt(), builder.build())
+    }
+
     private fun getLatitudeFromLocation(): Double {
         return try {
             when {
-                listingViewModel.location.contains("Talisay") -> 14.0824478
-                listingViewModel.location.contains("Batangas") -> 13.7565
-                listingViewModel.location.contains("Manila") -> 14.5995
-                listingViewModel.location.contains("Quezon") -> 14.6760
+                listingViewModel.location.contains("Talisay", ignoreCase = true) -> 14.0824478
+                listingViewModel.location.contains("Batangas", ignoreCase = true) -> 13.7565
+                listingViewModel.location.contains("Manila", ignoreCase = true) -> 14.5995
+                listingViewModel.location.contains("Quezon", ignoreCase = true) -> 14.6760
                 else -> 14.5995
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             14.5995
         }
     }
@@ -250,10 +428,10 @@ class AddPreviewFragment : Fragment() {
     private fun getLongitudeFromLocation(): Double {
         return try {
             when {
-                listingViewModel.location.contains("Talisay") -> 120.9618969
-                listingViewModel.location.contains("Batangas") -> 121.0583
-                listingViewModel.location.contains("Manila") -> 120.9842
-                listingViewModel.location.contains("Quezon") -> 121.0437
+                listingViewModel.location.contains("Talisay", ignoreCase = true) -> 120.9618969
+                listingViewModel.location.contains("Batangas", ignoreCase = true) -> 121.0583
+                listingViewModel.location.contains("Manila", ignoreCase = true) -> 120.9842
+                listingViewModel.location.contains("Quezon", ignoreCase = true) -> 121.0437
                 else -> 120.9842
             }
         } catch (_: Exception) {
@@ -264,7 +442,7 @@ class AddPreviewFragment : Fragment() {
     class PhotoPreviewAdapter(private val photos: List<String>) :
         RecyclerView.Adapter<PhotoPreviewAdapter.PhotoViewHolder>() {
 
-        inner class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val imageView: ImageView = itemView.findViewById(R.id.photoPreview)
         }
 

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Base.Theme.BarterHub" parent="Theme.Material3.DayNight.NoActionBar">
+
+        <item name="colorPrimary">#6F005F</item>
+        <item name="colorAccent">#4FD1C5</item>
+        <item name="android:colorAccent">#4FD1C5</item>
+
+        <item name="colorOnPrimary">@color/white</item>
+
+        <item name="colorSecondary">#4FD1C5</item>
+        <item name="colorOnSecondary">@color/black</item>
+
+        <item name="colorSurface">#141218</item>
+        <item name="colorOnSurface">#F5F5F5</item>
+        <item name="colorSurfaceVariant">#211F26</item>
+        <item name="colorOnSurfaceVariant">#B8B2C5</item>
+
+        <item name="colorError">@color/error</item>
+        <item name="colorOnError">@color/white</item>
+
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="27">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
+
+    </style>
+
+    <style name="Theme.BarterHub" parent="Base.Theme.BarterHub" />
+
+    <style name="Theme.BarterHub.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#12031F</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/loginlogo</item>
+        <item name="postSplashScreenTheme">@style/Theme.BarterHub</item>
+    </style>
+
+</resources>

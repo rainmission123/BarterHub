@@ -446,8 +446,7 @@ class FindFriendsFragment : Fragment() {
             val matchesFilter = when (currentFilter) {
                 FriendFilter.ADD_FRIEND ->
                     user.friendStatus == FriendStatus.NOT_FRIEND ||
-                            user.friendStatus == FriendStatus.REQUEST_SENT ||
-                            user.friendStatus == FriendStatus.REQUEST_RECEIVED
+                            user.friendStatus == FriendStatus.REQUEST_SENT
 
                 FriendFilter.FRIENDS ->
                     user.friendStatus == FriendStatus.FRIENDS

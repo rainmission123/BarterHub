@@ -32,6 +32,8 @@ import com.google.android.material.chip.Chip
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.example.barterhub.adapters.TrendingAdapter
+import com.example.barterhub.ui.helpers.BannerAnimationHelper
+import com.example.barterhub.ui.profile.ProfilePremiumManager
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
     private lateinit var trendingAdapter: TrendingAdapter
@@ -60,15 +62,26 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         showLoading(true)
         setupRecyclerView()
         setupUI()
-        view.postDelayed({
-            setupStatusBarInsets()
-            setupClickListeners()
-            setupTradeRequestBadgeListener()
-            observeViewModel()
-            viewModel.loadAllItems()
-            setupScrollListener()
-            setupTrendingSlider()
-        }, 1)
+        setupStatusBarInsets()
+        setupClickListeners()
+        setupTradeRequestBadgeListener()
+        setupWishlistBadgeListener()
+        observeViewModel()
+        viewModel.loadAllItems()
+        setupScrollListener()
+        setupTrendingSlider()
+
+        BannerAnimationHelper.startPulse(
+            binding.dailyChallengeBanner
+        ) { _binding != null }
+
+        BannerAnimationHelper.startShimmerEffect(
+            binding.dailyChallengeBanner,
+            binding.shimmerView
+        ) { _binding != null }
+
+        startCoinGlow()
+        setupDailyChallengeBannerAccess()
     }
 
     private fun setupTrendingSlider() {
@@ -87,10 +100,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         loadTrendingItemsFromFirebase()
     }
 
-    // Sa HomeFragment.kt, hanapin ang navigateToAllTrendingItems()
     private fun navigateToAllTrendingItems() {
         try {
-            // Gamitin ang action ID na nasa nav_graph niyo
             findNavController().navigate(R.id.action_homeFragment_to_allTrendingItemsFragment)
         } catch (e: Exception) {
             Log.e("HomeFragment", "Error navigating to AllTrendingItems: ${e.message}")
@@ -98,98 +109,131 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
-    private fun loadTrendingItemsFromFirebase() {
-        val ref = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
-            .getReference("items")
+    private fun setupWishlistBadgeListener() {
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
-        // Kunin ang latest items (pwede ring orderByChild("timestamp").limitToLast(20) para marami)
-        ref.orderByChild("timestamp").limitToLast(20)
+        val ref = FirebaseDatabase.getInstance()
+            .getReference("favorites")
+            .child(currentUserId)
+
+        ref.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (!isAdded || _binding == null) return
+
+                val count = snapshot.childrenCount.toInt()
+
+                if (count > 0) {
+                    binding.wishlistBadge.visibility = View.VISIBLE
+                    binding.wishlistBadge.text = count.toString()
+                } else {
+                    binding.wishlistBadge.visibility = View.GONE
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("WishlistBadge", "Error: ${error.message}")
+            }
+        })
+    }
+
+    private fun loadTrendingItemsFromFirebase() {
+        val db = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
+
+        db.getReference("items")
+            .orderByChild("timestamp")
+            .limitToLast(50)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    val trendingItems = mutableListOf<FeaturedItem>()
-                    val premiumUserIds = mutableSetOf<String>()
 
-                    Log.d("TRENDING_DEBUG", "📦 Loading items for trending slider...")
+                    if (_binding == null || !isAdded) return
 
-                    // Una, kunin muna natin ang lahat ng items
                     val allItems = mutableListOf<FeaturedItem>()
+
                     for (itemSnapshot in snapshot.children) {
                         val item = itemSnapshot.getValue(FeaturedItem::class.java)
-                        item?.let {
-                            it.itemId = itemSnapshot.key ?: ""
-                            allItems.add(it)
+                        if (item != null) {
+                            item.itemId = itemSnapshot.key ?: item.itemId
+
+                            val isActive = itemSnapshot.child("isActive")
+                                .getValue(Boolean::class.java) ?: true
+
+                            val isArchived = itemSnapshot.child("isArchived")
+                                .getValue(Boolean::class.java) ?: false
+
+                            if (item.ownerId.isNotBlank() && isActive && !isArchived) {
+                                allItems.add(item)
+                            }
                         }
                     }
 
-                    val ownerIds = allItems.map { it.ownerId }.distinct()
-
-                    if (ownerIds.isEmpty()) {
-                        binding.trendingSliderContainer.visibility = View.GONE
+                    if (allItems.isEmpty()) {
+                        binding.trendingViewPager.visibility = View.GONE
                         return
                     }
 
-                    val usersRef = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
-                        .getReference("users")
-
-                    var processedCount = 0
-
-                    ownerIds.forEach { ownerId ->
-                        usersRef.child(ownerId).child("isPremium").addListenerForSingleValueEvent(object : ValueEventListener {
-                            override fun onDataChange(userSnapshot: DataSnapshot) {
-                                val isPremium = userSnapshot.getValue(Boolean::class.java) ?: false
-
-                                if (isPremium) {
-                                    premiumUserIds.add(ownerId)
-                                }
-
-                                processedCount++
-
-                                if (processedCount == ownerIds.size) {
-                                    filterItemsByPremiumUsers(allItems, premiumUserIds)
-                                }
-                            }
-
-                            override fun onCancelled(error: DatabaseError) {
-                                Log.e("TRENDING_DEBUG", "Failed to check user premium status: ${error.message}")
-                                processedCount++
-
-                                if (processedCount == ownerIds.size) {
-                                    filterItemsByPremiumUsers(allItems, premiumUserIds)
-                                }
-                            }
-                        })
-                    }
+                    loadPremiumUsersForHomeTrending(allItems)
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    Log.e("TRENDING_DEBUG", "❌ Failed to load trending items: ${error.message}")
-                    binding.trendingSliderContainer.visibility = View.GONE
+
+                    if (_binding == null || !isAdded) return
+
+                    Log.e("TRENDING_DEBUG", "Failed to load items: ${error.message}")
+                    binding.trendingViewPager.visibility = View.GONE
                 }
             })
     }
 
-    private fun filterItemsByPremiumUsers(allItems: List<FeaturedItem>, premiumUserIds: Set<String>) {
-        val trendingItems = allItems.filter { it.ownerId in premiumUserIds }
-            .sortedByDescending { it.timestamp } // Pababang ayos (latest first)
-            .take(5)
+    private fun loadPremiumUsersForHomeTrending(allItems: List<FeaturedItem>) {
+        val db = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
+        val now = System.currentTimeMillis()
 
-        Log.d("TRENDING_DEBUG", "📊 Total items: ${allItems.size}")
-        Log.d("TRENDING_DEBUG", "⭐ Premium users: ${premiumUserIds.size}")
-        Log.d("TRENDING_DEBUG", "🔥 Trending items (premium only): ${trendingItems.size}")
+        db.getReference("public_users")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
 
-        trendingItems.forEachIndexed { index, item ->
-            Log.d("TRENDING_DEBUG", "  $index: ${item.title} - Owner: ${item.ownerId} (Premium)")
-        }
+                    if (_binding == null || !isAdded) return
 
-        trendingAdapter.submitList(trendingItems)
+                    val premiumUserIds = mutableSetOf<String>()
 
-        if (trendingItems.isNotEmpty()) {
-            binding.trendingSliderContainer.visibility = View.VISIBLE
-            trendingSliderManager?.startAutoSlide()
-        } else {
-            binding.trendingSliderContainer.visibility = View.GONE
-            Log.d("TRENDING_DEBUG", "😢 No premium items found")
-        }
+                    for (userSnapshot in snapshot.children) {
+                        val uid = userSnapshot.key ?: continue
+                        val isPremium = userSnapshot.child("isPremium").getValue(Boolean::class.java) ?: false
+                        val premiumExpiry = userSnapshot.child("premiumExpiry").getValue(Long::class.java) ?: 0L
+
+                        if (isPremium && premiumExpiry > now) {
+                            premiumUserIds.add(uid)
+                        }
+                    }
+
+                    val trendingItems = allItems
+                        .filter { it.ownerId in premiumUserIds }
+                        .sortedWith(
+                            compareByDescending<FeaturedItem> { it.likeCount }
+                                .thenByDescending { it.timestamp }
+                        )
+                        .take(5)
+
+                    trendingAdapter.submitList(trendingItems)
+
+                    if (trendingItems.isNotEmpty()) {
+                        binding.trendingSliderContainer.visibility = View.VISIBLE
+                        binding.trendingViewPager.visibility = View.VISIBLE
+                        trendingSliderManager?.startAutoSlide()
+                    } else {
+                        binding.trendingViewPager.visibility = View.GONE
+                        Log.d("TRENDING_DEBUG", "No premium trending items found")
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+
+                    if (_binding == null || !isAdded) return
+
+                    Log.e("TRENDING_DEBUG", "Failed to load public users: ${error.message}")
+                    binding.trendingViewPager.visibility = View.GONE
+                }
+            })
     }
 
     override fun onPause() {
@@ -212,8 +256,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
     private fun setupRecyclerView() {
         featuredAdapter = FeaturedAdapter()
-        featuredAdapter.setOnThreeDotsClickListener { item ->
-            showItemOptionsMenu(item)
+        featuredAdapter.setOnThreeDotsClickListener { anchorView, item ->
+            showItemOptionsMenu(anchorView, item)
         }
 
         binding.featuredItems.apply {
@@ -224,23 +268,34 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
-    private fun showItemOptionsMenu(item: FeaturedItem) {
+    private fun showItemOptionsMenu(anchorView: View, item: FeaturedItem) {
         val title = item.title
         val itemId = item.itemId
 
-        val options = arrayOf("Share", "Report", "Cancel")
+        val popup = androidx.appcompat.widget.PopupMenu(
+            requireContext(),
+            anchorView,
+            android.view.Gravity.END
+        )
 
-        AlertDialog.Builder(requireContext())
-            .setTitle("Item Options")
-            .setItems(options) { dialog, which ->
-                when (which) {
-                    0 -> shareItem(title)
-                    1 -> reportItem(itemId, title)
-                    // 2 is Cancel - do nothing
+        popup.menu.add(0, 1, 0, "Share")
+        popup.menu.add(0, 2, 1, "Report")
+
+        popup.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                1 -> {
+                    shareItem(title)
+                    true
                 }
-                dialog.dismiss()
+                2 -> {
+                    reportItem(itemId, title)
+                    true
+                }
+                else -> false
             }
-            .show()
+        }
+
+        popup.show()
     }
 
     private fun shareItem(title: String) {
@@ -295,12 +350,22 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun setupClickListeners() {
+        binding.btnMenu.setOnClickListener {
+            (activity as? HomeActivity)?.toggleDrawer()
+        }
+
+        binding.dailyChallengeBanner.setOnClickListener {
+            findNavController().navigate(R.id.action_home_to_dailyChallengesFragment)
+        }
+
         binding.tradeRequestIcon.setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_tradeRequestsFragment)
         }
+
         binding.itemWishlistIcon.setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_favoritesFragment)
         }
+
         binding.searchIcon.setOnClickListener {
             binding.searchInput.requestFocus()
         }
@@ -422,11 +487,22 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun setupStatusBarInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
+        val topBar = binding.topBar
+
+        ViewCompat.setOnApplyWindowInsetsListener(topBar) { view, insets ->
             val statusBarHeight = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
-            view.setPadding(0, statusBarHeight, 0, 0)
+
+            view.setPadding(
+                view.paddingLeft,
+                statusBarHeight + 5.dpToPx(view),
+                view.paddingRight,
+                5.dpToPx(view)
+            )
+
             insets
         }
+
+        ViewCompat.requestApplyInsets(topBar)
     }
 
     private fun setupScrollListener() {
@@ -449,14 +525,116 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     override fun onResume() {
         super.onResume()
+
+        if (_binding == null || !isAdded) return
+
         viewModel.loadAllItems()
-        view?.postDelayed({ binding.scrollContent.scrollTo(0, 0) }, 100)
+
+        view?.postDelayed({
+            if (_binding != null && isAdded) {
+                binding.scrollContent.scrollTo(0, 0)
+            }
+        }, 100)
     }
 
     override fun onDestroyView() {
         trendingSliderManager?.stopAutoSlide()
         trendingSliderManager = null
+
+        _binding?.coinGlow?.animate()?.cancel()
+
         _binding = null
         super.onDestroyView()
+    }
+
+    private fun startCoinGlow() {
+        binding.coinGlow.alpha = 0.45f
+        binding.coinGlow.scaleX = 0.85f
+        binding.coinGlow.scaleY = 0.85f
+
+        binding.coinGlow.animate()
+            .alpha(1f)
+            .scaleX(1.35f)
+            .scaleY(1.35f)
+            .setDuration(850)
+            .withEndAction {
+                if (_binding == null) return@withEndAction
+
+                binding.coinGlow.animate()
+                    .alpha(0.45f)
+                    .scaleX(0.85f)
+                    .scaleY(0.85f)
+                    .setDuration(850)
+                    .withEndAction {
+                        if (_binding != null) startCoinGlow()
+                    }
+                    .start()
+            }
+            .start()
+    }
+
+    private fun setupDailyChallengeBannerAccess() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+
+        if (uid == null) {
+            if (_binding != null && isAdded) {
+                showLockedDailyBanner()
+            }
+            return
+        }
+
+        FirebaseDatabase.getInstance()
+            .reference
+            .child("users")
+            .child(uid)
+            .get()
+            .addOnSuccessListener { snap ->
+
+                if (_binding == null || !isAdded) return@addOnSuccessListener
+
+                val isPremium = snap.child("isPremium").getValue(Boolean::class.java) ?: false
+                val expiry = snap.child("premiumExpiry").getValue(Long::class.java) ?: 0L
+                val premiumActive = isPremium && expiry > System.currentTimeMillis()
+
+                if (premiumActive) {
+                    showUnlockedDailyBanner()
+                } else {
+                    showLockedDailyBanner()
+                }
+            }
+            .addOnFailureListener {
+
+                if (_binding == null || !isAdded) return@addOnFailureListener
+
+                showLockedDailyBanner()
+            }
+    }
+
+    private fun showUnlockedDailyBanner() {
+        if (_binding == null || !isAdded) return
+
+        binding.tvDailyBannerTitle.text = "Daily Challenges"
+        binding.tvDailyBannerSubtitle.text = "Claim rewards and earn coins daily"
+        binding.dailyChallengeBanner.alpha = 1f
+
+        binding.dailyChallengeBanner.setOnClickListener {
+            if (_binding != null && isAdded) {
+                findNavController().navigate(R.id.action_home_to_dailyChallengesFragment)
+            }
+        }
+    }
+
+    private fun showLockedDailyBanner() {
+        if (_binding == null || !isAdded) return
+
+        binding.tvDailyBannerTitle.text = "Premium Challenges 🔒"
+        binding.tvDailyBannerSubtitle.text = "Upgrade to Premium to earn daily coins 💰"
+        binding.dailyChallengeBanner.alpha = 0.85f
+
+        binding.dailyChallengeBanner.setOnClickListener {
+            if (_binding != null && isAdded) {
+                ProfilePremiumManager(this).showPremiumDirect()
+            }
+        }
     }
 }

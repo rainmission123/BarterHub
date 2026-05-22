@@ -27,17 +27,16 @@ class ImageViewPagerAdapter(
         val imageUrl = imageUrls[position]
 
         if (imageUrl == "default") {
-            holder.imageView.setImageResource(R.drawable.backgroundlogin)
+            holder.imageView.setImageResource(R.drawable.bg_home_profile_logo)
         } else {
             Glide.with(holder.itemView.context)
                 .load(imageUrl)
-                .placeholder(R.drawable.backgroundlogin)
-                .error(R.drawable.backgroundlogin)
+                .placeholder(R.drawable.bg_home_profile_logo)
+                .error(R.drawable.bg_home_profile_logo)
                 .centerCrop()
                 .into(holder.imageView)
         }
 
-        // ✅ tap to fullscreen
         holder.imageView.setOnClickListener { onImageClick(position) }
     }
 

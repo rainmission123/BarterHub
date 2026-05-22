@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="6dp"
+    android:fitsSystemWindows="true"
+    android:padding="12dp"
     android:background="?attr/colorSurface">
 
     <LinearLayout
@@ -13,147 +14,161 @@
         android:background="?attr/colorSurface"
         android:orientation="vertical">
 
-        <!-- Coins Balance Card - IMPROVED DESIGN -->
+        <!-- ===== COINS BALANCE CARD ===== -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="8dp"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="1dp"
+            app:strokeColor="@color/white"
             app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="?attr/colorSurface"
                 android:orientation="vertical"
-                android:padding="10dp">
+                android:padding="16dp">
 
-                <!-- UID Display with Copy Icon -->
+                <!-- UID Row -->
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginStart="10dp">
+                    android:background="@color/gray_300"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:layout_marginBottom="16dp">
+
 
                     <TextView
                         android:id="@+id/tvUserUID"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="UID: 1234567890abcdef"
-                        android:textSize="15sp"
-                        android:textColor="@android:color/darker_gray"
+                        android:textSize="12sp"
+                        android:textColor="#616161"
                         android:ellipsize="middle"
                         android:scrollHorizontally="true"
-                        android:singleLine="true" />
+                        android:singleLine="true"
+                        android:fontFamily="monospace" />
 
                     <ImageView
                         android:id="@+id/ivCopyUID"
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:layout_marginStart="6dp"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginStart="8dp"
                         android:clickable="true"
                         android:contentDescription="Copy UID"
                         android:focusable="true"
                         android:src="@drawable/ic_copy"
-                        app:tint="@android:color/darker_gray"
+                        app:tint="#BDBDBD"
                         tools:ignore="TouchTargetSizeCheck" />
                 </LinearLayout>
 
-                <!-- Balance Content - SAME STRUCTURE -->
+                <!-- Balance Content -->
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginTop="16dp">
+                    android:gravity="center_vertical">
 
-                    <!-- Icon Container - SAME ID -->
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:gravity="center">
+                    <!-- Coin Icon -->
+                    <ImageView
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:adjustViewBounds="true"
+                        android:contentDescription="@string/ic_barter_coins"
+                        android:src="@drawable/ic_barter_coins"
+                        tools:ignore="ImageContrastCheck" />
 
-                        <ImageView
-                            android:layout_width="80dp"
-                            android:layout_height="80dp"
-                            android:adjustViewBounds="true"
-                            android:contentDescription="@string/ic_barter_coins"
-                            android:src="@drawable/ic_barter_coins"
-                            tools:ignore="ImageContrastCheck" />
-
-                    </LinearLayout>
-
-                    <!-- Text Container - SAME IDs -->
+                    <!-- Balance Text -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:orientation="vertical"
-                        android:gravity="center_vertical"
                         android:layout_marginStart="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Barter Coins"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="12sp"
+                            tools:ignore="HardcodedText" />
 
                         <TextView
                             android:id="@+id/tvCoinsBalance"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
                             android:text="1,500"
-                            android:textColor="@color/green_500"
-                            android:textSize="28sp"
-                            android:textStyle="bold"
-                            android:background="@color/divider"
-                            tools:ignore="HardcodedText" />
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="30sp"
+                            android:textStyle="bold" />
 
                         <TextView
                             android:id="@+id/tvCoinsPrice"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginTop="2dp"
                             android:text="₱0.00"
-                            android:textColor="?attr/postTextColor"
-                            android:textSize="14sp"
-                            android:alpha="0.9"
-                            tools:ignore="HardcodedText" />
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="13sp" />
 
                     </LinearLayout>
 
                 </LinearLayout>
 
-                <!-- Quick Actions - SAME IDs -->
+                <!-- Divider -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="0.5dp"
+                    android:background="#E8EAF0"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Quick Actions -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="24dp">
+                    android:orientation="horizontal">
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnBuyCoins"
                         style="@style/Widget.Material3.Button"
                         android:layout_width="0dp"
-                        android:layout_height="48dp"
+                        android:layout_height="46dp"
                         android:layout_marginEnd="8dp"
                         android:layout_weight="1"
-                        android:backgroundTint="@color/colorAccent"
                         android:text="Buy Coins"
-                        android:textColor="?attr/postTextColor"
-                        app:cornerRadius="12dp"
+                        android:textAllCaps="false"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp"
+                        app:backgroundTint="@color/bh_primary"
+                        app:cornerRadius="10dp"
                         app:icon="@drawable/ic_add"
-                        app:iconTint="@color/White"
+                        app:iconTint="#FFFFFF"
                         tools:ignore="HardcodedText" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnSendCoins"
                         style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="0dp"
-                        android:layout_height="48dp"
+                        android:layout_height="46dp"
                         android:layout_marginStart="8dp"
                         android:layout_weight="1"
                         android:text="@string/send_coins"
-                        android:textColor="?attr/postTextColor"
-                        app:cornerRadius="12dp"
-                        app:strokeColor="?attr/postTextColor"
+                        android:textAllCaps="false"
+                        android:textColor="#1BA36B"
+                        android:textSize="14sp"
+                        app:cornerRadius="10dp"
+                        app:strokeColor="@color/bh_primary"
                         app:strokeWidth="1dp"
                         tools:ignore="DuplicateSpeakableTextCheck" />
 
@@ -162,35 +177,41 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- How to Earn Button - SAME ID -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnHowToEarn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:cornerRadius="8dp"
-            android:layout_gravity="end"
-            android:text="@string/how_to_earn"
-            app:icon="@drawable/ic_earn"
-            app:iconGravity="textStart"
-            app:iconPadding="5dp" />
-
-        <!-- Transaction History - SAME IDs -->
-        <TextView
+        <!-- ===== RECENT TRANSACTIONS ===== -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Recent Transactions"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp"
-            tools:ignore="HardcodedText" />
+            app:cardCornerRadius="14dp"
+            app:cardElevation="1dp"
+            app:strokeColor="@color/white"
+            app:strokeWidth="1dp">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvTransactions"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:nestedScrollingEnabled="false"
-            tools:listitem="@layout/item_transaction" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/colorSurface"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Recent Transactions"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"
+                    android:layout_marginBottom="12dp"
+                    tools:ignore="HardcodedText" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvTransactions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    tools:listitem="@layout/item_transaction" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 </ScrollView>

@@ -248,7 +248,7 @@
                 android:contentDescription="@string/todo"
                 android:focusable="true"
                 android:scaleType="centerInside"
-                android:src="@drawable/ic_heart_selector"
+                android:src="@drawable/ic_cart"
                 tools:ignore="TouchTargetSizeCheck,ImageContrastCheck" />
 
         </LinearLayout>

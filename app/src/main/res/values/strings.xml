@@ -219,7 +219,7 @@
     <string name="sample_date">2 days ago</string>
     <string name="sample_location">Manila, Philippines</string>
     <string name="like">Like</string>
-    <string name="chat_owner">Chat Owner</string>
+    <string name="chat_owner">Chat</string>
     <string name="make_offer">Make Offer</string>
     <string name="posted_by_unknown">Posted by: Unknown</string>
     <string name="last_message_preview">Last message preview...</string>
@@ -348,8 +348,8 @@
     <string name="you_need_to_verify_your_account_before_posting_items_please_go_to_your_profile_and_submit_a_valid_id_for_verification">You need to verify your account before posting items. Please go to your Profile and submit a valid ID for verification.</string>
     <string name="verification_required">Verification Required</string>
     <string name="go_to_profile">Go to Profile</string>
-    <string name="mapbox_access_token">sk.eyJ1Ijoiam9yaWFuMTkyNjEwIiwiYSI6ImNtaGNsZHE0NDIwNnUyanM2NW5xaXAyYW0ifQ.ai6lxlXlbbPdPuuQpT7DFA</string>
     <string name="loading_map">Loading map...</string>
+    <string name="mapbox_access_token">YOUR_MAPBOX_TOKEN_HERE</string>
     <string name="tapos_na">Tapos Na</string>
     <string name="lokasyon_ng_item">Lokasyon ng Item</string>
     <string name="ilagay_kung_saan_matatagpuan_ang_item_para_makita_ito_ng_malapit_sa_iyo">Ilagay kung saan matatagpuan ang item para makita ito ng malapit sa iyo</string>
@@ -596,8 +596,9 @@
     <string name="connect_with_traders">Connect with traders</string>
     <string name="earn_exclusive_rewards">Earn exclusive rewards</string>
     <string name="complete_daily_challenges">Complete daily challenges</string>
-    <string name="post_items_for_sale_or_barter_you_earn_coins_when_a_transaction_completes">
-        Post items for sale or barter. You earn coins when a transaction completes.</string>
+    <string name="post_items_for_sale_or_barter_you_earn_coins_when_posting">
+    Earn +2 coins for your first item post each day.
+    </string>
     <string name="start_your_journey_and_earn_amazing_rewards_by_completing_daily_challenges_trade_earn_and_grow_with_our_community">
         Start your journey and earn amazing rewards by completing daily challenges! Trade, earn, and grow with our community.</string>
     <string name="your_trading_adventure_begins">Your trading adventure begins</string>
@@ -817,4 +818,10 @@
     <string name="_15_trades">15 trades</string>
     <string name="search_premium_trader">Search premium trader…</string>
     <string name="more_options">More options</string>
+    <string name="start_with_9_e_g_9123456789">Start with 9 (e.g. 9123456789)</string>
+    <string name="_63">+63</string>
+    <string name="referral_code">Referral Code</string>
+    <string name="claim_rewards_and_earn_coins_daily">Claim rewards and earn coins daily</string>
+    <string name="username_e_g_juan123">Username e.g. juan123</string>
+    <string name="update_your_personal_details">Update your personal details</string>
 </resources>

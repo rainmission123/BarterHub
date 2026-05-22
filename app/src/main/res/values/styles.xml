@@ -80,5 +80,20 @@
         <item name="android:textStyle">normal</item>
     </style>
 
+    <style name="NavigationViewStyle" parent="Widget.Material3.NavigationView">
+        <item name="android:itemTextAppearance">@style/NavigationViewTextStyle</item>
+        <item name="itemIconTint">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="NavigationViewTextStyle" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- Style para sa logout item -->
+    <style name="LogoutMenuItemStyle">
+        <item name="android:textColor">@color/red_600</item>
+        <item name="android:iconTint">@color/red_600</item>
+    </style>
 
 </resources>

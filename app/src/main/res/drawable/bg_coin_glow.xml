@@ -1,0 +1,38 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="100dp"
+    android:height="100dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+
+    <!-- outer soft glow -->
+    <path
+        android:fillColor="#33FFFFFF"
+        android:pathData="M50,50 m-35,0 a35,35 0,1 0,70 0 a35,35 0,1 0,-70 0" />
+
+    <!-- main light -->
+    <path
+        android:fillColor="#66FFF9C4"
+        android:pathData="M50,50 m-25,0 a25,25 0,1 0,50 0 a25,25 0,1 0,-50 0" />
+
+    <!-- inner bright core -->
+    <path
+        android:fillColor="#CCFFFFFF"
+        android:pathData="M50,50 m-12,0 a12,12 0,1 0,24 0 a12,12 0,1 0,-24 0" />
+
+    <!-- soft rays -->
+    <group android:pivotX="50" android:pivotY="50">
+
+        <path android:fillColor="#55FFFFFF" android:pathData="M50,5 L53,30 L47,30 Z"/>
+        <path android:fillColor="#44FFFDE7" android:pathData="M95,50 L70,53 L70,47 Z"/>
+        <path android:fillColor="#55FFFFFF" android:pathData="M50,95 L53,70 L47,70 Z"/>
+        <path android:fillColor="#44FFFDE7" android:pathData="M5,50 L30,53 L30,47 Z"/>
+
+        <!-- diagonal rays -->
+        <path android:fillColor="#33FFFFFF" android:pathData="M80,20 L60,40 L65,45 Z"/>
+        <path android:fillColor="#33FFFFFF" android:pathData="M80,80 L60,60 L65,55 Z"/>
+        <path android:fillColor="#33FFFFFF" android:pathData="M20,80 L40,60 L35,55 Z"/>
+        <path android:fillColor="#33FFFFFF" android:pathData="M20,20 L40,40 L35,45 Z"/>
+
+    </group>
+
+</vector>

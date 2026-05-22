@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="8dp"
+    android:focusable="true"
     app:cardCornerRadius="12dp"
     app:cardElevation="2dp"
     android:clickable="true"
@@ -12,6 +13,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="?attr/colorSurface"
         android:orientation="vertical"
         android:minHeight="70dp"
         android:padding="12dp">
@@ -31,7 +33,7 @@
             android:layout_height="wrap_content"
             android:text="+50.00"
             android:textSize="14sp"
-            android:textColor="@color/green_dark"
+            android:textColor="?attr/colorOnSurface"
             android:layout_marginTop="2dp"/>
 
         <TextView
@@ -49,7 +51,7 @@
             android:layout_height="wrap_content"
             android:text="Completed"
             android:textSize="12sp"
-            android:textColor="@android:color/white"
+            android:textColor="?attr/colorOnSurface"
             android:layout_marginTop="6dp"
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
