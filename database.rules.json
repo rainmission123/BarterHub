@@ -1,0 +1,58 @@
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": false,
+
+    "users": {
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid && (!data.exists() || (newData.child('isPremium').val() === data.child('isPremium').val() && newData.child('premiumExpiry').val() === data.child('premiumExpiry').val() && (!newData.child('isIDVerified').exists() || newData.child('isIDVerified').val() === data.child('isIDVerified').val() || newData.child('isIDVerified').val() === 'pending')))",
+        "isPremium": {
+          ".validate": "newData.val() === false || newData.val() === data.val()"
+        },
+        "premiumExpiry": {
+          ".validate": "newData.val() === 0 || newData.val() === data.val()"
+        },
+        "isIDVerified": {
+          ".validate": "newData.val() === 'none' || newData.val() === 'pending' || newData.val() === data.val()"
+        },
+        "idFrontUrl": {
+          ".validate": "!newData.exists() || newData.val() === data.val()"
+        },
+        "idBackUrl": {
+          ".validate": "!newData.exists() || newData.val() === data.val()"
+        },
+        "idFrontPath": {
+          ".validate": "newData.isString() && newData.val().beginsWith('id_verifications/' + $uid + '/front/')"
+        },
+        "idBackPath": {
+          ".validate": "newData.isString() && newData.val().beginsWith('id_verifications/' + $uid + '/back/')"
+        }
+      }
+    },
+
+    "public_users": {
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid && (!data.exists() || (newData.child('isPremium').val() === data.child('isPremium').val() && newData.child('premiumExpiry').val() === data.child('premiumExpiry').val() && newData.child('isIDVerified').val() === data.child('isIDVerified').val()))",
+        "isPremium": {
+          ".validate": "newData.val() === false || newData.val() === data.val()"
+        },
+        "premiumExpiry": {
+          ".validate": "newData.val() === 0 || newData.val() === data.val()"
+        },
+        "isIDVerified": {
+          ".validate": "newData.val() === 'none' || newData.val() === data.val()"
+        }
+      }
+    },
+
+    "usernames": {
+      "$username": {
+        ".write": "auth != null"
+      }
+    },
+
+    "$other": {
+      ".write": "auth != null"
+    }
+  }
+}

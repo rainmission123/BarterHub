@@ -151,7 +151,7 @@
                                         android:background="@android:color/transparent"
                                         android:autofillHints="emailAddress"
                                         android:importantForAutofill="yes"
-                                        android:hint="juandelacruz@example.com"
+                                        android:hint="juandelacruz@gmail.com"
                                         android:imeOptions="actionNext"
                                         android:inputType="textEmailAddress"
                                         android:textColor="?attr/colorOnSurface"

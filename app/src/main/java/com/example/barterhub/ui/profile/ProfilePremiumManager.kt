@@ -13,6 +13,8 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import com.google.firebase.functions.ktx.functions
+import com.google.firebase.ktx.Firebase
 
 class ProfilePremiumManager(private val fragment: Fragment) {
 
@@ -124,7 +126,7 @@ class ProfilePremiumManager(private val fragment: Fragment) {
         // ===========================
         // LOAD COINS
         // ===========================
-        database.child("users").child(userId).child("coins")
+        database.child("users").child(userId).child("wallet").child("coins")
             .addListenerForSingleValueEvent(object : ValueEventListener {
 
                 override fun onDataChange(snapshot: DataSnapshot) {
@@ -179,7 +181,7 @@ class ProfilePremiumManager(private val fragment: Fragment) {
                             return@setOnClickListener
                         }
 
-                        activatePremium(cost, planId, durationText)
+                        activatePremium(planId, durationText)
                         dialog.dismiss()
                     }
                 }
@@ -199,55 +201,28 @@ class ProfilePremiumManager(private val fragment: Fragment) {
     // ===========================
     // ACTIVATE PREMIUM
     // ===========================
-    private fun activatePremium(cost: Int, planId: String, duration: String) {
+    private fun activatePremium(planId: String, duration: String) {
+        if (auth.currentUser == null) return
+        val data = hashMapOf("planId" to planId)
 
-        val userId = auth.currentUser?.uid ?: return
-        val userRef = database.child("users").child(userId)
-
-        userRef.addListenerForSingleValueEvent(object : ValueEventListener {
-
-            override fun onDataChange(snapshot: DataSnapshot) {
-
-                val coins = snapshot.child("coins").getValue(Int::class.java) ?: 0
-                val isPremium = snapshot.child("isPremium").getValue(Boolean::class.java) ?: false
-                val expiry = snapshot.child("premiumExpiry").getValue(Long::class.java) ?: 0L
-
-                if (coins < cost) return
-
-                val durationMillis = PremiumHelper.getPlanExpiry(planId) - System.currentTimeMillis()
-
-                val newExpiry = if (PremiumHelper.isPremiumActive(isPremium, expiry)) {
-                    expiry + durationMillis
-                } else {
-                    System.currentTimeMillis() + durationMillis
-                }
-
-                val updates = mapOf(
-                    "coins" to (coins - cost),
-                    "isPremium" to true,
-                    "premiumExpiry" to newExpiry
-                )
-
-                userRef.updateChildren(updates)
-                    .addOnSuccessListener {
-                        AppOpenAdManager.onPremiumStateChanged()
-                        Toast.makeText(
-                            fragment.requireContext(),
-                            fragment.getString(R.string.premium_activated_for, duration),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    .addOnFailureListener {
-                        Toast.makeText(
-                            fragment.requireContext(),
-                            fragment.getString(R.string.failed_to_activate_premium),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+        Firebase.functions("us-central1")
+            .getHttpsCallable("activatePremium")
+            .call(data)
+            .addOnSuccessListener {
+                AppOpenAdManager.onPremiumStateChanged()
+                Toast.makeText(
+                    fragment.requireContext(),
+                    fragment.getString(R.string.premium_activated_for, duration),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
-
-            override fun onCancelled(error: DatabaseError) {}
-        })
+            .addOnFailureListener { error ->
+                Toast.makeText(
+                    fragment.requireContext(),
+                    error.message ?: fragment.getString(R.string.failed_to_activate_premium),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
     }
 
     fun clear() {

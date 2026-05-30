@@ -306,121 +306,76 @@
 
                     </LinearLayout>
 
-                    <!-- Province + City/Municipality -->
+                    <!-- Province + City -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:orientation="horizontal">
+                        android:orientation="vertical">
 
-                        <LinearLayout
-                            android:layout_width="0dp"
+                        <TextView
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginEnd="8dp"
-                            android:orientation="vertical">
+                            android:text="Province"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_marginBottom="8dp" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Province"
-                                android:textSize="13sp"
-                                android:textStyle="bold"
-                                android:textColor="?attr/colorOnSurfaceVariant"
-                                android:layout_marginBottom="8dp" />
-
-                            <com.google.android.material.card.MaterialCardView
-                                android:layout_width="match_parent"
-                                android:layout_height="56dp"
-                                app:cardCornerRadius="16dp"
-                                app:cardElevation="0dp"
-                                app:strokeWidth="1dp"
-                                app:strokeColor="?attr/colorOutline"
-                                app:cardBackgroundColor="?attr/colorSurfaceContainerHigh">
-
-                                <LinearLayout
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:gravity="center_vertical"
-                                    android:paddingHorizontal="14dp">
-
-                                    <com.google.android.material.textfield.TextInputLayout
-                                        android:layout_width="match_parent"
-                                        android:layout_height="wrap_content"
-                                        app:boxBackgroundMode="none"
-                                        app:hintEnabled="false"
-                                        app:startIconDrawable="@null"
-                                        app:endIconMode="clear_text"
-                                        app:endIconTint="?attr/colorOnSurfaceVariant">
-
-                                        <com.google.android.material.textfield.TextInputEditText
-                                            android:id="@+id/etProvince"
-                                            android:layout_width="match_parent"
-                                            android:layout_height="wrap_content"
-                                            android:background="@android:color/transparent"
-                                            android:hint="Metro Manila"
-                                            android:inputType="textCapWords"
-                                            android:textColor="?attr/colorOnSurface"
-                                            android:textColorHint="?attr/colorOnSurfaceVariant"
-                                            android:maxLines="1" />
-                                    </com.google.android.material.textfield.TextInputLayout>
-                                </LinearLayout>
-                            </com.google.android.material.card.MaterialCardView>
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/provinceContainer"
+                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
+                            android:layout_marginBottom="16dp"
+                            android:hint="Select Province"
+                            app:endIconMode="dropdown_menu">
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="City/Municipality"
-                                android:textSize="13sp"
-                                android:textStyle="bold"
-                                android:textColor="?attr/colorOnSurfaceVariant"
-                                android:layout_marginBottom="8dp" />
-
-                            <com.google.android.material.card.MaterialCardView
+                            <AutoCompleteTextView
+                                android:id="@+id/etProvince"
                                 android:layout_width="match_parent"
-                                android:layout_height="56dp"
-                                app:cardCornerRadius="16dp"
-                                app:cardElevation="0dp"
-                                app:strokeWidth="1dp"
-                                app:strokeColor="?attr/colorOutline"
-                                app:cardBackgroundColor="?attr/colorSurfaceContainerHigh">
+                                android:layout_height="wrap_content"
+                                android:background="@null"
+                                android:focusable="false"
+                                android:inputType="none"
+                                android:maxLines="1"
+                                android:minHeight="56dp"
+                                android:singleLine="true"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textSize="15sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
 
-                                <LinearLayout
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:gravity="center_vertical"
-                                    android:paddingHorizontal="14dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="City / Municipality"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_marginBottom="8dp" />
 
-                                    <com.google.android.material.textfield.TextInputLayout
-                                        android:layout_width="match_parent"
-                                        android:layout_height="wrap_content"
-                                        app:boxBackgroundMode="none"
-                                        app:hintEnabled="false"
-                                        app:startIconDrawable="@null"
-                                        app:endIconMode="clear_text"
-                                        app:endIconTint="?attr/colorOnSurfaceVariant">
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/cityContainer"
+                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="16dp"
+                            android:hint="Select City"
+                            app:endIconMode="dropdown_menu">
 
-                                        <com.google.android.material.textfield.TextInputEditText
-                                            android:id="@+id/etCityMunicipality"
-                                            android:layout_width="match_parent"
-                                            android:layout_height="wrap_content"
-                                            android:background="@android:color/transparent"
-                                            android:hint="Manila"
-                                            android:inputType="textCapWords"
-                                            android:textColor="?attr/colorOnSurface"
-                                            android:textColorHint="?attr/colorOnSurfaceVariant"
-                                            android:maxLines="1" />
-                                    </com.google.android.material.textfield.TextInputLayout>
-                                </LinearLayout>
-                            </com.google.android.material.card.MaterialCardView>
-                        </LinearLayout>
+                            <AutoCompleteTextView
+                                android:id="@+id/etCityMunicipality"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@null"
+                                android:focusable="false"
+                                android:inputType="none"
+                                android:maxLines="1"
+                                android:minHeight="56dp"
+                                android:singleLine="true"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textSize="15sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
 
                     </LinearLayout>
 

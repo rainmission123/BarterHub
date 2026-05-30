@@ -16,7 +16,6 @@ import com.example.barterhub.R
 import com.example.barterhub.managers.UsernameManager
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
@@ -38,7 +37,6 @@ class EditProfileActivity : AppCompatActivity() {
     private lateinit var fabChangePhoto: FloatingActionButton
     private lateinit var ivProfileImage: ImageView
     private lateinit var etFullName: EditText
-    private lateinit var etUsername: EditText
     private lateinit var etBio: EditText
     private lateinit var etPhone: EditText
     private lateinit var etLocation: EditText
@@ -110,7 +108,6 @@ class EditProfileActivity : AppCompatActivity() {
                     oldUsername = snapshot.child("username").getValue(String::class.java) ?: ""
 
                     etFullName.setText(snapshot.child("fullName").getValue(String::class.java) ?: "")
-                    etUsername.setText(oldUsername)
                     etBio.setText(snapshot.child("bio").getValue(String::class.java) ?: "")
                     etPhone.setText(snapshot.child("phoneNumber").getValue(String::class.java) ?: "")
                     etLocation.setText(snapshot.child("address").getValue(String::class.java) ?: "")

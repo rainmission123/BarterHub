@@ -28,7 +28,6 @@ import com.google.firebase.functions.FirebaseFunctions
 import com.google.firebase.functions.ktx.functions
 import com.google.firebase.ktx.Firebase
 import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -216,7 +215,6 @@ class BuyCoinsDialog(private val onCoinsUpdated: (() -> Unit)? = null) : DialogF
             .connectTimeout(60, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
-            .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
             .build()
 
         val retrofit = Retrofit.Builder()
@@ -227,6 +225,7 @@ class BuyCoinsDialog(private val onCoinsUpdated: (() -> Unit)? = null) : DialogF
 
         val service = retrofit.create(PayMongoApiService::class.java)
         val request = PayMongoRequest(
+            packageId = getSelectedPackageId(),
             amount = (selectedPrice * 100).toInt(),
             paymentMethod = paymentMethod,
             userId = currentUser.uid,
@@ -234,20 +233,38 @@ class BuyCoinsDialog(private val onCoinsUpdated: (() -> Unit)? = null) : DialogF
             currency = "PHP"
         )
 
-        service.createCheckoutSession(request).enqueue(object : Callback<PayMongoResponse> {
-            override fun onResponse(call: Call<PayMongoResponse>, response: Response<PayMongoResponse>) {
-                if (!isAdded) return
-                val checkoutUrl = response.body()?.checkout_url
-                if (!checkoutUrl.isNullOrEmpty()) startPaymentFlow(checkoutUrl, "payment_${System.currentTimeMillis()}")
-                else { showToast("Payment setup failed"); resetButtonState() }
-            }
+        currentUser.getIdToken(false)
+            .addOnSuccessListener { tokenResult ->
+                val authHeader = "Bearer ${tokenResult.token.orEmpty()}"
+                service.createCheckoutSession(authHeader, request).enqueue(object : Callback<PayMongoResponse> {
+                    override fun onResponse(call: Call<PayMongoResponse>, response: Response<PayMongoResponse>) {
+                        if (!isAdded) return
+                        val checkoutUrl = response.body()?.checkout_url
+                        if (!checkoutUrl.isNullOrEmpty()) startPaymentFlow(checkoutUrl, "payment_${System.currentTimeMillis()}")
+                        else { showToast("Payment setup failed"); resetButtonState() }
+                    }
 
-            override fun onFailure(call: Call<PayMongoResponse>, t: Throwable) {
-                if (!isAdded) return
-                showToast("Network error: ${t.message}")
+                    override fun onFailure(call: Call<PayMongoResponse>, t: Throwable) {
+                        if (!isAdded) return
+                        showToast("Network error: ${t.message}")
+                        resetButtonState()
+                    }
+                })
+            }
+            .addOnFailureListener { error ->
+                if (!isAdded) return@addOnFailureListener
+                showToast("Authentication error: ${error.message}")
                 resetButtonState()
             }
-        })
+    }
+
+    private fun getSelectedPackageId(): String {
+        return when (selectedCoins) {
+            100 -> "coin_100"
+            200 -> "coin_200"
+            500 -> "coin_500"
+            else -> ""
+        }
     }
 
     private fun startPaymentFlow(redirectUrl: String, paymentIntentId: String) {

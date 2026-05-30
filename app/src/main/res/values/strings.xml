@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- App Info -->
-    <string name="app_name">BarterHub Philippines</string>
+    <string name="app_name">BarterHub</string>
     <string name="app_logo">BarterHub Logo</string>
     <string name="barterhub_ph">TradeHub PH</string>
     <string name="welcome_to_barter_hub_ph">Welcome to BarterHub</string>
@@ -349,7 +349,7 @@
     <string name="verification_required">Verification Required</string>
     <string name="go_to_profile">Go to Profile</string>
     <string name="loading_map">Loading map...</string>
-    <string name="mapbox_access_token">YOUR_MAPBOX_TOKEN_HERE</string>
+    <string name="mapbox_access_token"></string>
     <string name="tapos_na">Tapos Na</string>
     <string name="lokasyon_ng_item">Lokasyon ng Item</string>
     <string name="ilagay_kung_saan_matatagpuan_ang_item_para_makita_ito_ng_malapit_sa_iyo">Ilagay kung saan matatagpuan ang item para makita ito ng malapit sa iyo</string>

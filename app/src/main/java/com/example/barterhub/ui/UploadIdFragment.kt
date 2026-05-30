@@ -27,18 +27,8 @@ import com.bumptech.glide.Glide
 import com.example.barterhub.databinding.FragmentUploadIdBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONObject
+import com.google.firebase.storage.FirebaseStorage
 import java.io.File
-import java.util.concurrent.TimeUnit
 
 class UploadIdFragment : Fragment() {
 
@@ -363,13 +353,13 @@ class UploadIdFragment : Fragment() {
             binding.btnSubmitVerification.isEnabled = false
             binding.btnSubmitVerification.text = "Uploading..."
 
-            uploadToCloudinary(frontImageUri!!,
-                onSuccess = { frontUrl ->
-                    if (!isFragmentActive) return@uploadToCloudinary
-                    uploadToCloudinary(backImageUri!!,
-                        onSuccess = { backUrl ->
-                            if (!isFragmentActive) return@uploadToCloudinary
-                            saveVerificationData(frontUrl, backUrl)
+            uploadVerificationImage(frontImageUri!!, "front",
+                onSuccess = { frontPath ->
+                    if (!isFragmentActive) return@uploadVerificationImage
+                    uploadVerificationImage(backImageUri!!, "back",
+                        onSuccess = { backPath ->
+                            if (!isFragmentActive) return@uploadVerificationImage
+                            saveVerificationData(frontPath, backPath)
                         },
                         onError = { errorMsg ->
                             if (isFragmentActive) showErrorAndReset("Back image: $errorMsg")
@@ -385,65 +375,28 @@ class UploadIdFragment : Fragment() {
         }
     }
 
-    private fun uploadToCloudinary(
+    private fun uploadVerificationImage(
         imageUri: Uri,
+        side: String,
         onSuccess: (String) -> Unit,
         onError: (String) -> Unit
     ) {
-        val cloudName = "dtccox0s0"
-        val uploadPreset = "barterhub_ids"
-
-        try {
-            val inputStream = requireContext().contentResolver.openInputStream(imageUri)
-            val fileBytes = inputStream?.readBytes()
-            inputStream?.close()
-
-            if (fileBytes == null) {
-                onError("Cannot read image file")
-                return
-            }
-
-            val requestBody = MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("file", "id_verification.jpg", fileBytes.toRequestBody("image/*".toMediaTypeOrNull()))
-                .addFormDataPart("upload_preset", uploadPreset)
-                .build()
-
-            val request = Request.Builder()
-                .url("https://api.cloudinary.com/v1_1/$cloudName/upload")
-                .post(requestBody)
-                .build()
-
-            CoroutineScope(Dispatchers.IO).launch {
-                try {
-                    val client = OkHttpClient.Builder()
-                        .connectTimeout(30, TimeUnit.SECONDS)
-                        .readTimeout(30, TimeUnit.SECONDS)
-                        .build()
-
-                    val response = client.newCall(request).execute()
-                    val responseBody = response.body?.string()
-
-                    if (response.isSuccessful && responseBody != null) {
-                        val json = JSONObject(responseBody)
-                        val imageUrl = json.getString("secure_url")
-                        withContext(Dispatchers.Main) {
-                            onSuccess(imageUrl)
-                        }
-                    } else {
-                        withContext(Dispatchers.Main) {
-                            onError("Upload failed: ${response.code}")
-                        }
-                    }
-                } catch (e: Exception) {
-                    withContext(Dispatchers.Main) {
-                        onError("Network error: ${e.message}")
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            onError("File error: ${e.message}")
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser == null) {
+            onError("User not logged in")
+            return
         }
+
+        val storagePath = "id_verifications/${currentUser.uid}/$side/${System.currentTimeMillis()}.jpg"
+        val storageRef = FirebaseStorage.getInstance().reference.child(storagePath)
+
+        storageRef.putFile(imageUri)
+            .addOnSuccessListener {
+                onSuccess(storagePath)
+            }
+            .addOnFailureListener { e ->
+                onError(e.message ?: "Upload failed")
+            }
     }
 
     @SuppressLint("SetTextI18n")
@@ -461,7 +414,7 @@ class UploadIdFragment : Fragment() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun saveVerificationData(frontUrl: String, backUrl: String) {
+    private fun saveVerificationData(frontPath: String, backPath: String) {
         if (!isFragmentActive) return
 
         val currentUser = FirebaseAuth.getInstance().currentUser
@@ -471,8 +424,8 @@ class UploadIdFragment : Fragment() {
         }
 
         val verificationData = mapOf(
-            "idFrontUrl" to frontUrl,
-            "idBackUrl" to backUrl,
+            "idFrontPath" to frontPath,
+            "idBackPath" to backPath,
             "isIDVerified" to "pending",
             "verificationSubmittedAt" to System.currentTimeMillis()
         )
@@ -503,17 +456,27 @@ class UploadIdFragment : Fragment() {
                 if (!isFragmentActive) return
 
                 val status = snapshot.child("isIDVerified").getValue(String::class.java)
+                val frontPath = snapshot.child("idFrontPath").getValue(String::class.java)
+                val backPath = snapshot.child("idBackPath").getValue(String::class.java)
                 val frontUrl = snapshot.child("idFrontUrl").getValue(String::class.java)
                 val backUrl = snapshot.child("idBackUrl").getValue(String::class.java)
 
                 updateVerificationStatusUI(status)
 
-                if (!frontUrl.isNullOrEmpty()) {
+                if (!frontPath.isNullOrEmpty()) {
+                    loadStoredIdImage(frontPath, binding.ivFrontID)
+                    binding.ivFrontID.visibility = View.VISIBLE
+                    binding.ivFrontPlaceholder.visibility = View.GONE
+                } else if (!frontUrl.isNullOrEmpty()) {
                     Glide.with(requireContext()).load(frontUrl).into(binding.ivFrontID)
                     binding.ivFrontID.visibility = View.VISIBLE
                     binding.ivFrontPlaceholder.visibility = View.GONE
                 }
-                if (!backUrl.isNullOrEmpty()) {
+                if (!backPath.isNullOrEmpty()) {
+                    loadStoredIdImage(backPath, binding.ivBackID)
+                    binding.ivBackID.visibility = View.VISIBLE
+                    binding.ivBackPlaceholder.visibility = View.GONE
+                } else if (!backUrl.isNullOrEmpty()) {
                     Glide.with(requireContext()).load(backUrl).into(binding.ivBackID)
                     binding.ivBackID.visibility = View.VISIBLE
                     binding.ivBackPlaceholder.visibility = View.GONE
@@ -527,6 +490,18 @@ class UploadIdFragment : Fragment() {
                 }
             }
         })
+    }
+
+    private fun loadStoredIdImage(storagePath: String, imageView: ImageView) {
+        FirebaseStorage.getInstance().reference.child(storagePath).downloadUrl
+            .addOnSuccessListener { uri ->
+                if (isFragmentActive && isAdded) {
+                    Glide.with(requireContext()).load(uri).into(imageView)
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("UploadIdFragment", "Failed to load ID image: ${e.message}")
+            }
     }
 
     private fun fixImageOrientation(imagePath: String): Bitmap {
