@@ -16,7 +16,8 @@ class SecurityManager(
     private val auth: FirebaseAuth
 ) {
 
-    private val functions: FirebaseFunctions = FirebaseFunctions.getInstance()
+    private val functions: FirebaseFunctions =
+        FirebaseFunctions.getInstance("us-central1")
 
     fun showChangePassword() {
         val email = auth.currentUser?.email
@@ -69,6 +70,9 @@ class SecurityManager(
 
         val btnOpenAppSettings = view.findViewById<View>(R.id.btnOpenAppSettings)
         val btnResetPassword = view.findViewById<View>(R.id.btnResetPassword)
+        val btnDeleteAccount = view.findViewById<View>(
+            R.id.btnRequestAccountDeletion
+        )
 
         btnOpenAppSettings.setOnClickListener {
             dialog.dismiss()
@@ -80,8 +84,48 @@ class SecurityManager(
             showChangePassword()
         }
 
+        btnDeleteAccount.setOnClickListener {
+            showDeleteAccountConfirmation(dialog)
+        }
+
         dialog.setContentView(view)
         dialog.show()
+    }
+
+    private fun showDeleteAccountConfirmation(dialog: BottomSheetDialog) {
+        val user = auth.currentUser
+
+        if (user == null) {
+            showError("Please sign in again before requesting account deletion.")
+            return
+        }
+
+        MaterialAlertDialogBuilder(context)
+            .setTitle("Request Account Deletion")
+            .setMessage(
+                "This will request deletion of your BarterHub account and " +
+                        "personal data. Some transaction, safety, or legal records " +
+                        "may be retained if required."
+            )
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("Request Deletion") { _, _ ->
+                requestAccountDeletion(dialog)
+            }
+            .show()
+    }
+
+    private fun requestAccountDeletion(dialog: BottomSheetDialog) {
+        functions.getHttpsCallable("requestAccountDeletion")
+            .call()
+            .addOnSuccessListener {
+                showToast("Account deletion request submitted.")
+                dialog.dismiss()
+            }
+            .addOnFailureListener { e ->
+                showError(
+                    e.message ?: "Could not submit deletion request. Please try again."
+                )
+            }
     }
 
     private fun showToast(message: String) {

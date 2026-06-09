@@ -515,18 +515,34 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         }
     }
 
+    private fun showComingSoonDialog(
+        title: String,
+        message: String,
+        iconRes: Int
+    ) {
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+            .setIcon(iconRes)
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton("Got it", null)
+            .show()
+    }
+
     private fun setupClickListeners(view: View) {
         view.findViewById<View>(R.id.addFriendButton).setOnClickListener {
-            try {
-                findNavController().navigate(R.id.action_profileFragment_to_findFriendsFragment)
-            } catch (e: Exception) {
-                Log.e("ProfileFragment", "Navigation error: ${e.message}")
-                Toast.makeText(requireContext(), "Find Friends not available", Toast.LENGTH_SHORT).show()
-            }
+            showComingSoonDialog(
+                "Add Friend",
+                "This feature is coming soon and will be available in a future update.",
+                R.drawable.ic_add_friend
+            )
         }
 
         view.findViewById<View>(R.id.topTradersButton).setOnClickListener {
-            navigateToTopTradersFragment()
+            showComingSoonDialog(
+                "Top Traders",
+                "The leaderboard will be available once more users join BarterHub.",
+                R.drawable.ic_trophy
+            )
         }
 
         view.findViewById<View>(R.id.notificationsLayout).setOnClickListener {

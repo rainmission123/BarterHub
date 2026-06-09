@@ -4,13 +4,14 @@ import android.app.Application
 import com.cloudinary.android.MediaManager
 
 class App : Application() {
+
     override fun onCreate() {
         super.onCreate()
 
-        val config: HashMap<String, String> = HashMap()
-        config["cloud_name"] = "dtccox0s0"
-        config["api_key"] = "957854413961625"
-        config["api_secret"] = "VYcwlAqTWWzmMhxnRtArlrPcaxA"
+        val config = hashMapOf(
+            "cloud_name" to "dtccox0s0",
+            "secure" to "true"
+        )
 
         MediaManager.init(this, config)
     }
