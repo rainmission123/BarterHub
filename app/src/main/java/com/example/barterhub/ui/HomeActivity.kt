@@ -43,7 +43,6 @@ import androidx.core.content.ContextCompat
 import com.example.barterhub.ads.AppOpenAdManager
 import androidx.appcompat.app.AppCompatDelegate
 import com.example.barterhub.utils.BottomNavBadgeManager
-import com.example.barterhub.utils.UserPresenceManager
 import com.example.barterhub.managers.PublicUserSyncManager
 
 @Suppress("DEPRECATION")
@@ -96,7 +95,6 @@ class HomeActivity : AppCompatActivity() {
         setupBackPressedHandler()
         setupSimpleWindowInsets()
         saveFcmToken()
-        startUserPresence()
         requestNotificationPermission()
         // ✅ Auto-create missing public_users for old accounts
         PublicUserSyncManager.ensurePublicUserExists()
@@ -352,7 +350,6 @@ class HomeActivity : AppCompatActivity() {
                         navController.navigate(R.id.nav_settings)
                 }
                 R.id.nav_logout -> {
-                    UserPresenceManager.stop()
                     FirebaseAuth.getInstance().signOut()
                     Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show()
                     startActivity(Intent(this, LoginActivity::class.java).apply {
@@ -378,11 +375,6 @@ class HomeActivity : AppCompatActivity() {
                 Log.d("FCM_DEBUG", "Saved FCM token for user $userId")
             }
         }
-    }
-
-    private fun startUserPresence() {
-        val currentUser = FirebaseAuth.getInstance().currentUser ?: return
-        UserPresenceManager.start(currentUser.uid)
     }
 
     private fun requestNotificationPermission() {
@@ -534,8 +526,5 @@ class HomeActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         badgeManager.removeListeners()
-        if (isFinishing) {
-            UserPresenceManager.stop()
-        }
     }
 }

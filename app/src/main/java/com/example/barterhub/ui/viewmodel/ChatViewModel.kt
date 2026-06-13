@@ -69,12 +69,17 @@ class ChatViewModel(
             currentUserName = currentUserName
         )
 
+        setupUserPresence()
         observePartnerStatus()
 
         if (chatId.isNotEmpty()) {
             observeMessages()
             observeNewMessagesForNotification()
         }
+    }
+
+    private fun setupUserPresence() {
+        chatRepository.setupUserPresence(currentUserId)
     }
 
     private fun observePartnerStatus() {

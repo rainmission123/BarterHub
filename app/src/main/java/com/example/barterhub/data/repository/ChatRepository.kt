@@ -179,6 +179,21 @@ class ChatRepository @Inject constructor(
         return listener
     }
 
+    override fun setupUserPresence(userId: String) {
+        val myStatusRef = statusRef.child(userId)
+        val onlineStatus = mapOf(
+            "state" to "online",
+            "lastSeen" to System.currentTimeMillis()
+        )
+        val offlineStatus = mapOf(
+            "state" to "offline",
+            "lastSeen" to System.currentTimeMillis()
+        )
+
+        myStatusRef.setValue(onlineStatus)
+        myStatusRef.onDisconnect().setValue(offlineStatus)
+    }
+
     override fun removeMessagesListener(chatId: String, listener: ChildEventListener) {
         messagesRef.child(chatId).child("messages").removeEventListener(listener)
     }
