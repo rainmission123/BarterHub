@@ -106,7 +106,7 @@ class SearchFragment : Fragment() {
             saveRecentSearch(selected)
             navigateToSearchResults(selected)
         }
-        trendingRecyclerView.setHasFixedSize(true)
+        //trendingRecyclerView.setHasFixedSize(true)
         trendingRecyclerView.isNestedScrollingEnabled = false
 
         recentRecyclerView.apply {
@@ -126,7 +126,6 @@ class SearchFragment : Fragment() {
 
     private fun setupSearchListeners() {
 
-        // ✅ Ensure keyboard shows "Search" action
         searchEditText.imeOptions = EditorInfo.IME_ACTION_SEARCH
         searchEditText.setRawInputType(EditorInfo.TYPE_CLASS_TEXT)
 
@@ -142,13 +141,8 @@ class SearchFragment : Fragment() {
                 val query = s?.toString()?.trim().orEmpty()
                 btnClearSearch.visibility = if (query.isNotEmpty()) View.VISIBLE else View.GONE
 
-                // ✅ Cancel any pending runnable (we no longer auto navigate)
                 pendingSearch?.let { searchHandler.removeCallbacks(it) }
                 pendingSearch = null
-
-                // ✅ Optional UI behaviors only (no navigation)
-                // Example: show recent/trending when empty
-                // showRecentAndTrending(query.isEmpty())
 
                 progressBar.visibility = View.GONE
                 lastNavigatedQuery = null
@@ -157,7 +151,6 @@ class SearchFragment : Fragment() {
             override fun afterTextChanged(s: Editable?) {}
         })
 
-        // ✅ Navigate ONLY when user presses keyboard search / enter
         searchEditText.setOnEditorActionListener { _, actionId, event ->
             val isImeSearch = actionId == EditorInfo.IME_ACTION_SEARCH
             val isEnter =
@@ -167,7 +160,6 @@ class SearchFragment : Fragment() {
             if (isImeSearch || isEnter) {
                 val query = searchEditText.text?.toString()?.trim().orEmpty()
                 if (query.isNotBlank()) {
-                    // ✅ prevent double-trigger
                     if (lastNavigatedQuery == query) return@setOnEditorActionListener true
                     lastNavigatedQuery = query
 
@@ -290,8 +282,8 @@ class SearchFragment : Fragment() {
         progressBar.visibility = View.VISIBLE
 
         database.child("items")
-            .orderByChild("timestamp")  // ✅ stable fetch
-            .limitToLast(100)           // ✅ pool
+            .orderByChild("timestamp")
+            .limitToLast(100)
             .get()
             .addOnSuccessListener { snapshot ->
                 trendingItems.clear()
@@ -302,13 +294,11 @@ class SearchFragment : Fragment() {
                     trendingItems.add(item)
                 }
 
-                // ✅ sort by likes then newest
                 trendingItems.sortWith(
                     compareByDescending<FeaturedItem> { it.likeCount }
                         .thenByDescending { it.timestamp }
                 )
 
-                // ✅ keep top 8
                 val top = trendingItems.take(8)
                 trendingItems.clear()
                 trendingItems.addAll(top)
@@ -336,7 +326,6 @@ class SearchFragment : Fragment() {
         }
     }
 
-    // ✅ Ordered recent searches (no StringSet)
     private fun saveRecentSearch(query: String) {
         val q = query.trim()
         if (q.isBlank()) return
@@ -414,7 +403,6 @@ class SearchFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // kapag bumalik from SearchResults, wag auto navigate agad
         suppressNextTextWatcher = true
     }
 

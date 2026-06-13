@@ -19,3 +19,15 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+# Keep Firebase Realtime Database model classes
+-keep class com.example.barterhub.data.models.** { *; }
+
+# Keep constructors and fields for Firebase reflection
+-keepclassmembers class com.example.barterhub.data.models.** {
+    public <init>();
+    <fields>;
+    <methods>;
+}
+
+-keepattributes Signature
+-keepattributes *Annotation*

@@ -42,6 +42,43 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:812276220118:android:8f296b70f6016c9b598977",
+        "android_client_info": {
+          "package_name": "com.jorian.barterhub"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "812276220118-5c4h8rigl39ct6shr8o2a9hlfru075es.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jorian.barterhub",
+            "certificate_hash": "3ad45f36789962a3d52844f32b1b3330ae126564"
+          }
+        },
+        {
+          "client_id": "812276220118-s617dq3tokn662objh4qn93tr4e8obh5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlG1AI2ZO1Xnj-cgG9ekguZOcXKelfZaA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "812276220118-s617dq3tokn662objh4qn93tr4e8obh5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"

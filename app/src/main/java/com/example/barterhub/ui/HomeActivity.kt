@@ -95,7 +95,6 @@ class HomeActivity : AppCompatActivity() {
         setupBackPressedHandler()
         setupSimpleWindowInsets()
         saveFcmToken()
-        showSwipeTutorial()
         requestNotificationPermission()
         // ✅ Auto-create missing public_users for old accounts
         PublicUserSyncManager.ensurePublicUserExists()
@@ -361,22 +360,6 @@ class HomeActivity : AppCompatActivity() {
             }
             drawerLayout.closeDrawer(navigationView)
             true
-        }
-    }
-
-    private fun showSwipeTutorial() {
-        val sharedPrefs = getSharedPreferences("AppPrefs", MODE_PRIVATE)
-        val isFirstTime = sharedPrefs.getBoolean("first_time_swipe", true)
-
-        if (isFirstTime) {
-            Snackbar.make(binding.root, "👈 SWIPE FROM LEFT EDGE TO OPEN MENU", Snackbar.LENGTH_LONG)
-                .setBackgroundTint(resources.getColor(R.color.com_facebook_messenger_blue))
-                .setTextColor(resources.getColor(android.R.color.white))
-                .setAction("GOT IT") { }
-                .setActionTextColor(resources.getColor(android.R.color.white))
-                .show()
-
-            sharedPrefs.edit { putBoolean("first_time_swipe", false) }
         }
     }
 

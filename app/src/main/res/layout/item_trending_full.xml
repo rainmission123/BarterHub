@@ -76,7 +76,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:ellipsize="end"
-                android:textColor="@color/white"
+                android:textColor="?attr/colorOnSurface"
                 android:lineSpacingExtra="2dp"
                 android:maxLines="1"
                 android:scrollHorizontally="false"
@@ -131,7 +131,7 @@
             android:breakStrategy="simple"
             android:scrollHorizontally="false"
             android:text="Item description here"
-            android:textColor="@color/white"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="11sp"
             tools:ignore="HardcodedText" />
 
@@ -142,7 +142,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:text="Condition: "
-            android:textColor="@color/white"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="9sp"
             android:textStyle="italic"
             tools:ignore="HardcodedText,SmallSp" />
@@ -159,7 +159,7 @@
                 android:layout_width="12dp"
                 android:layout_height="12dp"
                 android:src="@drawable/ic_location"
-                app:tint="@color/gray_400" />
+                app:tint="?attr/colorOnSurface" />
 
             <TextView
                 android:id="@+id/itemLocation"
@@ -168,7 +168,7 @@
                 android:layout_marginStart="4dp"
                 android:text="Location"
                 android:textSize="10sp"
-                android:textColor="@color/gray_400"
+                android:textColor="?attr/colorOnSurface"
                 android:maxLines="1"
                 android:ellipsize="end" />
         </LinearLayout>
@@ -231,7 +231,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Posted by: Unknown"
-                        android:textColor="@color/white"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="10sp"
                         android:textStyle="italic"
                         tools:ignore="SmallSp" />
@@ -247,6 +247,7 @@
                 android:clickable="true"
                 android:contentDescription="@string/todo"
                 android:focusable="true"
+                android:tint="?attr/colorOnSurface"
                 android:scaleType="centerInside"
                 android:src="@drawable/ic_cart"
                 tools:ignore="TouchTargetSizeCheck,ImageContrastCheck" />
