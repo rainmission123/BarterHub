@@ -590,11 +590,24 @@ class ChatFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
+        if (ActiveChatTracker.currentChatId == chatId) {
+            ActiveChatTracker.currentChatId = null
+        }
         viewModel.markMessagesAsRead()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (chatId.isNotBlank()) {
+            ActiveChatTracker.currentChatId = chatId
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        if (ActiveChatTracker.currentChatId == chatId) {
+            ActiveChatTracker.currentChatId = null
+        }
         isFragmentActive = false
         viewModel.clearListeners()
         _binding = null

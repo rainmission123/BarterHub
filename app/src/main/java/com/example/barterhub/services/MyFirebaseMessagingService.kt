@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.core.app.ActivityCompat
@@ -14,6 +15,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.barterhub.R
 import com.example.barterhub.ui.HomeActivity
+import com.example.barterhub.utils.ActiveChatTracker
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.messaging.FirebaseMessagingService
@@ -44,11 +46,19 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val fromUserId = remoteMessage.data["fromUserId"]
         val fromUserName = remoteMessage.data["fromUserName"]
         val fromUserProfilePic = remoteMessage.data["fromUserProfilePic"]
+        val notificationKey = remoteMessage.data["notificationId"]
+            ?: remoteMessage.data["messageId"]
+            ?: remoteMessage.messageId
 
         Log.d(
             "FCM_DEBUG",
             "Message received: type=$type chatId=$chatId partnerId=$partnerId fromUserId=$fromUserId"
         )
+
+        if (type == "chat_message" && !chatId.isNullOrBlank() && chatId == ActiveChatTracker.currentChatId) {
+            Log.d("FCM_DEBUG", "Suppressing chat notification for active chat: $chatId")
+            return
+        }
 
         showNotification(
             title = title,
@@ -62,7 +72,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             partnerProfilePic = partnerProfilePic,
             fromUserId = fromUserId,
             fromUserName = fromUserName,
-            fromUserProfilePic = fromUserProfilePic
+            fromUserProfilePic = fromUserProfilePic,
+            notificationKey = notificationKey
         )
     }
 
@@ -111,7 +122,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         partnerProfilePic: String? = null,
         fromUserId: String? = null,
         fromUserName: String? = null,
-        fromUserProfilePic: String? = null
+        fromUserProfilePic: String? = null,
+        notificationKey: String? = null
     ) {
         if (!canPostNotifications()) {
             Log.d("FCM_DEBUG", "POST_NOTIFICATIONS permission not granted")
@@ -120,9 +132,16 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         val channelId = CHANNEL_ID
         ensureChannel(channelId)
+        val fallbackNotificationKey = listOfNotNull(type, chatId, requestId, itemId, fromUserId)
+            .joinToString("_")
+            .ifBlank { "notification" } + "_${System.currentTimeMillis()}"
+        val uniqueNotificationKey = notificationKey
+            ?: fallbackNotificationKey
 
         val intent = Intent(this, HomeActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            action = "$packageName.NOTIFICATION.$uniqueNotificationKey"
+            data = Uri.parse("barterhub://notification/${Uri.encode(uniqueNotificationKey)}")
 
             putExtra("notification_type", type)
 
@@ -139,13 +158,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             fromUserProfilePic?.let { putExtra("fromUserProfilePic", it) }
         }
 
-        val requestCode = when {
-            !chatId.isNullOrBlank() -> chatId.hashCode()
-            !requestId.isNullOrBlank() -> requestId.hashCode()
-            !itemId.isNullOrBlank() -> itemId.hashCode()
-            !fromUserId.isNullOrBlank() -> fromUserId.hashCode()
-            else -> (System.currentTimeMillis() and 0xFFFFFFF).toInt()
-        }
+        val requestCode = uniqueNotificationKey.hashCode()
 
         val pendingIntent = PendingIntent.getActivity(
             this,
@@ -191,13 +204,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .build()
 
-        val notificationId = when {
-            !chatId.isNullOrBlank() -> chatId.hashCode()
-            !requestId.isNullOrBlank() -> requestId.hashCode()
-            !itemId.isNullOrBlank() -> itemId.hashCode()
-            !fromUserId.isNullOrBlank() -> fromUserId.hashCode()
-            else -> (System.currentTimeMillis() and 0xFFFFFFF).toInt()
-        }
+        val notificationId = uniqueNotificationKey.hashCode()
 
         try {
             NotificationManagerCompat.from(this).notify(notificationId, notification)

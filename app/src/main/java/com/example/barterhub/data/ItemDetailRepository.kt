@@ -11,7 +11,6 @@ class ItemDetailRepository {
     private val itemsRef = database.getReference("items")
     private val usersRef = database.getReference("users")
     private val favoritesRef = database.getReference("favorites")
-    private val notificationsRef = database.getReference("notifications")
 
     fun fetchItemDetails(itemId: String, callback: (Item?) -> Unit) {
         itemsRef.child(itemId).get().addOnSuccessListener { snapshot ->
@@ -94,10 +93,6 @@ class ItemDetailRepository {
                     val userFavoritesRef = favoritesRef.child(currentUserId).child(itemId)
                     if (isLiked) {
                         userFavoritesRef.setValue(true)
-                        // Send notification
-                        if (currentUserId != ownerId) {
-                            sendLikeNotification(ownerId, currentUserId, itemId)
-                        }
                     } else {
                         userFavoritesRef.removeValue()
                     }
@@ -123,18 +118,6 @@ class ItemDetailRepository {
         }.addOnFailureListener {
             callback(false)
         }
-    }
-
-    private fun sendLikeNotification(ownerId: String, fromUserId: String, itemId: String) {
-        val notificationRef = notificationsRef.child(ownerId).push()
-        val notificationData = mapOf(
-            "type" to "like",
-            "fromUserId" to fromUserId,
-            "itemId" to itemId,
-            "read" to false,
-            "timestamp" to System.currentTimeMillis()
-        )
-        notificationRef.setValue(notificationData)
     }
 
     private fun parseImageUrls(snapshot: com.google.firebase.database.DataSnapshot): List<String?> {

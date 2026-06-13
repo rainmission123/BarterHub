@@ -496,7 +496,8 @@ class ItemDetailFragment : Fragment() {
         if (currentUserId == ownerId) return
 
         val db = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
-        val notifRef = db.getReference("notifications").child(ownerId).push()
+        val notificationId = "like_${itemId}_${currentUserId}"
+        val notifRef = db.getReference("notifications").child(ownerId).child(notificationId)
 
         db.getReference("users").child(currentUserId).get().addOnSuccessListener { snap ->
             val fromName = snap.child("fullName").getValue(String::class.java)
@@ -507,6 +508,7 @@ class ItemDetailFragment : Fragment() {
             val message = "$fromName liked your item: $itemTitle"
 
             val notificationData = mapOf(
+                "id" to notificationId,
                 "type" to "like_item",
                 "fromUserId" to currentUserId,
                 "fromUserName" to fromName,
