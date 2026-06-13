@@ -74,7 +74,7 @@ class FindFriendsFragment : Fragment() {
 
         // Remove online status listener
         onlineStatusListener?.let {
-            database.reference.child("users").removeEventListener(it)
+            database.reference.child("status").removeEventListener(it)
         }
 
         friendsListener?.let {
@@ -372,19 +372,19 @@ class FindFriendsFragment : Fragment() {
         val currentUserId = auth.currentUser?.uid ?: return
 
         onlineStatusListener?.let {
-            database.reference.child("users").removeEventListener(it)
+            database.reference.child("status").removeEventListener(it)
         }
 
-        onlineStatusListener = database.reference.child("users").addValueEventListener(object : ValueEventListener {
+        onlineStatusListener = database.reference.child("status").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                for (userSnapshot in snapshot.children) {
-                    val userId = userSnapshot.key ?: continue
+                for (statusSnapshot in snapshot.children) {
+                    val userId = statusSnapshot.key ?: continue
 
                     if (userId == currentUserId) continue
 
-                    // Check if this user has online status data
-                    val isOnline = userSnapshot.child("isOnline").getValue(Boolean::class.java) ?: false
-                    val lastSeen = userSnapshot.child("lastSeen").getValue(Long::class.java) ?: 0L
+                    val state = statusSnapshot.child("state").getValue(String::class.java) ?: "offline"
+                    val isOnline = state == "online"
+                    val lastSeen = statusSnapshot.child("lastSeen").getValue(Long::class.java) ?: 0L
 
                     // Update user in our list
                     val index = allUsers.indexOfFirst { it.userId == userId }

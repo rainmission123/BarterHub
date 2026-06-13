@@ -22,7 +22,6 @@ interface IChatRepository {
 
     // Status
     fun observePartnerStatus(userId: String, onStatusChange: (String) -> Unit): ValueEventListener
-    fun setupUserPresence(userId: String)
 
     // Listeners cleanup
     fun removeMessagesListener(chatId: String, listener: ChildEventListener)
