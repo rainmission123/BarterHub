@@ -203,6 +203,38 @@ class NotificationsFragment : Fragment(R.layout.fragment_notifications) {
                         findNavController().navigate(R.id.ownerProfileFragment, bundle)
                     }
 
+                    "trade_request" -> {
+                        findNavController().navigate(R.id.tradeRequestsFragment)
+                    }
+
+                    "trade_accepted",
+                    "rating_submitted" -> {
+                        val chatId = notification.chatId.orEmpty()
+                        val partnerId = notification.partnerId.orEmpty()
+                        val partnerName = notification.partnerName.orEmpty()
+
+                        if (chatId.isBlank() || partnerId.isBlank()) {
+                            Toast.makeText(
+                                requireContext(),
+                                "Chat information missing",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return
+                        }
+
+                        val bundle = Bundle().apply {
+                            putString("chatId", chatId)
+                            putString("partnerId", partnerId)
+                            putString("partnerName", partnerName.ifBlank { "User" })
+                            putBoolean("isTradeAccepted", true)
+                        }
+
+                        findNavController().navigate(
+                            R.id.nav_chat,
+                            bundle
+                        )
+                    }
+
                     else -> {
                         val itemId = notification.itemId
                         val fromUserId = notification.fromUserId

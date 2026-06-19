@@ -7,6 +7,7 @@
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
     android:fillViewport="true"
+    android:fitsSystemWindows="true"
     android:overScrollMode="never"
     android:clipToPadding="false"
     android:paddingBottom="60dp">

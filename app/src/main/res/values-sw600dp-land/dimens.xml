@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="auth_screen_horizontal_padding">260dp</dimen>
+    <dimen name="form_screen_horizontal_padding">180dp</dimen>
+    <dimen name="receipt_screen_padding">220dp</dimen>
+    <dimen name="bottom_nav_content_clearance">96dp</dimen>
+    <dimen name="game_dialog_art_size">280dp</dimen>
+    <dimen name="home_content_horizontal_padding">56dp</dimen>
+    <dimen name="home_trending_height">220dp</dimen>
+    <dimen name="category_item_size">120dp</dimen>
+</resources>

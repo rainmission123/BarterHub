@@ -20,6 +20,11 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
@@ -194,25 +199,79 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 R.drawable.ic_notification
         }
 
-        val notification = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(smallIcon)
-            .setContentTitle(title)
-            .setContentText(message)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(message))
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .build()
-
         val notificationId = uniqueNotificationKey.hashCode()
 
-        try {
-            NotificationManagerCompat.from(this).notify(notificationId, notification)
-            Log.d("FCM_DEBUG", "Notification shown. type=$type, notificationId=$notificationId")
-        } catch (e: SecurityException) {
-            Log.e("FCM_DEBUG", "SecurityException while showing notification: ${e.message}")
-        } catch (e: Exception) {
-            Log.e("FCM_DEBUG", "Error while showing notification: ${e.message}")
+        val senderImageUrl = when (type) {
+            "chat_message" -> partnerProfilePic ?: fromUserProfilePic
+            "friend_request", "friend_accept" -> fromUserProfilePic
+            else -> fromUserProfilePic ?: partnerProfilePic
+        }
+
+        fun showBuiltNotification(largeIcon: Bitmap? = null) {
+            val builder = NotificationCompat.Builder(this, channelId)
+                .setSmallIcon(smallIcon)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+
+            if (type == "chat_message" && largeIcon != null) {
+                val senderName = fromUserName ?: partnerName ?: title
+
+                val person = androidx.core.app.Person.Builder()
+                    .setName(senderName)
+                    .setIcon(androidx.core.graphics.drawable.IconCompat.createWithBitmap(largeIcon))
+                    .build()
+
+                builder
+                    .setContentTitle(senderName)
+                    .setContentText(message)
+                    .setStyle(
+                        NotificationCompat.MessagingStyle(person)
+                            .setConversationTitle(senderName)
+                            .addMessage(message, System.currentTimeMillis(), person)
+                    )
+            } else {
+                builder
+                    .setContentTitle(title)
+                    .setContentText(message)
+                    .setStyle(NotificationCompat.BigTextStyle().bigText(message))
+
+                if (largeIcon != null) {
+                    builder.setLargeIcon(largeIcon)
+                }
+            }
+
+            try {
+                NotificationManagerCompat.from(this).notify(notificationId, builder.build())
+                Log.d("FCM_DEBUG", "Notification shown. type=$type, notificationId=$notificationId")
+            } catch (e: SecurityException) {
+                Log.e("FCM_DEBUG", "SecurityException while showing notification: ${e.message}")
+            } catch (e: Exception) {
+                Log.e("FCM_DEBUG", "Error while showing notification: ${e.message}")
+            }
+        }
+
+        if (!senderImageUrl.isNullOrBlank() && senderImageUrl != "null") {
+            Glide.with(applicationContext)
+                .asBitmap()
+                .load(senderImageUrl)
+                .circleCrop()
+                .into(object : CustomTarget<Bitmap>() {
+                    override fun onResourceReady(
+                        resource: Bitmap,
+                        transition: Transition<in Bitmap>?
+                    ) {
+                        showBuiltNotification(resource)
+                    }
+
+                    override fun onLoadCleared(placeholder: Drawable?) {}
+
+                    override fun onLoadFailed(errorDrawable: Drawable?) {
+                        showBuiltNotification(null)
+                    }
+                })
+        } else {
+            showBuiltNotification(null)
         }
     }
 

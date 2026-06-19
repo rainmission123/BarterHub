@@ -88,7 +88,6 @@ class NotificationsAdapter(
 
     override fun getItemCount(): Int = notifications.size
 
-    // Function to update notification status locally
     fun updateNotificationStatus(notificationId: String, status: String, position: Int) {
         val actualPosition = if (position != -1) {
             position
@@ -97,20 +96,17 @@ class NotificationsAdapter(
         }
 
         if (actualPosition != -1 && actualPosition < notifications.size) {
-            // Update the notification in the list
             notifications[actualPosition] = notifications[actualPosition].copy(
                 status = status,
                 read = true
             )
 
-            // 🔹 Notify THIS SPECIFIC ITEM changed
             notifyItemChanged(actualPosition)
 
             Log.d("NotificationsAdapter", "📱 Updated notification $notificationId to $status at position $actualPosition")
         }
     }
 
-    // Function to remove notification from list
     fun removeNotification(position: Int) {
         if (position != -1 && position < notifications.size) {
             notifications.removeAt(position)
@@ -118,7 +114,6 @@ class NotificationsAdapter(
         }
     }
 
-    // 🔹 FRIEND REQUEST VIEW HOLDER
     inner class FriendRequestViewHolder(itemView: View) :
         RecyclerView.ViewHolder(itemView) {
         private val ivDelete = itemView.findViewById<ImageView>(R.id.ivDeleteNotification)
@@ -130,10 +125,8 @@ class NotificationsAdapter(
         private val llActionButtons = itemView.findViewById<LinearLayout>(R.id.llActionButtons)
 
         fun bind(notification: NotificationModel, position: Int) {
-            // 🔹 Get sender name
             val senderName = notification.fromUserName ?: "Someone"
 
-            // 🔹 Check status and update UI
             when (notification.status) {
                 "accepted" -> {
                     tvMessage.text = "$senderName sent you a friend request ✓ Accepted"
@@ -148,11 +141,9 @@ class NotificationsAdapter(
                 }
 
                 "declined" -> {
-                    // ❌ DECLINED STATE
                     tvMessage.text = "$senderName sent you a friend request ✗ Declined"
-                    llActionButtons.visibility = View.GONE  // Hide buttons
+                    llActionButtons.visibility = View.GONE
 
-                    // Change text color to red
                     tvMessage.setTextColor(
                         ContextCompat.getColor(itemView.context, R.color.red_600)
                     )
@@ -161,11 +152,9 @@ class NotificationsAdapter(
                 }
 
                 else -> {
-                    // 🔘 PENDING STATE (show buttons)
                     tvMessage.text = "$senderName sent you a friend request"
                     llActionButtons.visibility = View.VISIBLE  // Show buttons
 
-                    // Reset text color to default
                     tvMessage.setTextColor(
                         ContextCompat.getColor(itemView.context, R.color.colorOnSurface)
                     )
@@ -174,10 +163,8 @@ class NotificationsAdapter(
                 }
             }
 
-            // 🔹 Format time
             tvTime.text = getTimeAgo(notification.timestamp)
 
-            // 🔹 Load profile image
             val profileUrl = notification.fromUserProfile
             if (!profileUrl.isNullOrEmpty() && profileUrl != "null") {
                 Glide.with(itemView.context)
@@ -189,13 +176,11 @@ class NotificationsAdapter(
             } else {
                 ivProfile.setImageResource(R.drawable.ic_profile_placeholder)
 
-                // Try to fetch if we have user ID
                 if (!notification.fromUserId.isNullOrEmpty()) {
                     fetchAndUpdateProfile(notification.fromUserId!!, ivProfile)
                 }
             }
 
-            // 🔹 Set click listeners ONLY for pending requests
             if (notification.status != "accepted" && notification.status != "declined") {
                 btnAccept.isEnabled = true
                 btnDecline.isEnabled = true
@@ -257,38 +242,44 @@ class NotificationsAdapter(
     inner class DefaultNotificationViewHolder(itemView: View) :
         RecyclerView.ViewHolder(itemView) {
 
+        private val ivProfile = itemView.findViewById<CircleImageView>(R.id.ivNotificationProfile)
         private val ivIcon = itemView.findViewById<ImageView>(R.id.ivNotificationIcon)
+        private val tvTitle = itemView.findViewById<TextView>(R.id.tvNotificationTitle)
         private val tvMessage = itemView.findViewById<TextView>(R.id.tvNotificationMessage)
         private val tvTime = itemView.findViewById<TextView>(R.id.tvNotificationTime)
+        private val tvBadge = itemView.findViewById<TextView>(R.id.tvNotificationBadge)
         private val ivDelete = itemView.findViewById<ImageView>(R.id.ivDeleteNotification)
 
         fun bind(notification: NotificationModel, position: Int) {
-            // 🔹 Fallback message logic
-            val displayMessage = notification.message.takeIf { !it.isNullOrBlank() } ?: run {
-                when (notification.type) {
-                    "like" -> "${notification.fromUserName ?: "Someone"} liked your item"
-                    "message" -> "${notification.fromUserName ?: "Someone"} sent you a message"
-                    "trade_request" -> "${notification.fromUserName ?: "Someone"} sent you a trade request"
-                    "trade_accepted" -> "Your trade request was accepted"
-                    "trade_rejected" -> "Your trade request was rejected"
-                    "coins" -> {
-                        val coinsAmount = notification.coins ?: 0
-                        val fromUser = notification.fromUserName ?: "Someone"
-                        "🎉 $fromUser sent you $coinsAmount coins!"
-                    }
-                    "referral_reward" -> "You received referral reward"
-                    "receipt_created" -> "Your receipt is ready"
-                    "trade_receipt" -> "Your trade receipt is ready"
-                    else -> "You have a new notification"
-                }
+            val sender = notification.fromUserName ?: "Someone"
+
+            val title = when (notification.type) {
+                "like", "like_item" -> "Liked your item"
+                "message", "chat_message" -> "New message"
+                "trade_request" -> "Trade request"
+                "trade_accepted" -> "Trade accepted"
+                "trade_rejected" -> "Trade rejected"
+                "coins" -> "Coins received"
+                "referral_reward" -> "Referral reward"
+                "receipt_created", "trade_receipt" -> "Trade receipt"
+                else -> "BarterHub notification"
             }
 
-            tvMessage.text = displayMessage
-            tvTime.text = getTimeAgo(notification.timestamp)
+            val message = notification.message.takeIf { !it.isNullOrBlank() } ?: when (notification.type) {
+                "like", "like_item" -> "$sender liked your item"
+                "message", "chat_message" -> "$sender sent you a message"
+                "trade_request" -> "$sender sent you a trade request"
+                "trade_accepted" -> "Your trade request was accepted"
+                "trade_rejected" -> "Your trade request was rejected"
+                "coins" -> "$sender sent you ${notification.coins ?: 0} coins"
+                "referral_reward" -> "You received a referral reward"
+                "receipt_created", "trade_receipt" -> "Your trade receipt is ready"
+                else -> "You have a new notification"
+            }
 
             val iconRes = when (notification.type) {
-                "like" -> R.drawable.ic_like
-                "message" -> R.drawable.ic_message
+                "like", "like_item" -> R.drawable.ic_like
+                "message", "chat_message" -> R.drawable.ic_message
                 "trade_request" -> R.drawable.ic_trade
                 "trade_accepted" -> R.drawable.ic_check
                 "trade_rejected" -> R.drawable.ic_close
@@ -297,18 +288,59 @@ class NotificationsAdapter(
                 "receipt_created", "trade_receipt" -> R.drawable.ic_notifications
                 else -> R.drawable.ic_notifications
             }
+
+            tvTitle.text = title
+            tvMessage.text = message
+            tvTime.text = getTimeAgo(notification.timestamp)
             ivIcon.setImageResource(iconRes)
+
+            tvBadge.visibility = if (notification.read == false) View.VISIBLE else View.GONE
+
+            val profileUrl = notification.fromUserProfile
+            if (!profileUrl.isNullOrBlank() && profileUrl != "null") {
+                Glide.with(itemView.context)
+                    .load(profileUrl)
+                    .placeholder(R.drawable.ic_profile_placeholder)
+                    .error(R.drawable.ic_profile_placeholder)
+                    .circleCrop()
+                    .into(ivProfile)
+            } else {
+                ivProfile.setImageResource(R.drawable.ic_profile_placeholder)
+
+                if (!notification.fromUserId.isNullOrBlank()) {
+                    fetchAndUpdateProfile(notification.fromUserId!!, ivProfile)
+                }
+            }
 
             itemView.setOnClickListener {
                 onNotificationClickListener?.onNotificationClick(notification)
             }
 
             ivDelete.setOnClickListener {
-                onNotificationActionListener?.onDeleteNotification(notification.id, position)
+                val pos = bindingAdapterPosition
+                if (pos != RecyclerView.NO_POSITION) {
+                    onNotificationActionListener?.onDeleteNotification(notification.id, pos)
+                }
             }
         }
-    }
 
+        private fun fetchAndUpdateProfile(userId: String, imageView: CircleImageView) {
+            database.child("public_users").child(userId).get()
+                .addOnSuccessListener { snapshot ->
+                    val url = snapshot.child("profileImageUrl").getValue(String::class.java)
+                        ?: snapshot.child("profileImage").getValue(String::class.java)
+
+                    if (!url.isNullOrBlank() && url != "null") {
+                        Glide.with(imageView.context)
+                            .load(url)
+                            .placeholder(R.drawable.ic_profile_placeholder)
+                            .error(R.drawable.ic_profile_placeholder)
+                            .circleCrop()
+                            .into(imageView)
+                    }
+                }
+        }
+    }
 
     private fun getTimeAgo(time: Long): String {
         val diff = System.currentTimeMillis() - time

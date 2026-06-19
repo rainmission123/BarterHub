@@ -211,26 +211,7 @@ class TradeCompletionManager {
             "targetItemCondition" to request.targetItem.condition,
             "status" to "Completed"
         )
-
-        val updates = hashMapOf<String, Any>(
-            "messageType" to "system_trade_completed",
-            "tradeDetails" to updatedTradeDetails,
-            "text" to "Transaction Completed! ✅",
-            "isSystemMessage" to true
-        )
-
-        db.child("chats")
-            .child(chatId)
-            .child("messages")
-            .child(messageId)
-            .updateChildren(updates)
-            .addOnSuccessListener {
-                Log.d(TAG, "✅ System message updated to completed")
-                onCompleted?.invoke()
-            }
-            .addOnFailureListener { e ->
-                Log.e(TAG, "❌ Failed system message update: ${e.message}")
-                onFailure?.invoke(e.message ?: "Failed to update system message")
-            }
+        Log.d(TAG, "✅ Trade completed. Chat message will be created by Cloud Function.")
+        onCompleted?.invoke()
     }
 }

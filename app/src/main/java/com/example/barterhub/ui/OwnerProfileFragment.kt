@@ -21,7 +21,6 @@ class OwnerProfileFragment : Fragment(R.layout.fragment_owner_profile) {
     private lateinit var tvItemsCount: TextView
     private lateinit var tvNoItems: TextView
     private lateinit var itemsAdapter: OwnerProfileItemsAdapter
-
     private lateinit var profileImage: CircleImageView
     private lateinit var userNameText: TextView
     private lateinit var ratingBar: RatingBar
@@ -29,11 +28,9 @@ class OwnerProfileFragment : Fragment(R.layout.fragment_owner_profile) {
     private lateinit var reviewsCountText: TextView
     private lateinit var memberSinceText: TextView
     private lateinit var locationTextView: TextView
-
     private lateinit var badgesContainer: LinearLayout
     private lateinit var progressBar: ProgressBar
     private lateinit var mainContent: LinearLayout
-
     private lateinit var database: DatabaseReference
     private var ownerId: String = ""
 
@@ -48,16 +45,12 @@ class OwnerProfileFragment : Fragment(R.layout.fragment_owner_profile) {
         reviewsCountText = view.findViewById(R.id.reviewsCountText)
         memberSinceText = view.findViewById(R.id.memberSinceText)
         locationTextView = view.findViewById(R.id.locationTextView)
-
         badgesContainer = view.findViewById(R.id.badgesContainer)
         progressBar = view.findViewById(R.id.progressBar)
         mainContent = view.findViewById(R.id.mainContent)
-
         rvOwnerItems = view.findViewById(R.id.rvOwnerItems)
         tvItemsCount = view.findViewById(R.id.tvItemsCount)
         tvNoItems = view.findViewById(R.id.tvNoItems)
-
-        // Adapter
         itemsAdapter = OwnerProfileItemsAdapter(mutableListOf()) { clicked ->
             val bundle = Bundle().apply {
                 putString("itemId", clicked.itemId)
@@ -69,7 +62,6 @@ class OwnerProfileFragment : Fragment(R.layout.fragment_owner_profile) {
         rvOwnerItems.layoutManager = GridLayoutManager(requireContext(), 2)
         rvOwnerItems.adapter = itemsAdapter
 
-        // Owner ID
         ownerId = arguments?.getString("ownerId") ?: ""
 
         if (ownerId.isEmpty()) {
@@ -77,11 +69,9 @@ class OwnerProfileFragment : Fragment(R.layout.fragment_owner_profile) {
             return
         }
 
-        // Badges
         val badgeManager = ProfileBadgeManager(this)
         badgeManager.loadUserBadgesForUserId(ownerId, badgesContainer)
 
-        // Firebase
         database = FirebaseDatabase
             .getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
             .reference
@@ -154,28 +144,32 @@ class OwnerProfileFragment : Fragment(R.layout.fragment_owner_profile) {
     }
 
     private fun loadOwnerInfo() {
-        database.child("users").child(ownerId)
+        database.child("public_users").child(ownerId)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
 
-                    val username = snapshot.child("username").value?.toString() ?: "Unknown User"
-                    val profileUrl = snapshot.child("profileImageUrl").value?.toString() ?: ""
-                    val raw = snapshot.child("memberSince").value
+                    val username = snapshot.child("username").value?.toString()
+                        ?: snapshot.child("fullName").value?.toString()
+                        ?: "Unknown User"
+
+                    val profileUrl = snapshot.child("profileImageUrl").value?.toString()
+                        ?: snapshot.child("profileImage").value?.toString()
+                        ?: ""
 
                     userNameText.text = username
-                    memberSinceText.text = formatMemberSince(raw)
+                    memberSinceText.text = "Member since Unknown"
 
-                    // SAFE LOCATION ONLY
-                    val fullAddress = snapshot.child("address").value?.toString() ?: ""
-                    val safeLocation = fullAddress.split(",").takeLast(2).joinToString(", ")
-                    locationTextView.text = if (safeLocation.isNotBlank()) safeLocation else "Not Provided"
+                    val city = snapshot.child("city").value?.toString() ?: ""
+                    val province = snapshot.child("province").value?.toString() ?: ""
+                    locationTextView.text =
+                        listOf(city, province).filter { it.isNotBlank() }.joinToString(", ")
+                            .ifBlank { "Not Provided" }
 
-                    if (profileUrl.isNotEmpty()) {
-                        Glide.with(requireContext())
-                            .load(profileUrl)
-                            .placeholder(R.drawable.ic_profile)
-                            .into(profileImage)
-                    }
+                    Glide.with(this@OwnerProfileFragment)
+                        .load(profileUrl.ifBlank { R.drawable.ic_profile })
+                        .placeholder(R.drawable.ic_profile)
+                        .error(R.drawable.ic_profile)
+                        .into(profileImage)
 
                     showLoading(false)
                 }
@@ -211,7 +205,7 @@ class OwnerProfileFragment : Fragment(R.layout.fragment_owner_profile) {
     }
 
     private fun loadOwnerStats() {
-        database.child("users").child(ownerId)
+        database.child("public_users").child(ownerId)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val rating = snapshot.child("rating").getValue(Float::class.java) ?: 0f

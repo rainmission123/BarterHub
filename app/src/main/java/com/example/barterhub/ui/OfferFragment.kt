@@ -1,23 +1,28 @@
+package com.example.barterhub.ui
+
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.app.Dialog
 import android.content.ContentResolver
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
-import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.barterhub.databinding.OfferDialogBinding
 import com.example.barterhub.adapters.SelectedPhotosAdapter
+import com.example.barterhub.databinding.FragmentOfferBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.FirebaseDatabase
@@ -28,7 +33,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
-import androidx.navigation.fragment.findNavController
 import okio.IOException
 import org.json.JSONObject
 
@@ -40,37 +44,73 @@ data class UserData(
 )
 
 @Suppress("DEPRECATION")
-class OfferDialogFragment : DialogFragment() {
+class OfferFragment : Fragment() {
 
-    private var _binding: OfferDialogBinding? = null
+    private var _binding: FragmentOfferBinding? = null
     private val binding get() = _binding!!
 
     private val selectedPhotos = mutableListOf<Uri>()
     private lateinit var photosAdapter: SelectedPhotosAdapter
     private var currentPhotoUri: Uri? = null
 
+    private val cameraPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            launchCamera()
+        } else {
+            Toast.makeText(
+                requireContext(),
+                "Camera permission is required to take photos",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    private val takePictureLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) {
+            currentPhotoUri?.let { uri ->
+                selectedPhotos.add(uri)
+                updatePhotosVisibility()
+                Log.d("OfferFragment", "Camera photo added: $uri")
+            }
+        } else {
+            currentPhotoUri = null
+        }
+    }
+
     companion object {
-        private const val REQUEST_CAMERA = 1001
         private const val REQUEST_GALLERY = 1002
         private const val CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dtccox0s0/image/upload"
         private const val UPLOAD_PRESET = "barterhub_ids"
     }
 
     private fun openCamera() {
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            launchCamera()
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    private fun launchCamera() {
         try {
-            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             val photoFile = createImageFile()
             currentPhotoUri = FileProvider.getUriForFile(
                 requireContext(),
                 "${requireContext().packageName}.provider",
                 photoFile
             )
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, currentPhotoUri)
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            startActivityForResult(intent, REQUEST_CAMERA)
+            takePictureLauncher.launch(currentPhotoUri)
         } catch (e: Exception) {
             Toast.makeText(requireContext(), "Camera not available: ${e.message}", Toast.LENGTH_SHORT).show()
-            Log.e("OfferDialog", "Camera error: ${e.message}")
+            Log.e("OfferFragment", "Camera error: ${e.message}")
         }
     }
 
@@ -102,16 +142,6 @@ class OfferDialogFragment : DialogFragment() {
 
         if (resultCode == android.app.Activity.RESULT_OK) {
             when (requestCode) {
-                REQUEST_CAMERA -> {
-                    currentPhotoUri?.let { uri ->
-                        selectedPhotos.add(uri)
-                        updatePhotosVisibility()
-                        Log.d("OfferDialog", "📸 Camera photo added: $uri")
-                    } ?: run {
-                        Log.e("OfferDialog", "❌ Camera photo URI is null")
-                        Toast.makeText(requireContext(), "Failed to capture photo", Toast.LENGTH_SHORT).show()
-                    }
-                }
                 REQUEST_GALLERY -> {
                     if (data?.clipData != null) {
                         val count = data.clipData!!.itemCount
@@ -145,20 +175,22 @@ class OfferDialogFragment : DialogFragment() {
     }
 
     private fun setupClickListeners() {
-        binding.cancelButton.setOnClickListener { dismiss() }
+        binding.cancelButton.setOnClickListener { findNavController().popBackStack() }
         binding.sendOfferButton.setOnClickListener { sendOffer() }
         binding.btnTakePhoto.setOnClickListener { openCamera() }
         binding.btnChooseFromGallery.setOnClickListener { openGallery() }
     }
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        _binding = OfferDialogBinding.inflate(LayoutInflater.from(context))
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentOfferBinding.inflate(inflater, container, false)
         setupRecyclerView()
         setupClickListeners()
         setupConditionDropdown()
-        return AlertDialog.Builder(requireContext())
-            .setView(binding.root)
-            .create()
+        return binding.root
     }
 
     private fun setupConditionDropdown() {
@@ -398,7 +430,7 @@ class OfferDialogFragment : DialogFragment() {
             message = message,
             additionalPhotos = additionalImageUrls
         ) {
-            dismiss()
+            findNavController().popBackStack()
         }
 
     }
@@ -420,12 +452,17 @@ class OfferDialogFragment : DialogFragment() {
             return
         }
 
-        val requestId = FirebaseDatabase.getInstance().reference.push().key ?: return
+        val requestId = FirebaseDatabase.getInstance().reference.push().key
+        if (requestId == null) {
+            Toast.makeText(requireContext(), "Failed to create trade request", Toast.LENGTH_SHORT).show()
+            resetSendButton()
+            return
+        }
 
         loadUserData(requesterId, ownerId) { currentUserData, targetUserData ->
             loadActualItemImage(itemId) { targetItemImageUrl ->
-                loadOfferedItemImage(offeredTitle) { offeredItemImageUrl ->
-                    val finalOfferedImageUrl = offeredItemImageUrl.ifEmpty { "" }
+                run {
+                    val finalOfferedImageUrl = additionalPhotos.firstOrNull().orEmpty()
                     val additionalPhotosString = additionalPhotos.joinToString(",")
 
                     Log.d("OfferDialog", "🎯 Saving to Firebase...")
@@ -511,9 +548,10 @@ class OfferDialogFragment : DialogFragment() {
     }
 
     private fun redirectToProfileFragment() {
-        dismiss()
+        val navController = findNavController()
+        navController.popBackStack()
         try {
-            findNavController().navigate(com.example.barterhub.R.id.nav_profile)
+            navController.navigate(com.example.barterhub.R.id.nav_profile)
             Toast.makeText(requireContext(), "Please complete ID verification", Toast.LENGTH_LONG).show()
         } catch (e: Exception) {
             Log.e("OfferDialog", "Navigation error: ${e.message}")
@@ -571,56 +609,9 @@ class OfferDialogFragment : DialogFragment() {
             }
             .addOnFailureListener { e ->
                 Log.e("OfferDialog", "❌ Failed to load target item image: ${e.message}")
+                Toast.makeText(requireContext(), "Failed to load item image. Continuing without it.", Toast.LENGTH_SHORT).show()
                 onComplete("")
             }
-    }
-
-    private fun loadOfferedItemImage(offeredItemTitle: String, onComplete: (String) -> Unit) {
-        val database = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/").reference
-        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
-
-        if (currentUserId.isEmpty()) {
-            Log.w("OfferDialog", "❌ No current user ID")
-            onComplete("")
-            return
-        }
-
-        Log.d("OfferDialog", "🔍 Searching for: '$offeredItemTitle'")
-
-        database.child("items")
-            .orderByChild("ownerId")
-            .equalTo(currentUserId)
-            .get()
-            .addOnSuccessListener { snapshot ->
-                var foundImageUrl = ""
-                Log.d("OfferDialog", "📦 Found ${snapshot.childrenCount} items for user")
-
-                for (itemSnap in snapshot.children) {
-                    val itemTitle = itemSnap.child("title").getValue(String::class.java) ?: ""
-                    if (itemTitle.equals(offeredItemTitle, ignoreCase = true)) {
-                        foundImageUrl = extractImageUrl(itemSnap)
-                        Log.d("OfferDialog", "✅ Exact match: '$itemTitle' -> '$foundImageUrl'")
-                        break
-                    }
-                }
-
-                if (foundImageUrl.isEmpty()) {
-                    Log.w("OfferDialog", "❌ No match found for: '$offeredItemTitle'")
-                }
-
-                onComplete(foundImageUrl)
-            }
-            .addOnFailureListener { e ->
-                Log.e("OfferDialog", "❌ Failed to search items: ${e.message}")
-                onComplete("")
-            }
-    }
-
-    private fun extractImageUrl(itemSnap: DataSnapshot): String {
-        return itemSnap.child("imageUrl").getValue(String::class.java)
-            ?: itemSnap.child("imageUrls").getValue(String::class.java)?.split(",")?.firstOrNull()
-            ?: itemSnap.child("image").getValue(String::class.java)
-            ?: ""
     }
 
     private fun loadUserData(
@@ -628,91 +619,114 @@ class OfferDialogFragment : DialogFragment() {
         targetUserId: String,
         onComplete: (UserData, UserData) -> Unit
     ) {
-        val database = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
-            .getReference("users")
-
-        database.child(currentUserId).get().addOnSuccessListener { currentUserSnap ->
-            val currentUserData = if (currentUserSnap.exists()) {
-                val username = currentUserSnap.child("username").getValue(String::class.java)
-                    ?: currentUserSnap.child("fullName").getValue(String::class.java)
-                    ?: "User_${currentUserId.takeLast(4)}"
-
-                val profileImage = currentUserSnap.child("profileImageUrl").getValue(String::class.java) ?: ""
-
-                val location = currentUserSnap.child("completeAddress").getValue(String::class.java)
-                    ?: currentUserSnap.child("address").getValue(String::class.java)
-                    ?: currentUserSnap.child("userLocation").getValue(String::class.java)
-                    ?: currentUserSnap.child("location").getValue(String::class.java)
-                    ?: buildAddressFromParts(
-                        currentUserSnap.child("barangay").getValue(String::class.java),
-                        currentUserSnap.child("city").getValue(String::class.java),
-                        currentUserSnap.child("province").getValue(String::class.java)
-                    )
-                    ?: "Address not set"
-
-                val rating = currentUserSnap.child("rating").getValue(Double::class.java) ?: 0.0
-
-                UserData(username, profileImage, location, rating)
-            } else {
-                UserData(
-                    username = "User_${currentUserId.takeLast(4)}",
-                    profileImage = "",
-                    location = "Address not set",
-                    rating = 0.0
-                )
-            }
-
-            database.child(targetUserId).get().addOnSuccessListener { targetUserSnap ->
-                val targetUserData = if (targetUserSnap.exists()) {
-                    val username = targetUserSnap.child("username").getValue(String::class.java)
-                        ?: targetUserSnap.child("fullName").getValue(String::class.java)
-                        ?: "User_${targetUserId.takeLast(4)}"
-
-                    val profileImage = targetUserSnap.child("profileImageUrl").getValue(String::class.java) ?: ""
-
-                    val location = targetUserSnap.child("completeAddress").getValue(String::class.java)
-                        ?: targetUserSnap.child("address").getValue(String::class.java)
-                        ?: targetUserSnap.child("userLocation").getValue(String::class.java)
-                        ?: targetUserSnap.child("location").getValue(String::class.java)
-                        ?: buildAddressFromParts(
-                            targetUserSnap.child("barangay").getValue(String::class.java),
-                            targetUserSnap.child("city").getValue(String::class.java),
-                            targetUserSnap.child("province").getValue(String::class.java)
-                        )
-                        ?: "Address not set"
-
-                    val rating = targetUserSnap.child("rating").getValue(Double::class.java) ?: 0.0
-
-                    UserData(username, profileImage, location, rating)
-                } else {
-                    UserData(
-                        username = "User_${targetUserId.takeLast(4)}",
-                        profileImage = "",
-                        location = "Address not set",
-                        rating = 0.0
-                    )
-                }
-
+        loadSingleUserData(currentUserId) { currentUserData ->
+            loadSingleUserData(targetUserId) { targetUserData ->
                 onComplete(currentUserData, targetUserData)
             }
-        }.addOnFailureListener {
-            Log.e("OfferDialog", "❌ Failed to load user data: ${it.message}")
-            val currentUserData = UserData(
-                username = "User_${currentUserId.takeLast(4)}",
-                profileImage = "",
-                location = "Address not set",
-                rating = 0.0
-            )
-            val targetUserData = UserData(
-                username = "User_${targetUserId.takeLast(4)}",
-                profileImage = "",
-                location = "Address not set",
-                rating = 0.0
-            )
-            onComplete(currentUserData, targetUserData)
         }
     }
 
+    private fun loadSingleUserData(userId: String, onComplete: (UserData) -> Unit) {
+        val database = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/").reference
+
+        database.child("public_users").child(userId).get()
+            .addOnSuccessListener { publicUserSnap ->
+                database.child("users").child(userId).get()
+                    .addOnSuccessListener { userSnap ->
+                        onComplete(buildUserData(userId, publicUserSnap, userSnap))
+                    }
+                    .addOnFailureListener { error ->
+                        Log.e("OfferDialog", "Failed to load private user data: ${error.message}")
+                        Toast.makeText(requireContext(), "Failed to load some user details. Continuing with public data.", Toast.LENGTH_SHORT).show()
+                        onComplete(buildUserData(userId, publicUserSnap, null))
+                    }
+            }
+            .addOnFailureListener { error ->
+                Log.e("OfferDialog", "Failed to load public user data: ${error.message}")
+                Toast.makeText(requireContext(), "Failed to load public user details. Trying fallback data.", Toast.LENGTH_SHORT).show()
+
+                database.child("users").child(userId).get()
+                    .addOnSuccessListener { userSnap ->
+                        onComplete(buildUserData(userId, null, userSnap))
+                    }
+                    .addOnFailureListener { privateError ->
+                        Log.e("OfferDialog", "Failed to load fallback user data: ${privateError.message}")
+                        Toast.makeText(requireContext(), "Failed to load user details. Continuing with fallback data.", Toast.LENGTH_SHORT).show()
+                        onComplete(createFallbackUserData(userId))
+                    }
+            }
+    }
+
+    private fun buildUserData(
+        userId: String,
+        publicUserSnap: DataSnapshot?,
+        userSnap: DataSnapshot?
+    ): UserData {
+        val username = firstNonBlank(
+            publicUserSnap?.child("username")?.getValue(String::class.java),
+            publicUserSnap?.child("fullName")?.getValue(String::class.java),
+            userSnap?.child("username")?.getValue(String::class.java),
+            userSnap?.child("fullName")?.getValue(String::class.java)
+        ) ?: "User_${userId.takeLast(4)}"
+
+        val profileImage = firstNonBlank(
+            publicUserSnap?.child("profileImageUrl")?.getValue(String::class.java),
+            publicUserSnap?.child("profileImage")?.getValue(String::class.java),
+            userSnap?.child("profileImageUrl")?.getValue(String::class.java),
+            userSnap?.child("profileImage")?.getValue(String::class.java)
+        ).orEmpty()
+
+        val location = firstNonBlank(
+            publicUserSnap?.child("location")?.getValue(String::class.java),
+            publicUserSnap?.child("address")?.getValue(String::class.java),
+            publicUserSnap?.child("completeAddress")?.getValue(String::class.java),
+            publicUserSnap?.child("userLocation")?.getValue(String::class.java),
+            buildAddressFromSnapshot(publicUserSnap),
+            userSnap?.child("location")?.getValue(String::class.java),
+            userSnap?.child("address")?.getValue(String::class.java),
+            userSnap?.child("completeAddress")?.getValue(String::class.java),
+            userSnap?.child("userLocation")?.getValue(String::class.java),
+            buildAddressFromSnapshot(userSnap)
+        ) ?: "Address not set"
+
+        val rating = readRating(publicUserSnap?.child("rating")?.value)
+            ?: readRating(userSnap?.child("rating")?.value)
+            ?: 0.0
+
+        return UserData(username, profileImage, location, rating)
+    }
+
+    private fun createFallbackUserData(userId: String): UserData {
+        return UserData(
+            username = "User_${userId.takeLast(4)}",
+            profileImage = "",
+            location = "Address not set",
+            rating = 0.0
+        )
+    }
+
+    private fun firstNonBlank(vararg values: String?): String? {
+        return values.firstOrNull { !it.isNullOrBlank() }?.trim()
+    }
+
+    private fun readRating(value: Any?): Double? {
+        return when (value) {
+            is Double -> value
+            is Long -> value.toDouble()
+            is Int -> value.toDouble()
+            is String -> value.toDoubleOrNull()
+            else -> null
+        }
+    }
+
+    private fun buildAddressFromSnapshot(snapshot: DataSnapshot?): String? {
+        if (snapshot == null) return null
+        return buildAddressFromParts(
+            snapshot.child("barangay").getValue(String::class.java),
+            snapshot.child("city").getValue(String::class.java),
+            snapshot.child("province").getValue(String::class.java)
+        )
+    }
     private fun buildAddressFromParts(barangay: String?, city: String?, province: String?): String? {
         val parts = listOf(barangay, city, province).filter { !it.isNullOrEmpty() }
         return if (parts.isNotEmpty()) parts.joinToString(", ") else null

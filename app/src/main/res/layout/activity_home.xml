@@ -29,9 +29,10 @@
             <com.google.android.material.bottomnavigation.BottomNavigationView
                 android:id="@+id/bottomNavigation"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/bottom_nav_height"
                 android:background="@android:color/transparent"
-                app:itemIconSize="18dp"
+                app:itemIconSize="24dp"
                 app:itemIconTint="@color/bottom_nav_icon_selector"
                 app:itemRippleColor="@color/White"
                 app:itemTextAppearanceActive="@style/BottomNavTextActive"
@@ -46,7 +47,7 @@
 
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigationView"
-        android:layout_width="280dp"
+        android:layout_width="@dimen/nav_drawer_max_width"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         app:headerLayout="@layout/nav_header"

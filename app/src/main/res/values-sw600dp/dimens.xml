@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="auth_screen_horizontal_padding">96dp</dimen>
+    <dimen name="form_screen_horizontal_padding">96dp</dimen>
+    <dimen name="receipt_screen_padding">96dp</dimen>
+    <dimen name="bottom_nav_content_clearance">96dp</dimen>
+    <dimen name="game_dialog_art_size">280dp</dimen>
+</resources>

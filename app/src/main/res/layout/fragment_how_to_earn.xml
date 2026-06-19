@@ -12,7 +12,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:paddingStart="@dimen/form_screen_horizontal_padding"
+        android:paddingTop="20dp"
+        android:paddingEnd="@dimen/form_screen_horizontal_padding"
+        android:paddingBottom="20dp">
 
         <!-- Header with Icon -->
         <LinearLayout

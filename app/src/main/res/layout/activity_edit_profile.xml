@@ -8,7 +8,10 @@
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
     android:fillViewport="true"
-    android:padding="20dp"
+    android:paddingStart="@dimen/form_screen_horizontal_padding"
+    android:paddingTop="20dp"
+    android:paddingEnd="@dimen/form_screen_horizontal_padding"
+    android:paddingBottom="20dp"
     tools:context=".ui.EditProfileActivity">
 
     <LinearLayout

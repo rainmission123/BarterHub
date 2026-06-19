@@ -93,7 +93,7 @@ class AddPhotosFragment : Fragment() {
             val photoFile = File(currentPhotoPath)
             val photoUri = FileProvider.getUriForFile(
                 requireContext(),
-                "${requireContext().packageName}.fileprovider",
+                "${requireContext().packageName}.provider",
                 photoFile
             )
             addImageToContainer(photoUri)
@@ -216,7 +216,7 @@ class AddPhotosFragment : Fragment() {
 
             val photoUri = FileProvider.getUriForFile(
                 requireContext(),
-                "${requireContext().packageName}.fileprovider",
+                "${requireContext().packageName}.provider",
                 photoFile
             )
 

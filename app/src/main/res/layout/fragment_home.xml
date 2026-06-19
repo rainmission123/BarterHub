@@ -23,6 +23,8 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:orientation="vertical"
+        android:paddingStart="@dimen/home_content_horizontal_padding"
+        android:paddingEnd="@dimen/home_content_horizontal_padding"
         android:visibility="visible"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -309,7 +311,7 @@
 
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="match_parent"
-                            android:layout_height="160dp"
+                            android:layout_height="@dimen/home_trending_height"
                             android:layout_marginBottom="8dp"
                             app:cardBackgroundColor="?attr/colorSurface"
                             app:cardCornerRadius="8dp"
@@ -345,7 +347,7 @@
                             <!-- Electronics -->
                             <LinearLayout
                                 android:id="@+id/categoryElectronics"
-                                android:layout_width="100dp"
+                                android:layout_width="@dimen/category_item_size"
                                 android:layout_height="wrap_content"
                                 android:layout_marginEnd="16dp"
                                 android:gravity="center_horizontal"
@@ -353,7 +355,7 @@
 
                                 <com.google.android.material.card.MaterialCardView
                                     android:layout_width="match_parent"
-                                    android:layout_height="100dp"
+                                    android:layout_height="@dimen/category_item_size"
                                     app:cardCornerRadius="16dp"
                                     app:cardElevation="1dp"
                                     app:strokeWidth="0.2dp"
@@ -383,7 +385,7 @@
                             <!-- Clothing -->
                             <LinearLayout
                                 android:id="@+id/categoryClothing"
-                                android:layout_width="100dp"
+                                android:layout_width="@dimen/category_item_size"
                                 android:layout_height="wrap_content"
                                 android:layout_marginEnd="16dp"
                                 android:gravity="center_horizontal"
@@ -391,7 +393,7 @@
 
                                 <com.google.android.material.card.MaterialCardView
                                     android:layout_width="match_parent"
-                                    android:layout_height="100dp"
+                                    android:layout_height="@dimen/category_item_size"
                                     app:cardBackgroundColor="?attr/colorSurface"
                                     app:cardCornerRadius="16dp"
                                     app:cardElevation="1dp"
@@ -421,7 +423,7 @@
                             <!-- Home & Kitchen -->
                             <LinearLayout
                                 android:id="@+id/categoryHomeKitchen"
-                                android:layout_width="100dp"
+                                android:layout_width="@dimen/category_item_size"
                                 android:layout_height="wrap_content"
                                 android:layout_marginEnd="16dp"
                                 android:gravity="center_horizontal"
@@ -429,7 +431,7 @@
 
                                 <com.google.android.material.card.MaterialCardView
                                     android:layout_width="match_parent"
-                                    android:layout_height="100dp"
+                                    android:layout_height="@dimen/category_item_size"
                                     app:cardBackgroundColor="?attr/colorSurface"
                                     app:cardCornerRadius="16dp"
                                     app:cardElevation="1dp"
@@ -459,7 +461,7 @@
                             <!-- Books & Education -->
                             <LinearLayout
                                 android:id="@+id/categoryBooks"
-                                android:layout_width="100dp"
+                                android:layout_width="@dimen/category_item_size"
                                 android:layout_height="wrap_content"
                                 android:layout_marginEnd="16dp"
                                 android:gravity="center_horizontal"
@@ -467,7 +469,7 @@
 
                                 <com.google.android.material.card.MaterialCardView
                                     android:layout_width="match_parent"
-                                    android:layout_height="100dp"
+                                    android:layout_height="@dimen/category_item_size"
                                     app:cardBackgroundColor="?attr/colorSurface"
                                     app:cardCornerRadius="16dp"
                                     app:strokeColor="?attr/colorOnSurface"
@@ -497,7 +499,7 @@
                             <!-- Sports -->
                             <LinearLayout
                                 android:id="@+id/categorySports"
-                                android:layout_width="100dp"
+                                android:layout_width="@dimen/category_item_size"
                                 android:layout_height="wrap_content"
                                 android:layout_marginEnd="16dp"
                                 android:gravity="center_horizontal"
@@ -505,7 +507,7 @@
 
                                 <com.google.android.material.card.MaterialCardView
                                     android:layout_width="match_parent"
-                                    android:layout_height="100dp"
+                                    android:layout_height="@dimen/category_item_size"
                                     app:cardBackgroundColor="?attr/colorSurface"
                                     app:cardCornerRadius="16dp"
                                     app:cardElevation="1dp"
@@ -535,7 +537,7 @@
                             <!-- View All -->
                             <LinearLayout
                                 android:id="@+id/viewAllCategories"
-                                android:layout_width="100dp"
+                                android:layout_width="@dimen/category_item_size"
                                 android:layout_height="wrap_content"
                                 android:layout_marginEnd="16dp"
                                 android:clickable="true"
@@ -546,7 +548,7 @@
 
                                 <com.google.android.material.card.MaterialCardView
                                     android:layout_width="match_parent"
-                                    android:layout_height="100dp"
+                                    android:layout_height="@dimen/category_item_size"
                                     app:cardBackgroundColor="?attr/colorSurface"
                                     app:cardCornerRadius="16dp"
                                     app:cardElevation="1dp"

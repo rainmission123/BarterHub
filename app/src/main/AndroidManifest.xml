@@ -134,7 +134,6 @@
         <activity
             android:name=".ui.SplashActivity"
             android:exported="true"
-            android:screenOrientation="portrait"
             android:theme="@style/Theme.BarterHub">
 
             <intent-filter>
@@ -146,7 +145,6 @@
         <activity
             android:name=".ui.LoginActivity"
             android:exported="true"
-            android:screenOrientation="portrait"
             android:theme="@style/Theme.BarterHub" />
 
         <activity
@@ -157,14 +155,12 @@
         <activity
             android:name=".ui.SignupActivity"
             android:exported="true"
-            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize|stateHidden"
             android:theme="@style/Theme.BarterHub" />
 
         <activity
             android:name=".ui.EditProfileActivity"
             android:exported="true"
-            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize|stateHidden"
             android:theme="@style/Theme.BarterHub" />
 

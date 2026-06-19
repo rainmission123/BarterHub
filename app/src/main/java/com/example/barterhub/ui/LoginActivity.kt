@@ -326,6 +326,17 @@ class LoginActivity : AppCompatActivity() {
             return
         }
 
+        if (openAfterLogin == "trade_request") {
+            val homeIntent = Intent(this, HomeActivity::class.java).apply {
+                putExtra("notification_type", "trade_request")
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+
+            startActivity(homeIntent)
+            finish()
+            return
+        }
+
         startActivity(Intent(this, HomeActivity::class.java))
         finish()
     }

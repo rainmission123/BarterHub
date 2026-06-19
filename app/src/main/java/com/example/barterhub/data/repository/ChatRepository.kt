@@ -105,6 +105,10 @@ class ChatRepository @Inject constructor(
             "lastMessage" to (firstMessage.text ?: ""),
             "lastMessageTime" to (firstMessage.timestamp ?: System.currentTimeMillis()),
             "createdAt" to System.currentTimeMillis(),
+            "unreadCount" to mapOf(
+                userId1 to 0,
+                userId2 to 1
+            ),
             "messages" to mapOf(messageId to firstMessage)
         )
 
@@ -159,6 +163,7 @@ class ChatRepository @Inject constructor(
         }
 
         inboxRef.child(userId).child(chatId).child("unreadCount").setValue(0).await()
+        messagesRef.child(chatId).child("unreadCount").child(userId).setValue(0).await()
     }
 
     override suspend fun clearChatForUser(chatId: String, userId: String) {
@@ -168,7 +173,11 @@ class ChatRepository @Inject constructor(
     override fun observePartnerStatus(userId: String, onStatusChange: (String) -> Unit): ValueEventListener {
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val state = snapshot.child("state").getValue(String::class.java) ?: "offline"
+                val state = snapshot.child("state").getValue(String::class.java)
+                    ?: snapshot.child("isOnline").getValue(Boolean::class.java)?.let { isOnline ->
+                        if (isOnline) "online" else "offline"
+                    }
+                    ?: "offline"
                 onStatusChange(state)
             }
 
@@ -180,18 +189,42 @@ class ChatRepository @Inject constructor(
     }
 
     override fun setupUserPresence(userId: String) {
-        val myStatusRef = statusRef.child(userId)
-        val onlineStatus = mapOf(
-            "state" to "online",
-            "lastSeen" to System.currentTimeMillis()
-        )
-        val offlineStatus = mapOf(
-            "state" to "offline",
-            "lastSeen" to System.currentTimeMillis()
-        )
+        if (userId.isBlank()) return
 
-        myStatusRef.setValue(onlineStatus)
-        myStatusRef.onDisconnect().setValue(offlineStatus)
+        val myStatusRef = statusRef.child(userId)
+        val connectedRef = database.getReference(".info/connected")
+
+        connectedRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val connected = snapshot.getValue(Boolean::class.java) == true
+                if (!connected) return
+
+                val offlineStatus = mapOf(
+                    "state" to "offline",
+                    "lastSeen" to ServerValue.TIMESTAMP,
+                    "isOnline" to false
+                )
+
+                val onlineStatus = mapOf(
+                    "state" to "online",
+                    "lastSeen" to ServerValue.TIMESTAMP,
+                    "isOnline" to true
+                )
+
+                myStatusRef.onDisconnect().setValue(offlineStatus)
+                    .addOnSuccessListener {
+                        myStatusRef.setValue(onlineStatus)
+                        Log.d("ChatRepository", "Presence set online for $userId")
+                    }
+                    .addOnFailureListener { error ->
+                        Log.e("ChatRepository", "Failed to register onDisconnect: ${error.message}")
+                    }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("ChatRepository", "Presence connection listener cancelled: ${error.message}")
+            }
+        })
     }
 
     override fun removeMessagesListener(chatId: String, listener: ChildEventListener) {
@@ -231,14 +264,33 @@ class ChatRepository @Inject constructor(
         inboxRef.child(message.receiverId).child(chatId).updateChildren(updates).await()
 
         if (message.senderId != message.receiverId) {
-            try {
-                val unreadSnapshot = inboxRef.child(message.receiverId).child(chatId).child("unreadCount").get().await()
-                val currentCount = unreadSnapshot.getValue(Int::class.java) ?: 0
-                inboxRef.child(message.receiverId).child(chatId).child("unreadCount").setValue(currentCount + 1).await()
-            } catch (e: Exception) {
-                inboxRef.child(message.receiverId).child(chatId).child("unreadCount").setValue(1).await()
-            }
+            incrementUnreadCounter(
+                inboxRef.child(message.receiverId).child(chatId).child("unreadCount")
+            )
+            incrementUnreadCounter(
+                messagesRef.child(chatId).child("unreadCount").child(message.receiverId)
+            )
         }
+    }
+
+    private fun incrementUnreadCounter(counterRef: DatabaseReference) {
+        counterRef.runTransaction(object : Transaction.Handler {
+            override fun doTransaction(currentData: MutableData): Transaction.Result {
+                val currentCount = currentData.getValue(Int::class.java) ?: 0
+                currentData.value = currentCount + 1
+                return Transaction.success(currentData)
+            }
+
+            override fun onComplete(
+                error: DatabaseError?,
+                committed: Boolean,
+                currentData: DataSnapshot?
+            ) {
+                if (error != null) {
+                    Log.e("ChatRepository", "Failed to increment unread count: ${error.message}")
+                }
+            }
+        })
     }
 
     override suspend fun getLastMessageAfterDeletion(chatId: String, userId: String): Pair<String, Long>? {

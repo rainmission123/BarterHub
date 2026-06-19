@@ -86,7 +86,7 @@ class ChatViewModel(
         partnerStatusListener = chatRepository.observePartnerStatus(partnerId) { status ->
             viewModelScope.launch {
                 _state.value = _state.value.copy(
-                    partnerStatus = if (status == "online") "Online" else "Offline"
+                    partnerStatus = if (status.equals("online", ignoreCase = true)) "Online" else "Offline"
                 )
             }
         }

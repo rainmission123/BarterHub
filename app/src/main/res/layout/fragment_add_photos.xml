@@ -6,12 +6,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_home_profile_logo"
+    android:fitsSystemWindows="true"
     tools:context=".ui.AddPhotosFragment">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dp"
+        android:paddingStart="@dimen/form_screen_horizontal_padding"
+        android:paddingTop="16dp"
+        android:paddingEnd="@dimen/form_screen_horizontal_padding"
+        android:paddingBottom="16dp"
         android:clipToPadding="false"
         android:fillViewport="true"
         android:scrollbars="none">

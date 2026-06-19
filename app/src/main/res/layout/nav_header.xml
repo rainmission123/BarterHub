@@ -4,7 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="192dp"
+    android:layout_height="wrap_content"
+    android:minHeight="192dp"
     android:background="@drawable/bg_home_profile_logo"
     android:padding="20dp"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
@@ -60,7 +61,7 @@
 
             <TextView
                 android:id="@+id/userEmail"
-                android:layout_width="252dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:ellipsize="end"
@@ -70,7 +71,7 @@
                 android:textSize="14sp" />
 
             <View
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="2dp"
                 android:background="@color/White"
                 android:layout_marginTop="8dp"

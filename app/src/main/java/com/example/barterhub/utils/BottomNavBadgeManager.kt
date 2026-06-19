@@ -10,7 +10,9 @@ class BottomNavBadgeManager(
 ) {
 
     private val auth = FirebaseAuth.getInstance()
-    private val database = FirebaseDatabase.getInstance().reference
+    private val database = FirebaseDatabase
+        .getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
+        .reference
 
     private var messageListener: ValueEventListener? = null
     private var notificationListener: ValueEventListener? = null
@@ -21,15 +23,32 @@ class BottomNavBadgeManager(
     fun listenForMessagesBadge() {
         val uid = auth.currentUser?.uid ?: return
 
-        val inboxRef = database.child("user_inbox").child(uid)
+        val chatsRef = database.child("chats")
 
-        messageListener = inboxRef.addValueEventListener(object : ValueEventListener {
+        messageListener = chatsRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 var totalUnread = 0
 
                 for (chatSnap in snapshot.children) {
-                    totalUnread += chatSnap.child("unreadCount")
-                        .getValue(Int::class.java) ?: 0
+                    if (!chatSnap.child("participants").child(uid).exists() &&
+                        !chatSnap.key.orEmpty().contains(uid)
+                    ) {
+                        continue
+                    }
+
+                    val unreadFromCounter = chatSnap.child("unreadCount")
+                        .child(uid)
+                        .getValue(Int::class.java)
+
+                    totalUnread += unreadFromCounter
+                        ?: chatSnap.child("messages").children.count { messageSnap ->
+                            val read = messageSnap.child("read")
+                                .getValue(Boolean::class.java) ?: true
+                            val receiverId = messageSnap.child("receiverId")
+                                .getValue(String::class.java)
+
+                            !read && receiverId == uid
+                        }
                 }
 
                 updateBadge(R.id.nav_messages, totalUnread)
@@ -95,7 +114,7 @@ class BottomNavBadgeManager(
         val uid = auth.currentUser?.uid ?: return
 
         messageListener?.let {
-            database.child("user_inbox").child(uid).removeEventListener(it)
+            database.child("chats").removeEventListener(it)
         }
 
         notificationListener?.let {

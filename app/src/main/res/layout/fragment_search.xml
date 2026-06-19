@@ -5,7 +5,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
+    android:background="?attr/colorSurface"
+    android:fitsSystemWindows="true">
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/searchScrollView"
@@ -13,7 +14,7 @@
         android:layout_height="match_parent"
         android:fillViewport="true"
         android:clipToPadding="false"
-        android:paddingBottom="20dp">
+        android:paddingBottom="@dimen/bottom_nav_content_clearance">
 
         <LinearLayout
             android:layout_width="match_parent"

@@ -312,7 +312,26 @@
         <action
             android:id="@+id/action_itemDetailFragment_to_fullScreenMapFragment"
             app:destination="@id/fullScreenMapFragment" />
+        <action
+            android:id="@+id/action_itemDetailFragment_to_offerFragment"
+            app:destination="@id/offerFragment" />
 
+    </fragment>
+
+    <fragment
+        android:id="@+id/offerFragment"
+        android:name="com.example.barterhub.ui.OfferFragment"
+        android:label="Make an Offer"
+        tools:layout="@layout/fragment_offer">
+        <argument
+            android:name="itemId"
+            app:argType="string" />
+        <argument
+            android:name="ownerId"
+            app:argType="string" />
+        <argument
+            android:name="itemTitle"
+            app:argType="string" />
     </fragment>
 
     <!-- Trade History -->

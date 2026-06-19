@@ -34,7 +34,8 @@ class TradeNotificationManager {
     fun notifyRated(
         currentUserId: String,
         chatId: String,
-        request: TradeRequest
+        request: TradeRequest,
+        rating: Int
     ) {
         val partnerId = getPartnerId(currentUserId, request)
         val currentUserName = getCurrentUserName(currentUserId, request)
@@ -45,7 +46,8 @@ class TradeNotificationManager {
             type = "trade_rated",
             chatId = chatId,
             request = request,
-            message = "$currentUserName submitted a rating for your barter."
+            message = "$currentUserName submitted a rating for your barter.",
+            rating = rating
         )
     }
 
@@ -159,28 +161,43 @@ class TradeNotificationManager {
         type: String,
         chatId: String,
         request: TradeRequest,
-        message: String
+        message: String,
+        rating: Int? = null
     ) {
-        val notifRef = db.child("notifications").child(targetUserId).push()
-        val notifId = notifRef.key ?: return
+        val cloudType = when (type) {
+            "trade_completed_clicked" -> "trade_completed"
+            "trade_rated" -> "rating_submitted"
+            else -> type
+        }
 
-        val notification = hashMapOf<String, Any>(
-            "id" to notifId,
-            "type" to type,
+        val fromUserName = getCurrentUserName(fromUserId, request)
+
+        val event = hashMapOf<String, Any>(
+            "type" to cloudType,
+            "toUserId" to targetUserId,
             "fromUserId" to fromUserId,
-            "requestId" to request.requestId,
+            "fromUserName" to fromUserName,
             "chatId" to chatId,
+            "partnerId" to fromUserId,
+            "partnerName" to fromUserName,
+            "requestId" to request.requestId,
+            "tradeId" to request.requestId,
             "message" to message,
-            "timestamp" to System.currentTimeMillis(),
-            "read" to false
+            "timestamp" to System.currentTimeMillis()
         )
 
-        notifRef.setValue(notification)
+        rating?.let {
+            event["rating"] = it
+        }
+
+        db.child("trade_events")
+            .push()
+            .setValue(event)
             .addOnSuccessListener {
-                Log.d(TAG, "✅ Notification sent: $type to $targetUserId")
+                Log.d(TAG, "✅ Trade event sent to cloud: $cloudType to $targetUserId")
             }
             .addOnFailureListener { e ->
-                Log.e(TAG, "❌ Failed notification: ${e.message}")
+                Log.e(TAG, "❌ Failed trade event: ${e.message}")
             }
     }
 

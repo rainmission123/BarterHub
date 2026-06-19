@@ -7,8 +7,11 @@
 
     <ImageView
         android:id="@+id/ivProfileDialog"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:maxHeight="480dp"
+        android:minHeight="200dp"
         android:scaleType="centerCrop"
         android:src="@drawable/ic_profile_placeholder" />
 

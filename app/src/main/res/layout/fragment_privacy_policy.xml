@@ -4,7 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp"
+    android:fitsSystemWindows="true"
+    android:paddingStart="@dimen/form_screen_horizontal_padding"
+    android:paddingTop="24dp"
+    android:paddingEnd="@dimen/form_screen_horizontal_padding"
+    android:paddingBottom="24dp"
     android:background="?attr/colorSurface">
 
     <LinearLayout

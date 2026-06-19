@@ -21,6 +21,7 @@
         <item name="colorOnError">@color/white</item>
 
         <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar" tools:targetApi="27">false</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
 

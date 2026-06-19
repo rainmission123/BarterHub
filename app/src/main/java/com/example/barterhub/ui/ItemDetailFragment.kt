@@ -1,6 +1,5 @@
 package com.example.barterhub.ui
 
-import OfferDialogFragment
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -36,6 +35,10 @@ class ItemDetailFragment : Fragment() {
     private var itemLatitude: Double = 0.0
     private var itemLongitude: Double = 0.0
     private var isLiked = false
+
+    private fun isUiActive(): Boolean {
+        return isAdded && _binding != null && context != null
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -167,6 +170,8 @@ class ItemDetailFragment : Fragment() {
         itemDatabase.child(itemId).addListenerForSingleValueEvent(
             object : com.google.firebase.database.ValueEventListener {
                 override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
+                    if (!isAdded || _binding == null || context == null) return
+
                     if (!snapshot.exists()) {
                         Toast.makeText(requireContext(), "Item not found", Toast.LENGTH_SHORT).show()
                         findNavController().popBackStack()
@@ -300,6 +305,7 @@ class ItemDetailFragment : Fragment() {
                 }
 
                 override fun onCancelled(error: com.google.firebase.database.DatabaseError) {
+                    if (!isAdded || _binding == null || context == null) return
                     Toast.makeText(requireContext(), "Failed to load item: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -322,6 +328,8 @@ class ItemDetailFragment : Fragment() {
         userDatabase.child(ownerId).addListenerForSingleValueEvent(
             object : com.google.firebase.database.ValueEventListener {
                 override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
+                    if (!isAdded || _binding == null || context == null) return
+
                     if (!snapshot.exists()) {
                         binding.itemOwner.text = "Unknown"
                         binding.ownerRating.text = ""
@@ -381,6 +389,8 @@ class ItemDetailFragment : Fragment() {
                 }
 
                 override fun onCancelled(error: com.google.firebase.database.DatabaseError) {
+                    if (!isAdded || _binding == null || context == null) return
+
                     binding.itemOwner.text = "Unknown"
                     binding.ownerRating.text = ""
 
@@ -407,8 +417,11 @@ class ItemDetailFragment : Fragment() {
             .child(currentUserId)
 
         likeRef.get().addOnSuccessListener { snapshot ->
+            if (!isAdded || _binding == null || context == null) return@addOnSuccessListener
             isLiked = snapshot.exists()
-            updateLikeButton()
+            updateLikeButton(isLiked)
+        }.addOnFailureListener {
+            if (!isAdded || _binding == null || context == null) return@addOnFailureListener
         }
     }
 
@@ -428,11 +441,13 @@ class ItemDetailFragment : Fragment() {
         val favoritesRef = db.getReference("favorites").child(currentUserId).child(itemId)
 
         likeRef.get().addOnSuccessListener { snap ->
+            if (!isAdded || _binding == null || context == null) return@addOnSuccessListener
             val alreadyLiked = snap.exists()
 
             if (alreadyLiked) {
                 // UNLIKE
                 likeRef.removeValue().addOnSuccessListener {
+                    if (!isAdded || _binding == null || context == null) return@addOnSuccessListener
                     itemRef.child("likeCount").runTransaction(object : com.google.firebase.database.Transaction.Handler {
                         override fun doTransaction(currentData: com.google.firebase.database.MutableData): com.google.firebase.database.Transaction.Result {
                             val current = (currentData.getValue(Long::class.java) ?: 0L)
@@ -445,13 +460,15 @@ class ItemDetailFragment : Fragment() {
                             committed: Boolean,
                             currentData: com.google.firebase.database.DataSnapshot?
                         ) {
+                            if (!isUiActive()) return
+
                             if (error != null) {
                                 Toast.makeText(requireContext(), "Failed to unlike", Toast.LENGTH_SHORT).show()
                                 return
                             }
                             favoritesRef.removeValue() // optional
                             isLiked = false
-                            updateLikeButton()
+                            updateLikeButton(isLiked)
                             Toast.makeText(requireContext(), "Item unliked", Toast.LENGTH_SHORT).show()
                         }
                     })
@@ -459,6 +476,7 @@ class ItemDetailFragment : Fragment() {
             } else {
                 // LIKE
                 likeRef.setValue(true).addOnSuccessListener {
+                    if (!isAdded || _binding == null || context == null) return@addOnSuccessListener
                     itemRef.child("likeCount").runTransaction(object : com.google.firebase.database.Transaction.Handler {
                         override fun doTransaction(currentData: com.google.firebase.database.MutableData): com.google.firebase.database.Transaction.Result {
                             val current = (currentData.getValue(Long::class.java) ?: 0L)
@@ -471,6 +489,8 @@ class ItemDetailFragment : Fragment() {
                             committed: Boolean,
                             currentData: com.google.firebase.database.DataSnapshot?
                         ) {
+                            if (!isUiActive()) return
+
                             if (error != null) {
                                 Toast.makeText(requireContext(), "Failed to like", Toast.LENGTH_SHORT).show()
                                 return
@@ -478,13 +498,10 @@ class ItemDetailFragment : Fragment() {
 
                             favoritesRef.setValue(true) // optional
                             isLiked = true
-                            updateLikeButton()
+                            updateLikeButton(isLiked)
                             Toast.makeText(requireContext(), "Item liked!", Toast.LENGTH_SHORT).show()
 
-                            // Create notification record (temporary client-side)
-                            if (currentUserId != ownerId) {
-                                sendLikeNotification()
-                            }
+
                         }
                     })
                 }
@@ -492,52 +509,22 @@ class ItemDetailFragment : Fragment() {
         }
     }
 
-    private fun sendLikeNotification() {
-        if (currentUserId == ownerId) return
-
-        val db = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
-        val notificationId = "like_${itemId}_${currentUserId}"
-        val notifRef = db.getReference("notifications").child(ownerId).child(notificationId)
-
-        db.getReference("users").child(currentUserId).get().addOnSuccessListener { snap ->
-            val fromName = snap.child("fullName").getValue(String::class.java)
-                ?: snap.child("username").getValue(String::class.java)
-                ?: "Someone"
-
-            val fromProfile = snap.child("profileImageUrl").getValue(String::class.java).orEmpty()
-            val message = "$fromName liked your item: $itemTitle"
-
-            val notificationData = mapOf(
-                "id" to notificationId,
-                "type" to "like_item",
-                "fromUserId" to currentUserId,
-                "fromUserName" to fromName,
-                "fromUserProfile" to fromProfile,
-                "itemId" to itemId,
-                "message" to message,
-                "read" to false,
-                "timestamp" to System.currentTimeMillis()
-            )
-
-            notifRef.setValue(notificationData)
-        }
-    }
-
-    private fun updateLikeButton() {
-        val context = requireContext()
+    private fun updateLikeButton(isLiked: Boolean) {
+        val ctx = context ?: return
+        val binding = _binding ?: return
         if (isLiked) {
             binding.btnLike.apply {
-                icon = ContextCompat.getDrawable(context, R.drawable.ic_like)
+                icon = ContextCompat.getDrawable(ctx, R.drawable.ic_like)
                 setIconTintResource(R.color.red_500)
-                strokeColor = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.red_500))
-                setTextColor(ContextCompat.getColor(context, R.color.red_500))
+                strokeColor = ColorStateList.valueOf(ContextCompat.getColor(ctx, R.color.red_500))
+                setTextColor(ContextCompat.getColor(ctx, R.color.red_500))
             }
         } else {
             binding.btnLike.apply {
-                icon = ContextCompat.getDrawable(context, R.drawable.ic_like_border)
+                icon = ContextCompat.getDrawable(ctx, R.drawable.ic_like_border)
                 setIconTintResource(R.color.teal_700)
-                strokeColor = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.teal_700))
-                setTextColor(ContextCompat.getColor(context, R.color.teal_700))
+                strokeColor = ColorStateList.valueOf(ContextCompat.getColor(ctx, R.color.teal_700))
+                setTextColor(ContextCompat.getColor(ctx, R.color.teal_700))
             }
         }
     }
@@ -567,14 +554,12 @@ class ItemDetailFragment : Fragment() {
     }
 
     private fun showOfferDialog() {
-        val dialog = OfferDialogFragment().apply {
-            arguments = Bundle().apply {
-                putString("itemId", itemId)
-                putString("ownerId", ownerId)
-                putString("itemTitle", itemTitle)
-            }
+        val bundle = Bundle().apply {
+            putString("itemId", itemId)
+            putString("ownerId", ownerId)
+            putString("itemTitle", itemTitle)
         }
-        dialog.show(parentFragmentManager, "OfferDialogFragment")
+        findNavController().navigate(R.id.action_itemDetailFragment_to_offerFragment, bundle)
     }
 
     private fun redirectToProfileForVerification() {
@@ -592,6 +577,7 @@ class ItemDetailFragment : Fragment() {
         }
 
         userDatabase.child(currentUserId).get().addOnSuccessListener { snapshot ->
+            if (!isAdded || _binding == null || context == null) return@addOnSuccessListener
             if (snapshot.exists()) {
                 val isIDVerified = snapshot.child("isIDVerified").getValue(String::class.java)
                 onComplete(isIDVerified == "verified")
@@ -599,6 +585,7 @@ class ItemDetailFragment : Fragment() {
                 onComplete(false)
             }
         }.addOnFailureListener {
+            if (!isAdded || _binding == null || context == null) return@addOnFailureListener
             onComplete(false)
         }
     }

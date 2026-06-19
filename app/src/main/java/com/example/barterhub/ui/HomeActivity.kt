@@ -11,7 +11,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.edit
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
@@ -33,7 +32,6 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.messaging.FirebaseMessaging
 import de.hdodenhof.circleimageview.CircleImageView
-import com.google.android.material.snackbar.Snackbar
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Looper
@@ -42,8 +40,11 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.barterhub.ads.AppOpenAdManager
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.view.WindowCompat
+import androidx.core.view.updatePadding
 import com.example.barterhub.utils.BottomNavBadgeManager
 import com.example.barterhub.managers.PublicUserSyncManager
+import kotlin.math.min
 
 @Suppress("DEPRECATION")
 class HomeActivity : AppCompatActivity() {
@@ -69,6 +70,7 @@ class HomeActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
 
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -96,7 +98,7 @@ class HomeActivity : AppCompatActivity() {
         setupSimpleWindowInsets()
         saveFcmToken()
         requestNotificationPermission()
-        // ✅ Auto-create missing public_users for old accounts
+        // âœ… Auto-create missing public_users for old accounts
         PublicUserSyncManager.ensurePublicUserExists()
     }
 
@@ -152,7 +154,7 @@ class HomeActivity : AppCompatActivity() {
                     }, 300)
 
                 } else {
-                    Log.d("HOME_ACTIVITY", "👑 Premium user - no ads")
+                    Log.d("HOME_ACTIVITY", "ðŸ‘‘ Premium user - no ads")
 
                 }
             }
@@ -164,8 +166,11 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun setDrawerWidth() {
-        val screenWidth = resources.displayMetrics.widthPixels
-        val drawerWidth = (screenWidth * 0.7).toInt() // 70% width
+        val availableWidth = binding.drawerLayout.width
+            .takeIf { it > 0 }
+            ?: resources.displayMetrics.widthPixels
+        val maxDrawerWidth = resources.getDimensionPixelSize(R.dimen.nav_drawer_max_width)
+        val drawerWidth = min((availableWidth * 0.85f).toInt(), maxDrawerWidth)
 
         val layoutParams = binding.navigationView.layoutParams as DrawerLayout.LayoutParams
         layoutParams.width = drawerWidth
@@ -175,13 +180,30 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun setupSimpleWindowInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.bottomNavigation) { view, insets ->
-            val navBarHeight = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
-            view.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                bottomMargin = navBarHeight
-            }
+        val bottomNavInitialPadding = binding.bottomNavCard.paddingBottom
+        val drawerInitialPaddingBottom = binding.navigationView.paddingBottom
+        val drawerHeader = binding.navigationView.getHeaderView(0)
+        val headerInitialPaddingTop = drawerHeader.paddingTop
+        val headerInitialMinHeight = drawerHeader.minimumHeight
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+
+            binding.bottomNavCard.updatePadding(
+                left = systemBars.left,
+                right = systemBars.right,
+                bottom = bottomNavInitialPadding + systemBars.bottom
+            )
+            binding.navigationView.updatePadding(
+                bottom = drawerInitialPaddingBottom + systemBars.bottom
+            )
+            drawerHeader.updatePadding(top = headerInitialPaddingTop + systemBars.top)
+            drawerHeader.minimumHeight = headerInitialMinHeight + systemBars.top
+
             insets
         }
+
+        ViewCompat.requestApplyInsets(binding.root)
     }
 
     private fun setupNavController() {
@@ -445,6 +467,16 @@ class HomeActivity : AppCompatActivity() {
                     finish()
                     return
                 }
+
+                "trade_request" -> {
+                    val loginIntent = Intent(this, LoginActivity::class.java).apply {
+                        putExtra("open_after_login", "trade_request")
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    }
+                    startActivity(loginIntent)
+                    finish()
+                    return
+                }
             }
         }
 
@@ -474,6 +506,18 @@ class HomeActivity : AppCompatActivity() {
                         navController.navigate(R.id.notificationsFragment)
                     } catch (e: Exception) {
                         Log.e("HOME_NOTIFICATION", "Friend request navigation error: ${e.message}")
+                    }
+                }
+            }
+
+            "trade_request" -> {
+                binding.root.post {
+                    try {
+                        if (navController.currentDestination?.id != R.id.tradeRequestsFragment) {
+                            navController.navigate(R.id.tradeRequestsFragment)
+                        }
+                    } catch (e: Exception) {
+                        Log.e("HOME_NOTIFICATION", "Trade request navigation error: ${e.message}")
                     }
                 }
             }

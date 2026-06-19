@@ -4,6 +4,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     android:padding="16dp">
 
     <TextView
@@ -30,5 +31,8 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvTradeHistory"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingBottom="@dimen/bottom_nav_content_clearance"/>
 </LinearLayout>

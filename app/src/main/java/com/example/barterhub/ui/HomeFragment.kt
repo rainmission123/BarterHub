@@ -261,7 +261,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
         binding.featuredItems.apply {
-            layoutManager = GridLayoutManager(requireContext(), 2)
+            layoutManager = GridLayoutManager(
+                requireContext(),
+                resources.getInteger(R.integer.home_grid_span_count)
+            )
             adapter = featuredAdapter
 
             addItemDecoration(GridItemDecoration(4.dpToPx(this)))

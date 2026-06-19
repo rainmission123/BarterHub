@@ -6,7 +6,11 @@
     android:layout_height="match_parent"
     android:background="@color/black"
     android:fillViewport="true"
-    android:padding="52dp">
+    android:fitsSystemWindows="true"
+    android:paddingStart="@dimen/receipt_screen_padding"
+    android:paddingTop="24dp"
+    android:paddingEnd="@dimen/receipt_screen_padding"
+    android:paddingBottom="24dp">
 
     <LinearLayout
         android:id="@+id/receiptRoot"

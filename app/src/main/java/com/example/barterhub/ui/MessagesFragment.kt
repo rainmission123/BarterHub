@@ -81,6 +81,16 @@ class MessagesFragment : Fragment() {
             showSnackbar("Chat Support is coming soon")
         }
 
+        binding.tvFaq.setOnClickListener {
+            closeChatMenu()
+            showSnackbar("FAQ is coming soon")
+        }
+
+        binding.tvReportProblem.setOnClickListener {
+            closeChatMenu()
+            showSnackbar("Report Problem is coming soon")
+        }
+
         viewLifecycleOwner.lifecycleScope.launch {
             delay(5000)
         }
@@ -92,6 +102,8 @@ class MessagesFragment : Fragment() {
         if (isChatMenuOpen) {
             binding.tvChatBot.visibility = View.VISIBLE
             binding.tvChatSupport.visibility = View.VISIBLE
+            binding.tvFaq.visibility = View.VISIBLE
+            binding.tvReportProblem.visibility = View.VISIBLE
             binding.fabChatIcon.setImageResource(android.R.drawable.ic_menu_close_clear_cancel)
         } else {
             closeChatMenu()
@@ -102,6 +114,8 @@ class MessagesFragment : Fragment() {
         isChatMenuOpen = false
         binding.tvChatBot.visibility = View.GONE
         binding.tvChatSupport.visibility = View.GONE
+        binding.tvFaq.visibility = View.GONE
+        binding.tvReportProblem.visibility = View.GONE
         binding.fabChatIcon.setImageResource(R.drawable.ic_chat)
     }
 

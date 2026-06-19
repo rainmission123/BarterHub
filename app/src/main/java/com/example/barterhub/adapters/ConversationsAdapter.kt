@@ -76,22 +76,57 @@ class ConversationsAdapter(
         // REAL-TIME UNREAD BADGE
         // -----------------------
         partnerId?.let { pid ->
-            val messagesRef = FirebaseDatabase.getInstance()
-                .getReference("chats/${conversation.chatId}/messages")
+            val chatRef = FirebaseDatabase
+                .getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
+                .getReference("chats/${conversation.chatId}")
 
-            messagesRef.addValueEventListener(object : ValueEventListener {
+            chatRef.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    val unreadCount = snapshot.children.count {
-                        val read = it.child("read").getValue(Boolean::class.java) ?: true
-                        val receiverId = it.child("receiverId").getValue(String::class.java)
-                        !read && receiverId == currentUserId
-                    }
+                    val unreadCount = snapshot.child("unreadCount")
+                        .child(currentUserId.orEmpty())
+                        .getValue(Int::class.java)
+                        ?: snapshot.child("messages").children.count {
+                            val read = it.child("read").getValue(Boolean::class.java) ?: true
+                            val receiverId = it.child("receiverId").getValue(String::class.java)
+                            !read && receiverId == currentUserId
+                        }
 
                     if (unreadCount > 0) {
                         holder.unreadBadge.visibility = View.VISIBLE
                         holder.unreadBadge.text = if (unreadCount > 9) "9+" else unreadCount.toString()
+
+                        holder.itemView.setBackgroundResource(R.drawable.bg_unread_conversation)
+
+                        holder.participantName.setTypeface(null, android.graphics.Typeface.BOLD)
+                        holder.lastMessage.setTypeface(null, android.graphics.Typeface.BOLD)
+                        holder.timestamp.setTypeface(null, android.graphics.Typeface.BOLD)
+
+                        holder.participantName.setTextColor(android.graphics.Color.WHITE)
+                        holder.lastMessage.setTextColor(android.graphics.Color.parseColor("#D8CBE8"))
+                        holder.timestamp.setTextColor(android.graphics.Color.parseColor("#D8CBE8"))
+
                     } else {
                         holder.unreadBadge.visibility = View.GONE
+                        holder.itemView.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+
+                        holder.participantName.setTypeface(null, android.graphics.Typeface.BOLD)
+                        holder.lastMessage.setTypeface(null, android.graphics.Typeface.NORMAL)
+                        holder.timestamp.setTypeface(null, android.graphics.Typeface.NORMAL)
+
+                        val isNightMode =
+                            (holder.itemView.context.resources.configuration.uiMode and
+                                    android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
+                                    android.content.res.Configuration.UI_MODE_NIGHT_YES
+
+                        if (isNightMode) {
+                            holder.participantName.setTextColor(android.graphics.Color.WHITE)
+                            holder.lastMessage.setTextColor(android.graphics.Color.parseColor("#CFC7D8"))
+                            holder.timestamp.setTextColor(android.graphics.Color.parseColor("#CFC7D8"))
+                        } else {
+                            holder.participantName.setTextColor(android.graphics.Color.parseColor("#111111"))
+                            holder.lastMessage.setTextColor(android.graphics.Color.parseColor("#666666"))
+                            holder.timestamp.setTextColor(android.graphics.Color.parseColor("#666666"))
+                        }
                     }
                 }
 

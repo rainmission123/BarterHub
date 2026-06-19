@@ -111,167 +111,26 @@ class TradeRequestsFragment : Fragment() {
     }
 
     private fun checkAndCreateChat(chatId: String, request: TradeRequest) {
-
         database.child("chats").child(chatId).get().addOnSuccessListener { snapshot ->
-
-            val requesterId = if (currentUserId == request.toUser.userId) {
-                request.fromUser.userId
-            } else {
-                request.toUser.userId
+            fun continueAfterChatReady() {
+                sendTradeAcceptedNotificationToRequester(chatId, request)
+                navigateToChat(chatId, request)
             }
 
             if (snapshot.exists()) {
-
-                Log.d("ChatDebug", "✅ Chat already exists, adding system message only")
-
-                addSystemMessageToChat(chatId, request) {
-
-                    // ✅ existing logic
-                    sendTradeAcceptedNotificationToRequester(chatId, request)
-                    incrementInboxUnread(requesterId, chatId)
-
-                }
-
+                Log.d("ChatDebug", "Chat already exists; trade_events Cloud Function will create accepted system message")
+                continueAfterChatReady()
             } else {
-
-                Log.d("ChatDebug", "✅ Creating new chat with system message")
-
-                saveChatInfo(chatId, request)
-
-                addSystemMessageToChat(chatId, request) {
-
-                    sendTradeAcceptedNotificationToRequester(chatId, request)
-                    incrementInboxUnread(requesterId, chatId)
-
-                    val receiptData = mapOf(
-                        "chatId" to chatId,
-                        "requestId" to request.requestId,
-                        "userA" to request.fromUser.userId,
-                        "userB" to request.toUser.userId,
-                        "offeredItemId" to request.offeredItem.itemId,
-                        "targetItemId" to request.targetItem.itemId,
-                        "offeredItemName" to request.offeredItem.title,
-                        "targetItemName" to request.targetItem.title,
-                        "offeredBy" to request.fromUser.username,
-                        "acceptedBy" to request.toUser.username,
-                        "timestamp" to System.currentTimeMillis(),
-                        "status" to "completed"
-                    )
-
+                Log.d("ChatDebug", "Creating new chat metadata; trade_events Cloud Function will create accepted system message")
+                saveChatInfo(chatId, request) {
+                    continueAfterChatReady()
                 }
             }
-
-            navigateToChat(chatId, request)
-
         }.addOnFailureListener { e ->
-            Log.e("ChatDebug", "❌ Error checking chat: ${e.message}")
+            Log.e("ChatDebug", "Error checking chat: ${e.message}")
         }
     }
-
-
-    private fun addSystemMessageToChat(
-        chatId: String,
-        request: TradeRequest,
-        onSaved: (() -> Unit)? = null
-    ) {
-        val messageId = FirebaseDatabase.getInstance().reference.push().key ?: return
-
-        // ✅ FIX: Get actual data from the request
-        val fromUsername = if (request.fromUser.username.isNotEmpty() &&
-            request.fromUser.username != "Unknown User") {
-            request.fromUser.username
-        } else {
-            "User" // Fallback
-        }
-
-        val toUsername = if (request.toUser.username.isNotEmpty() &&
-            request.toUser.username != "Unknown User") {
-            request.toUser.username
-        } else {
-            "User" // Fallback
-        }
-
-        val offeredItemTitle = if (request.offeredItem.title.isNotEmpty() &&
-            request.offeredItem.title != "Unknown Item") {
-            request.offeredItem.title
-        } else {
-            "Item" // Fallback
-        }
-
-        val targetItemTitle = if (request.targetItem.title.isNotEmpty() &&
-            request.targetItem.title != "Unknown Item") {
-            request.targetItem.title
-        } else {
-            "Item" // Fallback
-        }
-
-        // ✅ FIX: Clean image URLs
-        val offeredItemImage = fixImageUrl(request.offeredItem.image)
-        val targetItemImage = fixImageUrl(request.targetItem.image)
-
-        val systemMessage = mapOf(
-            "messageId" to messageId,
-            "senderId" to "system",
-            "senderName" to "System",
-            "text" to "Trade Accepted! ✅",
-            "timestamp" to System.currentTimeMillis(),
-            "messageType" to "system_trade_accepted",
-            "isSystemMessage" to true,
-            "isRead" to false,
-            "tradeDetails" to mapOf(
-                "tradeRequestId" to request.requestId,
-                "status" to "Accepted",
-
-                "fromUserId" to request.fromUser.userId,
-                "offeredBy" to fromUsername,
-                "fromUserLocation" to request.fromUser.location.ifEmpty { "Unknown Location" },
-                "fromUserRating" to request.fromUser.rating,
-                "fromUserProfileImage" to fixImageUrl(request.fromUser.profileImage),
-
-                "toUserId" to request.toUser.userId,
-                "acceptedBy" to toUsername,
-                "toUserLocation" to request.toUser.location.ifEmpty { "Unknown Location" },
-                "toUserRating" to request.toUser.rating,
-                "toUserProfileImage" to fixImageUrl(request.toUser.profileImage),
-
-                "offeredItemId" to request.offeredItem.itemId,
-                "offeredItemName" to offeredItemTitle,
-                "offeredItemDescription" to request.offeredItem.description.ifEmpty { "No description" },
-                "offeredItemImage" to offeredItemImage,
-                "offeredItemCategory" to request.offeredItem.category.ifEmpty { "Unknown" },
-                "offeredItemCondition" to request.offeredItem.condition.ifEmpty { "Unknown" },
-
-                "targetItemId" to request.targetItem.itemId,
-                "targetItemName" to targetItemTitle,
-                "targetItemDescription" to request.targetItem.description.ifEmpty { "No description" },
-                "targetItemImage" to targetItemImage,
-                "targetItemCategory" to request.targetItem.category.ifEmpty { "Unknown" },
-                "targetItemCondition" to request.targetItem.condition.ifEmpty { "Unknown" },
-
-                "message" to request.message.ifEmpty { "No message" },
-                "additionalPhotos" to request.additionalPhotos.joinToString(","),
-                "preferredMeetup" to request.preferredMeetup
-            )
-        )
-
-        database.child("chats").child(chatId).child("messages").child(messageId)
-            .setValue(systemMessage)
-            .addOnSuccessListener {
-                onSaved?.invoke()
-                Log.d("FirebaseDebug", "✅ REAL DATA SAVED TO SYSTEM MESSAGE:")
-                Log.d("FirebaseDebug", "   From User: $fromUsername")
-                Log.d("FirebaseDebug", "   To User: $toUsername")
-                Log.d("FirebaseDebug", "   Offered Item: $offeredItemTitle")
-                Log.d("FirebaseDebug", "   Target Item: $targetItemTitle")
-                Log.d("FirebaseDebug", "   Offered Image: $offeredItemImage")
-                Log.d("FirebaseDebug", "   Target Image: $targetItemImage")
-            }
-            .addOnFailureListener { e ->
-                Log.e("FirebaseDebug", "❌ Failed to save system message: ${e.message}")
-            }
-    }
-
-    private fun saveChatInfo(chatId: String, request: TradeRequest) {
+    private fun saveChatInfo(chatId: String, request: TradeRequest, onSaved: (() -> Unit)? = null) {
         val fromUsername = if (request.fromUser.username.isNotEmpty() &&
             request.fromUser.username != "Unknown User") {
             request.fromUser.username
@@ -312,6 +171,9 @@ class TradeRequestsFragment : Fragment() {
         )
 
         database.child("chats").child(chatId).setValue(chatData)
+            .addOnSuccessListener {
+                onSaved?.invoke()
+            }
             .addOnSuccessListener {
                 Log.d("ChatDebug", "✅ Chat info saved to chats/$chatId")
             }
@@ -529,10 +391,8 @@ class TradeRequestsFragment : Fragment() {
 
     private fun sendTradeAcceptedNotificationToRequester(chatId: String, request: TradeRequest) {
 
-        // ✅ who accepted? current user
         val acceptorId = currentUserId
 
-        // ✅ who should receive notification? the other user (requester)
         val requesterId = if (currentUserId == request.toUser.userId) {
             request.fromUser.userId
         } else {
@@ -541,65 +401,36 @@ class TradeRequestsFragment : Fragment() {
 
         if (requesterId.isBlank() || acceptorId.isBlank()) return
 
-        val notifRef = database.child("notifications").child(requesterId).push()
-        val notifId = notifRef.key ?: return
-
         val acceptorName = if (currentUserId == request.toUser.userId) {
             request.toUser.username
         } else {
             request.fromUser.username
         }.ifBlank { "Someone" }
 
-        val acceptorProfile = if (currentUserId == request.toUser.userId) {
-            request.toUser.profileImage
-        } else {
-            request.fromUser.profileImage
-        }
-
-        val data = mapOf(
-            "id" to notifId,
+        val event = hashMapOf<String, Any>(
             "type" to "trade_accepted",
+            "toUserId" to requesterId,
             "fromUserId" to acceptorId,
             "fromUserName" to acceptorName,
-            "fromUserProfile" to acceptorProfile,
-            "itemId" to request.targetItem.itemId,
-            "requestId" to request.requestId,
             "chatId" to chatId,
-
-            // ✅ When requester clicks, open chat with acceptor
             "partnerId" to acceptorId,
             "partnerName" to acceptorName,
-
+            "requestId" to request.requestId,
+            "tradeId" to request.requestId,
             "message" to "✅ $acceptorName accepted your trade request",
-            "timestamp" to System.currentTimeMillis(),
-            "read" to false
+            "timestamp" to System.currentTimeMillis()
         )
 
-        notifRef.setValue(data)
-    }
-
-    private fun incrementInboxUnread(userId: String, chatId: String) {
-        val inboxRef = database.child("user_inbox").child(userId).child(chatId)
-
-        inboxRef.child("unreadCount").runTransaction(object : com.google.firebase.database.Transaction.Handler {
-            override fun doTransaction(currentData: com.google.firebase.database.MutableData): com.google.firebase.database.Transaction.Result {
-                val current = currentData.getValue(Int::class.java) ?: 0
-                currentData.value = current + 1
-                return com.google.firebase.database.Transaction.success(currentData)
+        database.child("trade_events")
+            .push()
+            .setValue(event)
+            .addOnSuccessListener {
+                Log.d("TradeRequests", "✅ Trade accepted event sent")
             }
-
-            override fun onComplete(error: DatabaseError?, committed: Boolean, snapshot: DataSnapshot?) {
-                if (error != null) {
-                    Log.e("TradeInbox", "❌ increment unread failed: ${error.message}")
-                    return
-                }
-
-                // ✅ ensure metadata exists
-                inboxRef.child("lastUpdated").setValue(System.currentTimeMillis())
+            .addOnFailureListener { e ->
+                Log.e("TradeRequests", "❌ Failed trade accepted event: ${e.message}")
             }
-        })
     }
-
     private fun updateAdapterAndUI() {
         if (!isAdded || _binding == null) {
             return
@@ -644,11 +475,10 @@ class TradeRequestsFragment : Fragment() {
             }
     }
 
-    // ✅ HELPER FUNCTION: Fix image URLs
     private fun fixImageUrl(rawUrl: String): String {
         return when {
-            rawUrl.isEmpty() -> "" // Empty string if no image
-            rawUrl.contains("via.placeholder.com") -> "" // Remove placeholder URLs
+            rawUrl.isEmpty() -> ""
+            rawUrl.contains("via.placeholder.com") -> ""
             rawUrl.startsWith("http") -> rawUrl // Valid URL
             else -> "" // Invalid format
         }.also {
@@ -656,100 +486,6 @@ class TradeRequestsFragment : Fragment() {
                 Log.d("ImageFix", "❌ Removed placeholder URL: $rawUrl")
             }
         }
-    }
-
-    private fun fixBrokenImageUrlsInFirebase() {
-        Log.d("FirebaseFix", "🔧 Starting to fix broken image URLs in Firebase...")
-
-        database.child("trade_requests").addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                var fixedCount = 0
-
-                for (tradeSnap in snapshot.children) {
-                    val tradeId = tradeSnap.key ?: continue
-
-                    // Check and fix targetItem image
-                    val targetImage = tradeSnap.child("targetItem").child("image").getValue(String::class.java)
-                    if (targetImage?.contains("via.placeholder.com") == true) {
-                        database.child("trade_requests").child(tradeId).child("targetItem").child("image")
-                            .setValue("")
-                            .addOnSuccessListener {
-                                fixedCount++
-                                Log.d("FirebaseFix", "✅ Fixed targetItem image for trade $tradeId")
-                            }
-                    }
-
-                    // Check and fix offeredItem image
-                    val offeredImage = tradeSnap.child("offeredItem").child("image").getValue(String::class.java)
-                    if (offeredImage?.contains("via.placeholder.com") == true) {
-                        database.child("trade_requests").child(tradeId).child("offeredItem").child("image")
-                            .setValue("")
-                            .addOnSuccessListener {
-                                fixedCount++
-                                Log.d("FirebaseFix", "✅ Fixed offeredItem image for trade $tradeId")
-                            }
-                    }
-
-                    // Check and fix user profile images
-                    val fromProfileImage = tradeSnap.child("fromUser").child("profileImage").getValue(String::class.java)
-                    if (fromProfileImage?.contains("via.placeholder.com") == true) {
-                        database.child("trade_requests").child(tradeId).child("fromUser").child("profileImage")
-                            .setValue("")
-                            .addOnSuccessListener {
-                                fixedCount++
-                                Log.d("FirebaseFix", "✅ Fixed fromUser profile image for trade $tradeId")
-                            }
-                    }
-
-                    val toProfileImage = tradeSnap.child("toUser").child("profileImage").getValue(String::class.java)
-                    if (toProfileImage?.contains("via.placeholder.com") == true) {
-                        database.child("trade_requests").child(tradeId).child("toUser").child("profileImage")
-                            .setValue("")
-                            .addOnSuccessListener {
-                                fixedCount++
-                                Log.d("FirebaseFix", "✅ Fixed toUser profile image for trade $tradeId")
-                            }
-                    }
-                }
-
-                Log.d("FirebaseFix", "🎉 Fixed $fixedCount broken image URLs in total")
-
-                // Also fix in users collection
-                fixUserProfileImages()
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("FirebaseFix", "Failed to fix images: ${error.message}")
-            }
-        })
-    }
-
-    private fun fixUserProfileImages() {
-        database.child("users").addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                var fixedCount = 0
-
-                for (userSnap in snapshot.children) {
-                    val userId = userSnap.key ?: continue
-                    val profileImage = userSnap.child("profileImageUrl").getValue(String::class.java)
-
-                    if (profileImage?.contains("via.placeholder.com") == true) {
-                        database.child("users").child(userId).child("profileImageUrl")
-                            .setValue("")
-                            .addOnSuccessListener {
-                                fixedCount++
-                                Log.d("FirebaseFix", "✅ Fixed user profile image for $userId")
-                            }
-                    }
-                }
-
-                Log.d("FirebaseFix", "🎉 Fixed $fixedCount user profile images")
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("FirebaseFix", "Failed to fix user images: ${error.message}")
-            }
-        })
     }
 
     override fun onDestroyView() {

@@ -302,7 +302,8 @@ class SystemMessageBinder(
                 notificationManager.notifyRated(
                     currentUserId = currentUserId,
                     chatId = chatId,
-                    request = request
+                    request = request,
+                    rating = rating.toInt()
                 )
 
                 completionManager.checkUserActionStatus(

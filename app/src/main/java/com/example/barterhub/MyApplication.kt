@@ -9,6 +9,8 @@ import com.google.android.gms.ads.appopen.AppOpenAd
 import com.google.android.gms.ads.LoadAdError
 import android.util.Log
 import com.google.android.gms.ads.RequestConfiguration
+import com.example.barterhub.utils.UserPresenceManager
+import com.google.firebase.auth.FirebaseAuth
 
 class MyApplication : Application(), Application.ActivityLifecycleCallbacks {
 
@@ -16,6 +18,15 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks {
     private var appOpenAd: AppOpenAd? = null
     private var isLoadingAd = false
     private var isShowingAd = false
+    private var startedActivityCount = 0
+    private val authStateListener = FirebaseAuth.AuthStateListener { auth ->
+        val uid = auth.currentUser?.uid
+        if (uid != null && startedActivityCount > 0) {
+            UserPresenceManager.start(uid)
+        } else if (uid == null) {
+            UserPresenceManager.stop(markOffline = true)
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -33,6 +44,7 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks {
 
         // Register Activity callbacks
         registerActivityLifecycleCallbacks(this)
+        FirebaseAuth.getInstance().addAuthStateListener(authStateListener)
 
         // Load App Open Ad
         loadAd()
@@ -112,8 +124,18 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks {
     }
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
-    override fun onActivityStarted(activity: Activity) {}
-    override fun onActivityStopped(activity: Activity) {}
+
+    override fun onActivityStarted(activity: Activity) {
+        startedActivityCount++
+        FirebaseAuth.getInstance().currentUser?.uid?.let { uid ->
+            UserPresenceManager.start(uid)
+        }
+    }
+
+    override fun onActivityStopped(activity: Activity) {
+        startedActivityCount = (startedActivityCount - 1).coerceAtLeast(0)
+    }
+
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
     override fun onActivityDestroyed(activity: Activity) {}
 }

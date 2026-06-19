@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
+    android:background="?attr/colorSurface"
+    android:fitsSystemWindows="true">
 
     <!-- MAIN CONTENT -->
     <LinearLayout
@@ -222,7 +223,7 @@
             android:textColor="@android:color/white"
             android:visibility="gone" />
 
-        <!-- Chat Bot -->
+        <!-- AI Assistant -->
         <TextView
             android:id="@+id/tvChatBot"
             android:layout_width="wrap_content"
@@ -230,7 +231,31 @@
             android:layout_marginBottom="10dp"
             android:background="@drawable/bg_chat_menu_label"
             android:padding="10dp"
-            android:text="Chat Bot"
+            android:text="AI Assistant"
+            android:textColor="@android:color/white"
+            android:visibility="gone" />
+
+        <!-- FAQ -->
+        <TextView
+            android:id="@+id/tvFaq"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_chat_menu_label"
+            android:padding="10dp"
+            android:text="FAQ"
+            android:textColor="@android:color/white"
+            android:visibility="gone" />
+
+        <!-- Report Problem -->
+        <TextView
+            android:id="@+id/tvReportProblem"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_chat_menu_label"
+            android:padding="10dp"
+            android:text="Report Problem"
             android:textColor="@android:color/white"
             android:visibility="gone" />
 
