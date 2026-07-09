@@ -124,11 +124,19 @@ class AllTrendingItemsAdapter(
     }
 
     private fun getSafeOwnerName(item: FeaturedItem): String {
-        return when {
-            item.ownerName.isNotBlank() -> item.ownerName.trim()
-            item.ownerId.isNotBlank() -> "User"
-            else -> "Unknown"
-        }
+        val ownerName = item.ownerName.trim()
+        return ownerName
+            .takeUnless { it.isGenericOwnerName() }
+            ?: "Unknown seller"
+    }
+
+    private fun String.isGenericOwnerName(): Boolean {
+        val normalized = lowercase(Locale.ROOT)
+        return normalized.isBlank() ||
+            normalized == "user" ||
+            normalized == "unknown" ||
+            normalized == "unknown user" ||
+            normalized == "barterhub user"
     }
 
     private fun getSafePriceText(item: FeaturedItem): String {

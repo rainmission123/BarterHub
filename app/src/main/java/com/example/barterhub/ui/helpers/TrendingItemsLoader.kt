@@ -92,79 +92,117 @@ object TrendingItemsLoader {
         onEmpty: () -> Unit,
         onError: (DatabaseError) -> Unit
     ) {
-        db.getReference("public_users")
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val now = System.currentTimeMillis()
-                    val premiumOwnerIds = snapshot.children.mapNotNull { userSnapshot ->
-                        val uid = userSnapshot.key ?: return@mapNotNull null
-                        val isPremium = userSnapshot.child("isPremium").asBoolean(defaultValue = false)
-                        val premiumExpiry = normalizeExpiryMillis(
-                            userSnapshot.child("premiumExpiry").asLong() ?: 0L
-                        )
-                        uid.takeIf { isPremium && premiumExpiry > now }
-                    }.toSet()
+        val ownerIds = activeItems.map { it.ownerId }.filter { it.isNotBlank() }.distinct()
 
-                    val premiumItems = activeItems
-                        .filter { it.ownerId in premiumOwnerIds }
-                        .sortedByLikesThenTime()
+        loadOwnerProfiles(
+            db = db,
+            ownerIds = ownerIds,
+            onComplete = { ownerProfiles ->
+                val now = System.currentTimeMillis()
+                val premiumOwnerIds = ownerProfiles
+                    .filterValues { it.isPremium && it.premiumExpiry > now }
+                    .keys
 
-                    val trendingItems = if (premiumItems.isNotEmpty()) {
-                        premiumItems.take(limit)
-                    } else {
-                        activeItems.sortedByLikesThenTime().take(limit)
-                    }
+                val premiumItems = activeItems
+                    .filter { it.ownerId in premiumOwnerIds }
+                    .sortedByLikesThenTime()
 
-                    if (trendingItems.isEmpty()) {
-                        onEmpty()
-                        return
-                    }
-
-                    enrichItemsWithOwnerInfo(trendingItems, snapshot)
-                    onSuccess(trendingItems)
+                val trendingItems = if (premiumItems.isNotEmpty()) {
+                    premiumItems.take(limit)
+                } else {
+                    activeItems.sortedByLikesThenTime().take(limit)
                 }
 
-                override fun onCancelled(error: DatabaseError) {
-                    Log.e("TrendingItemsLoader", "Failed to load premium owners: ${error.message}")
-                    val fallbackItems = activeItems.sortedByLikesThenTime().take(limit)
-                    if (fallbackItems.isNotEmpty()) {
-                        onSuccess(fallbackItems)
-                    } else {
-                        onError(error)
-                    }
+                if (trendingItems.isEmpty()) {
+                    onEmpty()
+                    return@loadOwnerProfiles
                 }
-            })
+
+                enrichItemsWithOwnerInfo(trendingItems, ownerProfiles)
+                onSuccess(trendingItems)
+            },
+            onError = { error ->
+                Log.e("TrendingItemsLoader", "Failed to load owner profiles: ${error.message}")
+                val fallbackItems = activeItems.sortedByLikesThenTime().take(limit)
+                if (fallbackItems.isNotEmpty()) {
+                    onSuccess(fallbackItems)
+                } else {
+                    onError(error)
+                }
+            }
+        )
     }
 
-    private fun enrichItemsWithOwnerInfo(items: List<FeaturedItem>, usersSnapshot: DataSnapshot) {
-        for (item in items) {
-            val userSnapshot = usersSnapshot.child(item.ownerId)
-            if (!userSnapshot.exists()) continue
+    private fun loadOwnerProfiles(
+        db: FirebaseDatabase,
+        ownerIds: List<String>,
+        onComplete: (Map<String, OwnerPublicInfo>) -> Unit,
+        onError: (DatabaseError) -> Unit
+    ) {
+        if (ownerIds.isEmpty()) {
+            onComplete(emptyMap())
+            return
+        }
 
-            val fetchedName =
-                userSnapshot.child("fullName").getValue(String::class.java)?.takeIf { it.isNotBlank() }
-                    ?: userSnapshot.child("name").getValue(String::class.java)?.takeIf { it.isNotBlank() }
-                    ?: userSnapshot.child("username").getValue(String::class.java)?.takeIf { it.isNotBlank() }
-                    ?: userSnapshot.child("displayName").getValue(String::class.java)?.takeIf { it.isNotBlank() }
+        val profiles = mutableMapOf<String, OwnerPublicInfo>()
+        var pendingCount = ownerIds.size
+        var firstError: DatabaseError? = null
 
-            val fetchedProfile =
-                userSnapshot.child("profileImage").getValue(String::class.java)?.takeIf { it.isNotBlank() }
-                    ?: userSnapshot.child("profileImageUrl").getValue(String::class.java)?.takeIf { it.isNotBlank() }
-                    ?: userSnapshot.child("imageUrl").getValue(String::class.java)?.takeIf { it.isNotBlank() }
-                    ?: userSnapshot.child("avatar").getValue(String::class.java)?.takeIf { it.isNotBlank() }
-
-            val fetchedLocation = userSnapshot.resolveUserLocation()
-
-            if (item.ownerName.isGenericDisplayName() && !fetchedName.isNullOrBlank()) {
-                item.ownerName = fetchedName
-            }
-            if (item.ownerProfileImage.isBlank() && !fetchedProfile.isNullOrBlank()) {
-                item.ownerProfileImage = fetchedProfile
-            }
-            if (item.location.isGenericLocation() && fetchedLocation.isNotBlank()) {
-                item.location = fetchedLocation
+        fun finishOne() {
+            pendingCount -= 1
+            if (pendingCount == 0) {
+                if (profiles.isEmpty() && firstError != null) {
+                    onError(firstError!!)
+                } else {
+                    onComplete(profiles)
+                }
             }
         }
+
+        ownerIds.forEach { ownerId ->
+            db.getReference("public_users")
+                .child(ownerId)
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        if (snapshot.exists()) {
+                            profiles[ownerId] = snapshot.toOwnerPublicInfo()
+                        }
+                        finishOne()
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        if (firstError == null) firstError = error
+                        Log.e("TrendingItemsLoader", "Failed to load owner $ownerId: ${error.message}")
+                        finishOne()
+                    }
+                })
+        }
+    }
+
+    private fun enrichItemsWithOwnerInfo(items: List<FeaturedItem>, ownerProfiles: Map<String, OwnerPublicInfo>) {
+        for (item in items) {
+            val ownerProfile = ownerProfiles[item.ownerId] ?: continue
+
+            if (item.ownerName.isGenericDisplayName() && ownerProfile.name.isNotBlank()) {
+                item.ownerName = ownerProfile.name
+            }
+            if (item.ownerProfileImage.isBlank() && ownerProfile.profileImage.isNotBlank()) {
+                item.ownerProfileImage = ownerProfile.profileImage
+            }
+            if (item.location.isGenericLocation() && ownerProfile.location.isNotBlank()) {
+                item.location = ownerProfile.location
+            }
+        }
+    }
+
+    private fun DataSnapshot.toOwnerPublicInfo(): OwnerPublicInfo {
+        return OwnerPublicInfo(
+            name = firstString("fullName", "name", "username", "displayName"),
+            profileImage = firstString("profileImage", "profileImageUrl", "imageUrl", "avatar"),
+            location = resolveUserLocation(),
+            isPremium = child("isPremium").asBoolean(defaultValue = false),
+            premiumExpiry = normalizeExpiryMillis(child("premiumExpiry").asLong() ?: 0L)
+        )
     }
 
     private fun DataSnapshot.resolveItemLocation(existingLocation: String): String {
@@ -275,4 +313,12 @@ object TrendingItemsLoader {
     private fun normalizeExpiryMillis(expiry: Long): Long {
         return if (expiry in 1 until 1_000_000_000_000L) expiry * 1000L else expiry
     }
+
+    private data class OwnerPublicInfo(
+        val name: String,
+        val profileImage: String,
+        val location: String,
+        val isPremium: Boolean,
+        val premiumExpiry: Long
+    )
 }
