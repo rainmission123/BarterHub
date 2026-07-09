@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:background="?attr/colorSurface"
+    android:background="@drawable/bg_home_screen_3d"
     android:layout_height="match_parent"
     android:id="@+id/rootLayout">
 
@@ -35,33 +35,39 @@
             android:id="@+id/topBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="60dp"
+            android:minHeight="68dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingHorizontal="8dp">
+            android:paddingHorizontal="6dp">
 
             <!-- Menu Icon -->
             <FrameLayout
                 android:layout_width="36dp"
                 android:layout_height="36dp"
-                android:layout_marginEnd="8dp">
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/bg_home_icon_button_3d"
+                android:elevation="4dp"
+                android:padding="2dp">
 
                 <ImageView
                     android:id="@+id/btnMenu"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="center"
                     android:src="@drawable/ic_menu"
                     app:tint="?attr/colorOnSurface"/>
             </FrameLayout>
 
             <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="35dp"
+                android:layout_height="44dp"
                 android:layout_weight="1"
-                android:background="@drawable/rounded_corner"
+                android:background="@drawable/bg_home_search_3d"
+                android:elevation="5dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:padding="4dp">
+                android:paddingStart="12dp"
+                android:paddingEnd="10dp">
 
                 <ImageView
                     android:id="@+id/searchIcon"
@@ -100,12 +106,16 @@
             <FrameLayout
                 android:layout_width="36dp"
                 android:layout_height="36dp"
-                android:layout_marginStart="2dp">
+                android:layout_marginStart="2dp"
+                android:background="@drawable/bg_home_icon_button_3d"
+                android:elevation="4dp"
+                android:padding="2dp">
 
                 <ImageView
                     android:id="@+id/tradeRequestIcon"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="center"
                     android:src="@drawable/handshake2"
                     app:tint="?attr/colorOnSurface"/>
 
@@ -126,12 +136,16 @@
             <FrameLayout
                 android:layout_width="36dp"
                 android:layout_height="36dp"
-                android:layout_margin="8dp">
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_home_icon_button_3d"
+                android:elevation="4dp"
+                android:padding="2dp">
 
                 <ImageView
                     android:id="@+id/itemWishlistIcon"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="center"
                     android:src="@drawable/ic_heart"
                     app:tint="?attr/colorOnSurface"/>
 
@@ -156,6 +170,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
+            android:clipToPadding="false"
             android:fillViewport="true">
 
                 <LinearLayout
@@ -169,7 +184,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="5dp"
-                        android:layout_marginBottom="4dp"
+                        android:layout_marginBottom="8dp"
                         android:orientation="vertical"
                         android:padding="5dp">
 
@@ -179,11 +194,12 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="16dp"
                             android:layout_marginEnd="16dp"
-                            android:layout_marginBottom="10dp"
+                            android:layout_marginBottom="14dp"
                             android:background="@drawable/bg_daily_challenge_banner"
                             android:clickable="true"
-                            android:focusable="true"
-                            android:clipToOutline="true">
+                            android:elevation="8dp"
+                            android:clipToOutline="true"
+                            android:focusable="true">
 
                             <!-- MAIN CONTENT -->
                             <LinearLayout
@@ -267,7 +283,8 @@
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="6dp"
+                        android:layout_marginTop="2dp"
+                        android:layout_marginBottom="8dp"
                         android:paddingHorizontal="4dp">
                         <ImageView
                             android:layout_width="20dp"
@@ -312,19 +329,35 @@
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="match_parent"
                             android:layout_height="@dimen/home_trending_height"
-                            android:layout_marginBottom="8dp"
-                            app:cardBackgroundColor="?attr/colorSurface"
-                            app:cardCornerRadius="8dp"
-                            app:cardElevation="0dp"
-                            app:strokeColor="#D0D0D0"
+                            android:layout_marginBottom="12dp"
+                            app:cardBackgroundColor="@color/bh_home_surface_high"
+                            app:cardCornerRadius="18dp"
+                            app:cardElevation="8dp"
+                            app:strokeColor="@color/bh_home_outline"
                             app:strokeWidth="1dp">
 
-                            <androidx.viewpager2.widget.ViewPager2
-                                android:id="@+id/trendingViewPager"
+                            <FrameLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:clipToPadding="false"
-                                android:paddingHorizontal="0dp" />
+                                android:layout_height="match_parent">
+
+                                <androidx.viewpager2.widget.ViewPager2
+                                    android:id="@+id/trendingViewPager"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:clipToPadding="false"
+                                    android:paddingHorizontal="0dp" />
+
+                                <TextView
+                                    android:id="@+id/trendingEmptyState"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:gravity="center"
+                                    android:padding="18dp"
+                                    android:text="No trending items yet"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="13sp"
+                                    android:visibility="gone" />
+                            </FrameLayout>
                         </com.google.android.material.card.MaterialCardView>
 
                 </LinearLayout>
@@ -334,7 +367,9 @@
                         android:id="@+id/categoriesScroll"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="6dp"
+                        android:layout_marginBottom="4dp"
+                        android:clipToPadding="false"
                         android:overScrollMode="never">
 
                         <LinearLayout
@@ -349,18 +384,21 @@
                                 android:id="@+id/categoryElectronics"
                                 android:layout_width="@dimen/category_item_size"
                                 android:layout_height="wrap_content"
-                                android:layout_marginEnd="16dp"
+                                android:layout_marginEnd="14dp"
+                                android:background="@drawable/bg_home_chip_3d"
+                                android:elevation="5dp"
                                 android:gravity="center_horizontal"
-                                android:orientation="vertical">
+                                android:orientation="vertical"
+                                android:padding="5dp">
 
                                 <com.google.android.material.card.MaterialCardView
                                     android:layout_width="match_parent"
                                     android:layout_height="@dimen/category_item_size"
-                                    app:cardCornerRadius="16dp"
-                                    app:cardElevation="1dp"
-                                    app:strokeWidth="0.2dp"
-                                    app:strokeColor="?attr/colorOnSurface"
-                                    app:cardBackgroundColor="?attr/colorSurfaceVariant">
+                                    app:cardCornerRadius="18dp"
+                                    app:cardElevation="4dp"
+                                    app:strokeWidth="1dp"
+                                    app:strokeColor="@color/bh_home_outline_soft"
+                                    app:cardBackgroundColor="@color/bh_home_surface_high">
 
                                     <ImageView
                                         android:layout_width="match_parent"
@@ -387,18 +425,21 @@
                                 android:id="@+id/categoryClothing"
                                 android:layout_width="@dimen/category_item_size"
                                 android:layout_height="wrap_content"
-                                android:layout_marginEnd="16dp"
+                                android:layout_marginEnd="14dp"
+                                android:background="@drawable/bg_home_chip_3d"
+                                android:elevation="5dp"
                                 android:gravity="center_horizontal"
-                                android:orientation="vertical">
+                                android:orientation="vertical"
+                                android:padding="5dp">
 
                                 <com.google.android.material.card.MaterialCardView
                                     android:layout_width="match_parent"
                                     android:layout_height="@dimen/category_item_size"
-                                    app:cardBackgroundColor="?attr/colorSurface"
-                                    app:cardCornerRadius="16dp"
-                                    app:cardElevation="1dp"
-                                    app:strokeColor="?attr/colorOnSurface"
-                                    app:strokeWidth="0.2dp">
+                                    app:cardBackgroundColor="@color/bh_home_surface_high"
+                                    app:cardCornerRadius="18dp"
+                                    app:cardElevation="4dp"
+                                    app:strokeColor="@color/bh_home_outline_soft"
+                                    app:strokeWidth="1dp">
 
                                     <ImageView
                                         android:layout_width="match_parent"
@@ -425,18 +466,21 @@
                                 android:id="@+id/categoryHomeKitchen"
                                 android:layout_width="@dimen/category_item_size"
                                 android:layout_height="wrap_content"
-                                android:layout_marginEnd="16dp"
+                                android:layout_marginEnd="14dp"
+                                android:background="@drawable/bg_home_chip_3d"
+                                android:elevation="5dp"
                                 android:gravity="center_horizontal"
-                                android:orientation="vertical">
+                                android:orientation="vertical"
+                                android:padding="5dp">
 
                                 <com.google.android.material.card.MaterialCardView
                                     android:layout_width="match_parent"
                                     android:layout_height="@dimen/category_item_size"
-                                    app:cardBackgroundColor="?attr/colorSurface"
-                                    app:cardCornerRadius="16dp"
-                                    app:cardElevation="1dp"
-                                    app:strokeColor="?attr/colorOnSurface"
-                                    app:strokeWidth="0.2dp">
+                                    app:cardBackgroundColor="@color/bh_home_surface_high"
+                                    app:cardCornerRadius="18dp"
+                                    app:cardElevation="4dp"
+                                    app:strokeColor="@color/bh_home_outline_soft"
+                                    app:strokeWidth="1dp">
 
                                     <ImageView
                                         android:layout_width="match_parent"
@@ -463,18 +507,21 @@
                                 android:id="@+id/categoryBooks"
                                 android:layout_width="@dimen/category_item_size"
                                 android:layout_height="wrap_content"
-                                android:layout_marginEnd="16dp"
+                                android:layout_marginEnd="14dp"
+                                android:background="@drawable/bg_home_chip_3d"
+                                android:elevation="5dp"
                                 android:gravity="center_horizontal"
-                                android:orientation="vertical">
+                                android:orientation="vertical"
+                                android:padding="5dp">
 
                                 <com.google.android.material.card.MaterialCardView
                                     android:layout_width="match_parent"
                                     android:layout_height="@dimen/category_item_size"
-                                    app:cardBackgroundColor="?attr/colorSurface"
-                                    app:cardCornerRadius="16dp"
-                                    app:strokeColor="?attr/colorOnSurface"
-                                    app:cardElevation="1dp"
-                                    app:strokeWidth="0.2dp">
+                                    app:cardBackgroundColor="@color/bh_home_surface_high"
+                                    app:cardCornerRadius="18dp"
+                                    app:strokeColor="@color/bh_home_outline_soft"
+                                    app:cardElevation="4dp"
+                                    app:strokeWidth="1dp">
 
                                     <ImageView
                                         android:layout_width="match_parent"
@@ -501,18 +548,21 @@
                                 android:id="@+id/categorySports"
                                 android:layout_width="@dimen/category_item_size"
                                 android:layout_height="wrap_content"
-                                android:layout_marginEnd="16dp"
+                                android:layout_marginEnd="14dp"
+                                android:background="@drawable/bg_home_chip_3d"
+                                android:elevation="5dp"
                                 android:gravity="center_horizontal"
-                                android:orientation="vertical">
+                                android:orientation="vertical"
+                                android:padding="5dp">
 
                                 <com.google.android.material.card.MaterialCardView
                                     android:layout_width="match_parent"
                                     android:layout_height="@dimen/category_item_size"
-                                    app:cardBackgroundColor="?attr/colorSurface"
-                                    app:cardCornerRadius="16dp"
-                                    app:cardElevation="1dp"
-                                    app:strokeColor="?attr/colorOnSurface"
-                                    app:strokeWidth="0.2dp">
+                                    app:cardBackgroundColor="@color/bh_home_surface_high"
+                                    app:cardCornerRadius="18dp"
+                                    app:cardElevation="4dp"
+                                    app:strokeColor="@color/bh_home_outline_soft"
+                                    app:strokeWidth="1dp">
 
                                     <ImageView
                                         android:layout_width="match_parent"
@@ -539,21 +589,24 @@
                                 android:id="@+id/viewAllCategories"
                                 android:layout_width="@dimen/category_item_size"
                                 android:layout_height="wrap_content"
-                                android:layout_marginEnd="16dp"
+                                android:layout_marginEnd="14dp"
+                                android:background="@drawable/bg_home_chip_3d"
                                 android:clickable="true"
+                                android:elevation="5dp"
                                 android:focusable="true"
                                 android:foreground="?attr/selectableItemBackground"
                                 android:gravity="center_horizontal"
-                                android:orientation="vertical">
+                                android:orientation="vertical"
+                                android:padding="5dp">
 
                                 <com.google.android.material.card.MaterialCardView
                                     android:layout_width="match_parent"
                                     android:layout_height="@dimen/category_item_size"
-                                    app:cardBackgroundColor="?attr/colorSurface"
-                                    app:cardCornerRadius="16dp"
-                                    app:cardElevation="1dp"
-                                    app:strokeColor="?attr/colorOnSurface"
-                                    app:strokeWidth="0.2dp">
+                                    app:cardBackgroundColor="@color/bh_home_surface_high"
+                                    app:cardCornerRadius="18dp"
+                                    app:cardElevation="4dp"
+                                    app:strokeColor="@color/bh_home_outline_soft"
+                                    app:strokeWidth="1dp">
 
                                     <LinearLayout
                                         android:layout_width="match_parent"
@@ -588,13 +641,20 @@
                 <LinearLayout
                     android:id="@+id/filterButton"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="4dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="@drawable/bg_home_chip_3d"
                     android:clickable="true"
-                    android:paddingStart="5dp"
+                    android:elevation="5dp"
                     android:focusable="true"
                     android:gravity="center_vertical"
                     android:minHeight="50dp"
                     android:orientation="horizontal"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
                     tools:ignore="TouchTargetSizeCheck">
 
                     <ImageView
@@ -614,8 +674,9 @@
 
                     <HorizontalScrollView
                         android:id="@+id/expandedCategoriesScroll"
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:layout_marginTop="8dp"
                         android:overScrollMode="never"
                         android:visibility="gone">
@@ -635,7 +696,11 @@
                     android:id="@+id/featuredItems"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:clipToPadding="false"
                     android:nestedScrollingEnabled="false"
+                    android:paddingStart="2dp"
+                    android:paddingEnd="2dp"
+                    android:paddingBottom="8dp"
                     android:visibility="visible"
                     tools:listitem="@layout/item_user_post" />
 

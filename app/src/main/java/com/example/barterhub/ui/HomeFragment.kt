@@ -153,12 +153,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                         val item = itemSnapshot.getValue(FeaturedItem::class.java)
                         if (item != null) {
                             item.itemId = itemSnapshot.key ?: item.itemId
+                            item.ownerId = itemSnapshot.child("ownerId").getValue(String::class.java).orEmpty()
+                            item.likeCount = itemSnapshot.child("likeCount").asInt() ?: 0
+                            item.timestamp = itemSnapshot.child("timestamp").asLong() ?: 0L
 
-                            val isActive = itemSnapshot.child("isActive")
-                                .getValue(Boolean::class.java) ?: true
-
-                            val isArchived = itemSnapshot.child("isArchived")
-                                .getValue(Boolean::class.java) ?: false
+                            val isActive = itemSnapshot.child("isActive").asBoolean(defaultValue = true)
+                            val isArchived = itemSnapshot.child("isArchived").asBoolean(defaultValue = false)
 
                             if (item.ownerId.isNotBlank() && isActive && !isArchived) {
                                 allItems.add(item)
@@ -167,7 +167,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     }
 
                     if (allItems.isEmpty()) {
-                        binding.trendingViewPager.visibility = View.GONE
+                        showHomeTrendingEmpty()
                         return
                     }
 
@@ -179,7 +179,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     if (_binding == null || !isAdded) return
 
                     Log.e("TRENDING_DEBUG", "Failed to load items: ${error.message}")
-                    binding.trendingViewPager.visibility = View.GONE
+                    showHomeTrendingEmpty()
                 }
             })
     }
@@ -198,15 +198,15 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
                     for (userSnapshot in snapshot.children) {
                         val uid = userSnapshot.key ?: continue
-                        val isPremium = userSnapshot.child("isPremium").getValue(Boolean::class.java) ?: false
-                        val premiumExpiry = userSnapshot.child("premiumExpiry").getValue(Long::class.java) ?: 0L
+                        val isPremium = userSnapshot.child("isPremium").asBoolean(defaultValue = false)
+                        val premiumExpiry = normalizeExpiryMillis(userSnapshot.child("premiumExpiry").asLong() ?: 0L)
 
                         if (isPremium && premiumExpiry > now) {
                             premiumUserIds.add(uid)
                         }
                     }
 
-                    val trendingItems = allItems
+                    val premiumTrendingItems = allItems
                         .filter { it.ownerId in premiumUserIds }
                         .sortedWith(
                             compareByDescending<FeaturedItem> { it.likeCount }
@@ -214,14 +214,21 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                         )
                         .take(5)
 
+                    val trendingItems = if (premiumTrendingItems.isNotEmpty()) {
+                        premiumTrendingItems
+                    } else {
+                        allItems.sortedWith(
+                            compareByDescending<FeaturedItem> { it.likeCount }
+                                .thenByDescending { it.timestamp }
+                        ).take(5)
+                    }
+
                     trendingAdapter.submitList(trendingItems)
 
                     if (trendingItems.isNotEmpty()) {
-                        binding.trendingSliderContainer.visibility = View.VISIBLE
-                        binding.trendingViewPager.visibility = View.VISIBLE
-                        trendingSliderManager?.startAutoSlide()
+                        showHomeTrendingItems()
                     } else {
-                        binding.trendingViewPager.visibility = View.GONE
+                        showHomeTrendingEmpty()
                         Log.d("TRENDING_DEBUG", "No premium trending items found")
                     }
                 }
@@ -231,9 +238,68 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     if (_binding == null || !isAdded) return
 
                     Log.e("TRENDING_DEBUG", "Failed to load public users: ${error.message}")
-                    binding.trendingViewPager.visibility = View.GONE
+                    val fallbackItems = allItems.sortedWith(
+                        compareByDescending<FeaturedItem> { it.likeCount }
+                            .thenByDescending { it.timestamp }
+                    ).take(5)
+
+                    trendingAdapter.submitList(fallbackItems)
+                    if (fallbackItems.isNotEmpty()) {
+                        showHomeTrendingItems()
+                    } else {
+                        showHomeTrendingEmpty()
+                    }
                 }
             })
+    }
+
+    private fun showHomeTrendingItems() {
+        if (_binding == null || !isAdded) return
+        binding.trendingSliderContainer.visibility = View.VISIBLE
+        binding.trendingViewPager.visibility = View.VISIBLE
+        binding.trendingEmptyState.visibility = View.GONE
+        trendingSliderManager?.startAutoSlide()
+    }
+
+    private fun showHomeTrendingEmpty() {
+        if (_binding == null || !isAdded) return
+        trendingSliderManager?.stopAutoSlide()
+        binding.trendingSliderContainer.visibility = View.VISIBLE
+        binding.trendingViewPager.visibility = View.GONE
+        binding.trendingEmptyState.visibility = View.VISIBLE
+    }
+
+    private fun DataSnapshot.asBoolean(defaultValue: Boolean): Boolean {
+        return when (val value = getValue()) {
+            is Boolean -> value
+            is String -> value.equals("true", ignoreCase = true)
+            is Number -> value.toInt() != 0
+            else -> defaultValue
+        }
+    }
+
+    private fun DataSnapshot.asLong(): Long? {
+        return when (val value = getValue()) {
+            is Long -> value
+            is Int -> value.toLong()
+            is Double -> value.toLong()
+            is String -> value.toLongOrNull()
+            else -> null
+        }
+    }
+
+    private fun DataSnapshot.asInt(): Int? {
+        return when (val value = getValue()) {
+            is Int -> value
+            is Long -> value.toInt()
+            is Double -> value.toInt()
+            is String -> value.toIntOrNull()
+            else -> null
+        }
+    }
+
+    private fun normalizeExpiryMillis(expiry: Long): Long {
+        return if (expiry in 1 until 1_000_000_000_000L) expiry * 1000L else expiry
     }
 
     override fun onPause() {
@@ -252,7 +318,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun setupUI() {
-        Log.d("ThemeDebug", "🎨 Using default theme from XML")
+        Log.d("ThemeDebug", "ðŸŽ¨ Using default theme from XML")
     }
     private fun setupRecyclerView() {
         featuredAdapter = FeaturedAdapter()
@@ -303,7 +369,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun shareItem(title: String) {
         val shareText = "Check out this item on BarterHub:\n\n" +
-                "📱 $title\n\n" +
+                "ðŸ“± $title\n\n" +
                 "Download BarterHub to see more!"
 
         val shareIntent = Intent().apply {
@@ -335,7 +401,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun observeViewModel() {
         viewModel.items.observe(viewLifecycleOwner, Observer { itemList ->
-            // ✅ ADDITIONAL DEBUG: Check each item
+            // âœ… ADDITIONAL DEBUG: Check each item
             itemList.forEachIndexed { index, item ->
                 Log.d("FragmentDebug", "Item $index received:")
                 Log.d("FragmentDebug", "  Title: '${item.title}'")
@@ -458,29 +524,55 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun setupTradeRequestBadgeListener() {
         val currentUserId = auth.currentUser?.uid ?: return
-        val ref = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
-            .getReference("trade_requests")
+        val db = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/").reference
+        val ref = db.child("user_trade_requests").child(currentUserId)
 
         ref.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (!isAdded || _binding == null) return
-                var pendingCount = 0
-                for (tradeSnap in snapshot.children) {
-                    val tradeMap = tradeSnap.value as? Map<*, *> ?: continue
-                    val toUserId = (tradeMap["toUser"] as? Map<*, *>)?.get("userId") as? String ?: ""
-                    val fromUserId = (tradeMap["fromUser"] as? Map<*, *>)?.get("userId") as? String ?: ""
-                    val status = tradeMap["status"] as? String ?: ""
-                    if ((toUserId == currentUserId || fromUserId == currentUserId) && status == "Pending") pendingCount++
+
+                val requestIds = snapshot.children.mapNotNull { child ->
+                    child.key?.takeIf { child.getValue(Boolean::class.java) != false }
                 }
-                updateTradeRequestBadge(pendingCount)
+                if (requestIds.isEmpty()) {
+                    updateTradeRequestBadge(0)
+                    return
+                }
+
+                var pendingCount = 0
+                var remaining = requestIds.size
+                requestIds.forEach { requestId ->
+                    db.child("trade_requests").child(requestId).get()
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                val tradeSnap = task.result
+                                val toUserId = tradeSnap.child("toUser").child("userId").getValue(String::class.java)
+                                    ?: tradeSnap.child("toUserId").getValue(String::class.java)
+                                    ?: tradeSnap.child("receiverId").getValue(String::class.java)
+                                    ?: ""
+                                val fromUserId = tradeSnap.child("fromUser").child("userId").getValue(String::class.java)
+                                    ?: tradeSnap.child("fromUserId").getValue(String::class.java)
+                                    ?: tradeSnap.child("requesterId").getValue(String::class.java)
+                                    ?: ""
+                                val status = tradeSnap.child("status").getValue(String::class.java) ?: ""
+                                if ((toUserId == currentUserId || fromUserId == currentUserId) && status == "Pending") pendingCount++
+                            } else {
+                                Log.e("HomeFragment", "Failed to load trade request $requestId: ${task.exception?.message}")
+                            }
+
+                            remaining--
+                            if (remaining == 0 && isAdded && _binding != null) {
+                                updateTradeRequestBadge(pendingCount)
+                            }
+                        }
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.e("HomeFragment", "Failed to load trade requests: ${error.message}")
+                Log.e("HomeFragment", "Failed to load trade request index: ${error.message}")
             }
         })
     }
-
     private fun updateTradeRequestBadge(count: Int) {
         if (!isAdded || _binding == null) return
         binding.tradeRequestBadge.visibility = if (count > 0) {
@@ -630,8 +722,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun showLockedDailyBanner() {
         if (_binding == null || !isAdded) return
 
-        binding.tvDailyBannerTitle.text = "Premium Challenges 🔒"
-        binding.tvDailyBannerSubtitle.text = "Upgrade to Premium to earn daily coins 💰"
+        binding.tvDailyBannerTitle.text = "Premium Challenges ðŸ”’"
+        binding.tvDailyBannerSubtitle.text = "Upgrade to Premium to earn daily coins ðŸ’°"
         binding.dailyChallengeBanner.alpha = 0.85f
 
         binding.dailyChallengeBanner.setOnClickListener {

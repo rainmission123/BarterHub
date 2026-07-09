@@ -262,49 +262,52 @@ class MessagesFragment : Fragment() {
             .child("unreadCount")
             .child(currentUserId)
             .setValue(0)
+
+        database.child("user_inbox")
+            .child(currentUserId)
+            .child(chatId)
+            .child("unreadCount")
+            .setValue(0)
     }
 
     private fun deleteConversation(chatId: String, position: Int) {
-        val chatRef = FirebaseDatabase.getInstance().getReference("chats").child(chatId)
+        val currentUserId = auth.currentUser?.uid ?: return
+        val conversation = filteredConversationList.getOrNull(position)
+            ?: conversationList.firstOrNull { it.chatId == chatId }
+        val partnerId = conversation?.participants?.keys?.firstOrNull { it != currentUserId }.orEmpty()
+        val partnerName = conversation?.participantNames?.get(partnerId).orEmpty()
+        val lastMessage = conversation?.lastMessage.orEmpty()
+        val lastMessageTime = conversation?.lastMessageTime ?: System.currentTimeMillis()
+        val deletedInboxEntry = mapOf(
+            "chatId" to chatId,
+            "partnerId" to partnerId,
+            "partnerName" to partnerName,
+            "lastMessage" to lastMessage,
+            "lastMessageTime" to lastMessageTime,
+            "unreadCount" to 0,
+            "deleted" to true,
+            "deletedAt" to System.currentTimeMillis()
+        )
 
-        chatRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if (!snapshot.exists()) {
-                    showSnackbar("Chat not found.")
-                    return
+        database.child("user_inbox")
+            .child(currentUserId)
+            .child(chatId)
+            .setValue(deletedInboxEntry)
+            .addOnSuccessListener {
+                if (position in filteredConversationList.indices) {
+                    val removedChatId = filteredConversationList[position].chatId
+                    filteredConversationList.removeAt(position)
+                    conversationList.removeAll { it.chatId == removedChatId }
+                    adapter.notifyDataSetChanged()
+                } else {
+                    adapter.notifyDataSetChanged()
                 }
-
-                val participants = snapshot.child("participants").children.mapNotNull { it.key }
-
-                val updates = hashMapOf<String, Any?>()
-                updates["/chats/$chatId"] = null
-
-                participants.forEach { pid ->
-                    updates["/user_chats/$pid/$chatId"] = null
-                }
-
-                database.updateChildren(updates)
-                    .addOnSuccessListener {
-                        if (position in filteredConversationList.indices) {
-                            val removedChatId = filteredConversationList[position].chatId
-                            filteredConversationList.removeAt(position)
-                            conversationList.removeAll { it.chatId == removedChatId }
-                            adapter.notifyDataSetChanged()
-                        } else {
-                            adapter.notifyDataSetChanged()
-                        }
-                        updateEmptyState()
-                        showSnackbar("Conversation permanently deleted")
-                    }
-                    .addOnFailureListener { e ->
-                        showSnackbar("Failed to delete: ${e.message}")
-                    }
+                updateEmptyState()
+                showSnackbar("Conversation deleted")
             }
-
-            override fun onCancelled(error: DatabaseError) {
-                showSnackbar("Failed: ${error.message}")
+            .addOnFailureListener { e ->
+                showSnackbar("Failed to delete: ${e.message}")
             }
-        })
     }
 
     private fun showSnackbar(message: String) {
@@ -323,15 +326,18 @@ class MessagesFragment : Fragment() {
             conversationList.clear()
             filteredConversationList.clear()
 
-            conversationsListener?.let { database.child("chats").removeEventListener(it) }
+            val inboxRef = database.child("user_inbox").child(userId)
+            Log.d("MESSAGES_INBOX_PATH", "Listening to user_inbox/$userId")
+            conversationsListener?.let { inboxRef.removeEventListener(it) }
 
-            conversationsListener = database.child("chats")
+            conversationsListener = inboxRef
                 .addValueEventListener(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
                         try {
                             if (_binding == null) return
 
                             conversationList.clear()
+                            Log.d("MESSAGES_INBOX_COUNT", "exists=${snapshot.exists()} count=${snapshot.childrenCount}")
 
                             if (!snapshot.exists()) {
                                 binding.progressBar.visibility = View.GONE
@@ -339,53 +345,120 @@ class MessagesFragment : Fragment() {
                                 return
                             }
 
-                            Log.d("DEBUG_MESSAGES", "Found ${snapshot.childrenCount} chats")
-                            var chatsProcessed = 0
+                            Log.d("DEBUG_MESSAGES", "Found ${snapshot.childrenCount} inbox conversations")
+                            val inboxItems = snapshot.children.toList()
+                            var pendingChatReads = inboxItems.size
+                            var conversationsQueued = 0
 
-                            for (chatSnap in snapshot.children) {
-                                if (_binding == null) break
-
-                                val chatId = chatSnap.key ?: continue
-
-                                if (chatId.startsWith("chat_")) continue
-                                if (!chatId.contains(userId)) continue
-
-                                val partnerId = extractPartnerIdFromChatId(chatId, userId) ?: continue
-
-                                val lastMessage = chatSnap.child("lastMessage").getValue(String::class.java)
-                                    ?: getLastMessageFromMessages(chatSnap)
-                                    ?: "New message"
-
-                                val lastMessageTime = chatSnap.child("lastMessageTime").getValue(Long::class.java)
-                                    ?: getLastMessageTimeFromMessages(chatSnap)
-                                    ?: System.currentTimeMillis()
-
-                                val unreadCount = chatSnap.child("messages").children.count { messageSnap ->
-                                    val read = messageSnap.child("read").getValue(Boolean::class.java) ?: true
-                                    val receiverId = messageSnap.child("receiverId").getValue(String::class.java)
-                                    !read && receiverId == userId
+                            fun finishChatRead() {
+                                pendingChatReads--
+                                if (pendingChatReads <= 0 && conversationsQueued == 0) {
+                                    binding.progressBar.visibility = View.GONE
+                                    applyFilters()
+                                    updateEmptyState()
                                 }
-
-                                val isArchived = chatSnap.child("archivedBy")
-                                    .child(userId)
-                                    .getValue(Boolean::class.java) ?: false
-
-                                loadPartnerDetails(
-                                    chatId = chatId,
-                                    partnerId = partnerId,
-                                    lastMessage = lastMessage,
-                                    lastMessageTime = lastMessageTime,
-                                    unreadCount = unreadCount,
-                                    isArchived = isArchived
-                                )
-
-                                chatsProcessed++
                             }
 
-                            binding.progressBar.visibility = View.GONE
-                            if (chatsProcessed == 0) {
-                                applyFilters()
-                                updateEmptyState()
+                            for (inboxSnap in inboxItems) {
+                                if (_binding == null) break
+
+                                val inboxKey = inboxSnap.key.orEmpty()
+                                val inboxChatId = inboxSnap.child("chatId").getValue(String::class.java)
+                                val chatId = inboxKey.ifBlank { inboxChatId.orEmpty() }
+
+                                Log.d(
+                                    "MESSAGES_INBOX_CHILD",
+                                    "key=$inboxKey chatId=$inboxChatId partnerId=${inboxSnap.child("partnerId").getValue(String::class.java)} " +
+                                            "partnerName=${inboxSnap.child("partnerName").getValue(String::class.java)} " +
+                                            "lastMessage=${inboxSnap.child("lastMessage").getValue(String::class.java)} " +
+                                            "lastMessageTime=${inboxSnap.child("lastMessageTime").value} " +
+                                            "unreadCount=${inboxSnap.child("unreadCount").value}"
+                                )
+
+                                if (chatId.isBlank()) {
+                                    Log.d("MESSAGES_INBOX_CHILD", "Skipping blank chatId for key=$inboxKey")
+                                    finishChatRead()
+                                    continue
+                                }
+
+                                if (inboxSnap.child("deleted").getValue(Boolean::class.java) == true) {
+                                    Log.d("MESSAGES_INBOX_CHILD", "Skipping deleted conversation $chatId")
+                                    finishChatRead()
+                                    continue
+                                }
+
+                                database.child("chats")
+                                    .child(chatId)
+                                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                                        override fun onDataChange(chatSnap: DataSnapshot) {
+                                            if (_binding == null) return
+
+                                            if (!chatSnap.exists()) {
+                                                Log.d("MESSAGES_INBOX_CHILD", "Skipping $chatId because chat node does not exist")
+                                                finishChatRead()
+                                                return
+                                            }
+
+                                            if (!isCurrentUserParticipant(chatSnap, userId)) {
+                                                Log.d(
+                                                    "MESSAGES_INBOX_CHILD",
+                                                    "Using inbox membership fallback for $chatId; no participant fields found on chat"
+                                                )
+                                            }
+
+                                            val partnerId = firstNonBlank(
+                                                inboxSnap.child("partnerId").getValue(String::class.java),
+                                                resolvePartnerId(chatSnap, userId),
+                                                extractPartnerIdFromChatId(chatId, userId)
+                                            )
+
+                                            if (partnerId.isNullOrBlank()) {
+                                                Log.d("MESSAGES_INBOX_CHILD", "Skipping $chatId because partnerId is blank")
+                                                finishChatRead()
+                                                return
+                                            }
+
+                                            val lastMessage = firstNonBlank(
+                                                inboxSnap.child("lastMessage").getValue(String::class.java),
+                                                chatSnap.child("lastMessage").getValue(String::class.java),
+                                                getLastMessageFromMessages(chatSnap)
+                                            ) ?: "New message"
+
+                                            val lastMessageTime =
+                                                inboxSnap.child("lastMessageTime").asLong()
+                                                    ?: chatSnap.child("lastMessageTime").asLong()
+                                                    ?: getLastMessageTimeFromMessages(chatSnap)
+                                                    ?: System.currentTimeMillis()
+
+                                            val unreadCount =
+                                                inboxSnap.child("unreadCount").asInt()
+                                                    ?: chatSnap.child("unreadCount").child(userId).asInt()
+                                                    ?: 0
+
+                                            val isArchived =
+                                                inboxSnap.child("archived").getValue(Boolean::class.java)
+                                                    ?: chatSnap.child("archivedBy")
+                                                        .child(userId)
+                                                        .getValue(Boolean::class.java)
+                                                    ?: false
+
+                                            conversationsQueued++
+                                            loadPartnerDetails(
+                                                chatId = chatId,
+                                                partnerId = partnerId,
+                                                lastMessage = lastMessage,
+                                                lastMessageTime = lastMessageTime,
+                                                unreadCount = unreadCount,
+                                                isArchived = isArchived
+                                            )
+                                            finishChatRead()
+                                        }
+
+                                        override fun onCancelled(error: DatabaseError) {
+                                            Log.e("MESSAGES_FRAGMENT", "Chat read blocked for $chatId: ${error.message}")
+                                            finishChatRead()
+                                        }
+                                    })
                             }
 
                         } catch (e: Exception) {
@@ -397,10 +470,17 @@ class MessagesFragment : Fragment() {
                     override fun onCancelled(error: DatabaseError) {
                         if (_binding != null) {
                             binding.progressBar.visibility = View.GONE
+                            Log.e(
+                                "MESSAGES_INBOX_ERROR",
+                                "Inbox listener cancelled: ${error.message}",
+                                error.toException()
+                            )
                             Log.e("MESSAGES_FRAGMENT", "Error: ${error.message}")
                         }
                     }
                 })
+
+            Log.d("MESSAGES_INBOX_LISTENER", "ValueEventListener attached")
 
         } catch (e: Exception) {
             Log.e("DEBUG_MESSAGES", "Error in fetch: ${e.message}", e)
@@ -425,6 +505,61 @@ class MessagesFragment : Fragment() {
 
         Log.d("DEBUG_MESSAGES", "Filtered partner IDs: $potentialUserIds")
         return potentialUserIds.firstOrNull()
+    }
+
+    private fun isCurrentUserParticipant(chatSnap: DataSnapshot, currentUserId: String): Boolean {
+        if (chatSnap.child("participants").child(currentUserId).exists()) return true
+        if (chatSnap.child("participantIds").child(currentUserId).exists()) return true
+
+        return listOf(
+            "user1Id",
+            "user2Id",
+            "user1",
+            "user2",
+            "buyerId",
+            "sellerId",
+            "ownerId",
+            "requesterId"
+        ).any { field ->
+            chatSnap.child(field).getValue(String::class.java) == currentUserId
+        }
+    }
+
+    private fun resolvePartnerId(chatSnap: DataSnapshot, currentUserId: String): String? {
+        val participantKey = chatSnap.child("participants").children
+            .mapNotNull { it.key }
+            .firstOrNull { it != currentUserId }
+
+        if (!participantKey.isNullOrBlank()) return participantKey
+
+        val participantId = chatSnap.child("participantIds").children
+            .mapNotNull { it.key }
+            .firstOrNull { it != currentUserId }
+
+        if (!participantId.isNullOrBlank()) return participantId
+
+        return listOf(
+            "user1Id",
+            "user2Id",
+            "user1",
+            "user2",
+            "buyerId",
+            "sellerId",
+            "ownerId",
+            "requesterId"
+        ).mapNotNull { field ->
+            chatSnap.child(field).getValue(String::class.java)
+        }.firstOrNull { it != currentUserId }
+    }
+
+    private fun DataSnapshot.asInt(): Int? {
+        return getValue(Int::class.java) ?: getValue(Long::class.java)?.toInt()
+    }
+
+    private fun DataSnapshot.asLong(): Long? {
+        return getValue(Long::class.java)
+            ?: getValue(Int::class.java)?.toLong()
+            ?: getValue(Double::class.java)?.toLong()
     }
 
     private fun getLastMessageFromMessages(chatSnap: DataSnapshot): String? {
@@ -455,75 +590,149 @@ class MessagesFragment : Fragment() {
     ) {
         val userId = auth.currentUser?.uid ?: return
 
-        database.child("public_users").child(partnerId)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    if (_binding == null) return
+        database.child("users").child(partnerId).get()
+            .addOnSuccessListener { userSnapshot ->
+                database.child("public_users").child(partnerId).get()
+                    .addOnSuccessListener { publicSnapshot ->
+                        if (_binding == null) return@addOnSuccessListener
 
-                    val partnerName =
-                        snapshot.child("fullName").getValue(String::class.java)
-                            ?: snapshot.child("username").getValue(String::class.java)
-                            ?: "Chat Partner"
+                        val partnerName = firstNonBlank(
+                            publicSnapshot.child("fullName").getValue(String::class.java),
+                            userSnapshot.child("fullName").getValue(String::class.java),
+                            publicSnapshot.child("username").getValue(String::class.java),
+                            userSnapshot.child("username").getValue(String::class.java)
+                        ) ?: "Chat Partner"
 
-                    val partnerProfilePic =
-                        snapshot.child("profileImageUrl").getValue(String::class.java)
-                            ?: snapshot.child("profileImage").getValue(String::class.java)
-                            ?: snapshot.child("profilePicture").getValue(String::class.java)
-                            ?: ""
+                        val partnerProfilePic = firstNonBlank(
+                            userSnapshot.child("profileImageUrl").getValue(String::class.java),
+                            userSnapshot.child("profileImage").getValue(String::class.java),
+                            publicSnapshot.child("profileImageUrl").getValue(String::class.java),
+                            publicSnapshot.child("profileImage").getValue(String::class.java),
+                            publicSnapshot.child("profilePicture").getValue(String::class.java)
+                        ).orEmpty()
 
-                    val convo = Conversation(
-                        chatId = chatId,
-                        participants = mapOf(userId to true, partnerId to true),
-                        participantNames = mapOf(userId to "You", partnerId to partnerName),
-                        participantProfilePics = mapOf(partnerId to partnerProfilePic),
-                        messages = mapOf(),
-                        lastMessage = lastMessage,
-                        lastMessageTime = lastMessageTime,
-                        unreadCount = unreadCount
-                    )
+                        upsertConversation(
+                            chatId = chatId,
+                            userId = userId,
+                            partnerId = partnerId,
+                            partnerName = partnerName,
+                            partnerProfilePic = partnerProfilePic,
+                            lastMessage = lastMessage,
+                            lastMessageTime = lastMessageTime,
+                            unreadCount = unreadCount,
+                            isArchived = isArchived
+                        )
+                    }
+                    .addOnFailureListener {
+                        if (_binding == null) return@addOnFailureListener
 
-                    conversationList.removeAll { it.chatId == chatId }
+                        val partnerName = firstNonBlank(
+                            userSnapshot.child("fullName").getValue(String::class.java),
+                            userSnapshot.child("username").getValue(String::class.java)
+                        ) ?: "Chat Partner"
 
-                    // store archive flag temporarily in a side-path style via map if Conversation has no archived field
-                    val convoWithArchiveTag = convo.copy(
-                        lastMessage = if (isArchived) convo.lastMessage else convo.lastMessage
-                    )
+                        val partnerProfilePic = firstNonBlank(
+                            userSnapshot.child("profileImageUrl").getValue(String::class.java),
+                            userSnapshot.child("profileImage").getValue(String::class.java)
+                        ).orEmpty()
 
-                    conversationList.add(convoWithArchiveTag)
-                    conversationList.sortByDescending { it.lastMessageTime }
+                        upsertConversation(
+                            chatId = chatId,
+                            userId = userId,
+                            partnerId = partnerId,
+                            partnerName = partnerName,
+                            partnerProfilePic = partnerProfilePic,
+                            lastMessage = lastMessage,
+                            lastMessageTime = lastMessageTime,
+                            unreadCount = unreadCount,
+                            isArchived = isArchived
+                        )
+                    }
+            }
+            .addOnFailureListener {
+                database.child("public_users").child(partnerId)
+                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            if (_binding == null) return
 
-                    // keep archive state separately in tag map
-                    archivedStateMap[chatId] = isArchived
+                            val partnerName =
+                                snapshot.child("fullName").getValue(String::class.java)
+                                    ?: snapshot.child("username").getValue(String::class.java)
+                                    ?: "Chat Partner"
 
-                    applyFilters()
-                    binding.progressBar.visibility = View.GONE
-                    updateEmptyState()
-                }
+                            val partnerProfilePic =
+                                firstNonBlank(
+                                    snapshot.child("profileImageUrl").getValue(String::class.java),
+                                    snapshot.child("profileImage").getValue(String::class.java),
+                                    snapshot.child("profilePicture").getValue(String::class.java)
+                                ).orEmpty()
 
-                override fun onCancelled(error: DatabaseError) {
-                    if (_binding == null) return
+                            upsertConversation(
+                                chatId = chatId,
+                                userId = userId,
+                                partnerId = partnerId,
+                                partnerName = partnerName,
+                                partnerProfilePic = partnerProfilePic,
+                                lastMessage = lastMessage,
+                                lastMessageTime = lastMessageTime,
+                                unreadCount = unreadCount,
+                                isArchived = isArchived
+                            )
+                        }
 
-                    val convo = Conversation(
-                        chatId = chatId,
-                        participants = mapOf(userId to true, partnerId to true),
-                        participantNames = mapOf(userId to "You", partnerId to "Chat Partner"),
-                        participantProfilePics = mapOf(),
-                        messages = mapOf(),
-                        lastMessage = lastMessage,
-                        lastMessageTime = lastMessageTime,
-                        unreadCount = unreadCount
-                    )
+                        override fun onCancelled(error: DatabaseError) {
+                            upsertConversation(
+                                chatId = chatId,
+                                userId = userId,
+                                partnerId = partnerId,
+                                partnerName = "Chat Partner",
+                                partnerProfilePic = "",
+                                lastMessage = lastMessage,
+                                lastMessageTime = lastMessageTime,
+                                unreadCount = unreadCount,
+                                isArchived = isArchived
+                            )
+                        }
+                    })
+            }
+    }
 
-                    conversationList.removeAll { it.chatId == chatId }
-                    conversationList.add(convo)
-                    conversationList.sortByDescending { it.lastMessageTime }
-                    archivedStateMap[chatId] = isArchived
+    private fun upsertConversation(
+        chatId: String,
+        userId: String,
+        partnerId: String,
+        partnerName: String,
+        partnerProfilePic: String,
+        lastMessage: String,
+        lastMessageTime: Long,
+        unreadCount: Int,
+        isArchived: Boolean
+    ) {
+        if (_binding == null) return
 
-                    applyFilters()
-                    binding.progressBar.visibility = View.GONE
-                    updateEmptyState()
-                }
-            })
+        val convo = Conversation(
+            chatId = chatId,
+            participants = mapOf(userId to true, partnerId to true),
+            participantNames = mapOf(userId to "You", partnerId to partnerName),
+            participantProfilePics = mapOf(partnerId to partnerProfilePic),
+            messages = mapOf(),
+            lastMessage = lastMessage,
+            lastMessageTime = lastMessageTime,
+            unreadCount = unreadCount
+        )
+
+        conversationList.removeAll { it.chatId == chatId }
+        conversationList.add(convo)
+        conversationList.sortByDescending { it.lastMessageTime }
+        archivedStateMap[chatId] = isArchived
+
+        applyFilters()
+        binding.progressBar.visibility = View.GONE
+        updateEmptyState()
+    }
+
+    private fun firstNonBlank(vararg values: String?): String? {
+        return values.firstOrNull { !it.isNullOrBlank() }?.trim()
     }
 
     private val archivedStateMap = mutableMapOf<String, Boolean>()
@@ -557,6 +766,10 @@ class MessagesFragment : Fragment() {
 
         filteredConversationList.clear()
         filteredConversationList.addAll(result)
+        Log.d(
+            "MESSAGES_ADAPTER_SUBMIT_COUNT",
+            "conversationList=${conversationList.size} filtered=${filteredConversationList.size} filter=$selectedFilter query='$query'"
+        )
         adapter.notifyDataSetChanged()
         updateEmptyState()
     }
@@ -574,7 +787,9 @@ class MessagesFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         conversationsListener?.let {
-            database.child("chats").removeEventListener(it)
+            auth.currentUser?.uid?.let { uid ->
+                database.child("user_inbox").child(uid).removeEventListener(it)
+            }
         }
         _binding = null
     }

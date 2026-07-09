@@ -89,15 +89,19 @@ class AllTrendingItemsFragment : Fragment(R.layout.fragment_all_trending_items) 
 
                             // FORCE READ important fields
                             item.ownerId = itemSnapshot.child("ownerId").getValue(String::class.java) ?: ""
-                            item.likeCount = itemSnapshot.child("likeCount").getValue(Int::class.java) ?: 0
-                            item.timestamp = itemSnapshot.child("timestamp").getValue(Long::class.java) ?: 0L
+                            item.likeCount = itemSnapshot.child("likeCount").asInt() ?: 0
+                            item.timestamp = itemSnapshot.child("timestamp").asLong() ?: 0L
+                            val isActive = itemSnapshot.child("isActive").asBoolean(defaultValue = true)
+                            val isArchived = itemSnapshot.child("isArchived").asBoolean(defaultValue = false)
 
                             Log.d("TRENDING_TEST", "itemId=${item.itemId}")
                             Log.d("TRENDING_TEST", "title=${item.title}")
                             Log.d("TRENDING_TEST", "ownerId=${item.ownerId}")
                             Log.d("TRENDING_TEST", "likeCount=${item.likeCount}")
 
-                            allItems.add(item)
+                            if (item.ownerId.isNotBlank() && isActive && !isArchived) {
+                                allItems.add(item)
+                            }
                         }
                     }
 
@@ -131,10 +135,12 @@ class AllTrendingItemsFragment : Fragment(R.layout.fragment_all_trending_items) 
                         val uid = userSnapshot.key ?: continue
 
                         val isPremium = userSnapshot.child("isPremium")
-                            .getValue(Boolean::class.java) ?: false
+                            .asBoolean(defaultValue = false)
 
                         val premiumExpiry = userSnapshot.child("premiumExpiry")
-                            .getValue(Long::class.java) ?: 0L
+                            .asLong()
+                            ?.let { normalizeExpiryMillis(it) }
+                            ?: 0L
 
                         val premiumActive = isPremium && premiumExpiry > now
 
@@ -148,7 +154,7 @@ class AllTrendingItemsFragment : Fragment(R.layout.fragment_all_trending_items) 
                         )
                     }
 
-                    val trendingItems = items
+                    val premiumTrendingItems = items
                         .filter { item ->
                             val matched = item.ownerId.isNotBlank() &&
                                     premiumOwnerIds.contains(item.ownerId)
@@ -166,6 +172,17 @@ class AllTrendingItemsFragment : Fragment(R.layout.fragment_all_trending_items) 
                         )
                         .take(20)
                         .toMutableList()
+
+                    val trendingItems = if (premiumTrendingItems.isNotEmpty()) {
+                        premiumTrendingItems
+                    } else {
+                        items.sortedWith(
+                            compareByDescending<FeaturedItem> { it.likeCount }
+                                .thenByDescending { it.timestamp }
+                        )
+                            .take(20)
+                            .toMutableList()
+                    }
 
                     Log.d("TrendingPremium", "Premium owners count = ${premiumOwnerIds.size}")
                     Log.d("TrendingPremium", "Trending premium items count = ${trendingItems.size}")
@@ -242,6 +259,39 @@ class AllTrendingItemsFragment : Fragment(R.layout.fragment_all_trending_items) 
         if (_binding == null) return
         binding.emptyStateLayout.visibility = if (show) View.VISIBLE else View.GONE
         binding.trendingItemsRecyclerView.visibility = if (show) View.GONE else View.VISIBLE
+    }
+
+    private fun DataSnapshot.asBoolean(defaultValue: Boolean): Boolean {
+        return when (val value = getValue()) {
+            is Boolean -> value
+            is String -> value.equals("true", ignoreCase = true)
+            is Number -> value.toInt() != 0
+            else -> defaultValue
+        }
+    }
+
+    private fun DataSnapshot.asLong(): Long? {
+        return when (val value = getValue()) {
+            is Long -> value
+            is Int -> value.toLong()
+            is Double -> value.toLong()
+            is String -> value.toLongOrNull()
+            else -> null
+        }
+    }
+
+    private fun DataSnapshot.asInt(): Int? {
+        return when (val value = getValue()) {
+            is Int -> value
+            is Long -> value.toInt()
+            is Double -> value.toInt()
+            is String -> value.toIntOrNull()
+            else -> null
+        }
+    }
+
+    private fun normalizeExpiryMillis(expiry: Long): Long {
+        return if (expiry in 1 until 1_000_000_000_000L) expiry * 1000L else expiry
     }
 
     override fun onDestroyView() {
