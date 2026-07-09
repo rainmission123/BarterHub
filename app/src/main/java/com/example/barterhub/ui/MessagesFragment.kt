@@ -286,7 +286,7 @@ class MessagesFragment : Fragment() {
             "lastMessageTime" to lastMessageTime,
             "unreadCount" to 0,
             "deleted" to true,
-            "deletedAt" to System.currentTimeMillis()
+            "deletedAt" to ServerValue.TIMESTAMP
         )
 
         database.child("user_inbox")

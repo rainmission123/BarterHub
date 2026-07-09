@@ -77,17 +77,25 @@ object ChatInboxUpdater {
             inboxEntryRef.runTransaction(object : Transaction.Handler {
                 override fun doTransaction(currentData: MutableData): Transaction.Result {
                     val currentUnread = currentData.child("unreadCount").asInt() ?: 0
+                    val currentDeletedAt = currentData.child("deletedAt").asLong()
                     val currentPartnerName =
                         currentData.child("partnerName").getValue(String::class.java).orEmpty()
 
-                    currentData.value = mapOf(
+                    val nextValue = mutableMapOf<String, Any>(
                         "chatId" to chatId,
                         "partnerId" to partnerId,
                         "partnerName" to currentPartnerName.ifBlank { partnerName },
                         "lastMessage" to lastMessage,
                         "lastMessageTime" to lastMessageTime,
-                        "unreadCount" to if (incrementUnread) currentUnread + 1 else currentUnread
+                        "unreadCount" to if (incrementUnread) currentUnread + 1 else currentUnread,
+                        "deleted" to false
                     )
+
+                    if (currentDeletedAt != null) {
+                        nextValue["deletedAt"] = currentDeletedAt
+                    }
+
+                    currentData.value = nextValue
 
                     return Transaction.success(currentData)
                 }
@@ -111,6 +119,13 @@ object ChatInboxUpdater {
 
     private fun MutableData.asInt(): Int? {
         return getValue(Int::class.java) ?: getValue(Long::class.java)?.toInt()
+    }
+
+    private fun MutableData.asLong(): Long? {
+        return getValue(Long::class.java)
+            ?: getValue(Int::class.java)?.toLong()
+            ?: getValue(Double::class.java)?.toLong()
+            ?: getValue(String::class.java)?.toLongOrNull()
     }
 
     private fun incrementUnreadCounter(counterRef: DatabaseReference) {

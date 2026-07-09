@@ -23,6 +23,7 @@ import com.example.barterhub.R
 import com.example.barterhub.adapters.FeaturedAdapter
 import com.example.barterhub.data.models.FeaturedItem
 import com.example.barterhub.databinding.FragmentHomeBinding
+import com.example.barterhub.ui.helpers.TrendingItemsLoader
 import com.example.barterhub.ui.helpers.TrendingSliderManager
 import com.example.barterhub.ui.viewmodel.HomeViewModel
 import com.example.barterhub.utils.Categories
@@ -137,120 +138,23 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun loadTrendingItemsFromFirebase() {
-        val db = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
-
-        db.getReference("items")
-            .orderByChild("timestamp")
-            .limitToLast(50)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-
-                    if (_binding == null || !isAdded) return
-
-                    val allItems = mutableListOf<FeaturedItem>()
-
-                    for (itemSnapshot in snapshot.children) {
-                        val item = itemSnapshot.getValue(FeaturedItem::class.java)
-                        if (item != null) {
-                            item.itemId = itemSnapshot.key ?: item.itemId
-                            item.ownerId = itemSnapshot.child("ownerId").getValue(String::class.java).orEmpty()
-                            item.likeCount = itemSnapshot.child("likeCount").asInt() ?: 0
-                            item.timestamp = itemSnapshot.child("timestamp").asLong() ?: 0L
-
-                            val isActive = itemSnapshot.child("isActive").asBoolean(defaultValue = true)
-                            val isArchived = itemSnapshot.child("isArchived").asBoolean(defaultValue = false)
-
-                            if (item.ownerId.isNotBlank() && isActive && !isArchived) {
-                                allItems.add(item)
-                            }
-                        }
-                    }
-
-                    if (allItems.isEmpty()) {
-                        showHomeTrendingEmpty()
-                        return
-                    }
-
-                    loadPremiumUsersForHomeTrending(allItems)
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-
-                    if (_binding == null || !isAdded) return
-
-                    Log.e("TRENDING_DEBUG", "Failed to load items: ${error.message}")
-                    showHomeTrendingEmpty()
-                }
-            })
-    }
-
-    private fun loadPremiumUsersForHomeTrending(allItems: List<FeaturedItem>) {
-        val db = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
-        val now = System.currentTimeMillis()
-
-        db.getReference("public_users")
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-
-                    if (_binding == null || !isAdded) return
-
-                    val premiumUserIds = mutableSetOf<String>()
-
-                    for (userSnapshot in snapshot.children) {
-                        val uid = userSnapshot.key ?: continue
-                        val isPremium = userSnapshot.child("isPremium").asBoolean(defaultValue = false)
-                        val premiumExpiry = normalizeExpiryMillis(userSnapshot.child("premiumExpiry").asLong() ?: 0L)
-
-                        if (isPremium && premiumExpiry > now) {
-                            premiumUserIds.add(uid)
-                        }
-                    }
-
-                    val premiumTrendingItems = allItems
-                        .filter { it.ownerId in premiumUserIds }
-                        .sortedWith(
-                            compareByDescending<FeaturedItem> { it.likeCount }
-                                .thenByDescending { it.timestamp }
-                        )
-                        .take(5)
-
-                    val trendingItems = if (premiumTrendingItems.isNotEmpty()) {
-                        premiumTrendingItems
-                    } else {
-                        allItems.sortedWith(
-                            compareByDescending<FeaturedItem> { it.likeCount }
-                                .thenByDescending { it.timestamp }
-                        ).take(5)
-                    }
-
-                    trendingAdapter.submitList(trendingItems)
-
-                    if (trendingItems.isNotEmpty()) {
-                        showHomeTrendingItems()
-                    } else {
-                        showHomeTrendingEmpty()
-                        Log.d("TRENDING_DEBUG", "No premium trending items found")
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-
-                    if (_binding == null || !isAdded) return
-
-                    Log.e("TRENDING_DEBUG", "Failed to load public users: ${error.message}")
-                    val fallbackItems = allItems.sortedWith(
-                        compareByDescending<FeaturedItem> { it.likeCount }
-                            .thenByDescending { it.timestamp }
-                    ).take(5)
-
-                    trendingAdapter.submitList(fallbackItems)
-                    if (fallbackItems.isNotEmpty()) {
-                        showHomeTrendingItems()
-                    } else {
-                        showHomeTrendingEmpty()
-                    }
-                }
-            })
+        TrendingItemsLoader.load(
+            limit = 5,
+            onSuccess = { trendingItems ->
+                if (_binding == null || !isAdded) return@load
+                trendingAdapter.submitList(trendingItems)
+                showHomeTrendingItems()
+            },
+            onEmpty = {
+                if (_binding == null || !isAdded) return@load
+                showHomeTrendingEmpty()
+            },
+            onError = { error ->
+                if (_binding == null || !isAdded) return@load
+                Log.e("TRENDING_DEBUG", "Failed to load trending items: ${error.message}")
+                showHomeTrendingEmpty()
+            }
+        )
     }
 
     private fun showHomeTrendingItems() {
@@ -267,39 +171,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         binding.trendingSliderContainer.visibility = View.VISIBLE
         binding.trendingViewPager.visibility = View.GONE
         binding.trendingEmptyState.visibility = View.VISIBLE
-    }
-
-    private fun DataSnapshot.asBoolean(defaultValue: Boolean): Boolean {
-        return when (val value = getValue()) {
-            is Boolean -> value
-            is String -> value.equals("true", ignoreCase = true)
-            is Number -> value.toInt() != 0
-            else -> defaultValue
-        }
-    }
-
-    private fun DataSnapshot.asLong(): Long? {
-        return when (val value = getValue()) {
-            is Long -> value
-            is Int -> value.toLong()
-            is Double -> value.toLong()
-            is String -> value.toLongOrNull()
-            else -> null
-        }
-    }
-
-    private fun DataSnapshot.asInt(): Int? {
-        return when (val value = getValue()) {
-            is Int -> value
-            is Long -> value.toInt()
-            is Double -> value.toInt()
-            is String -> value.toIntOrNull()
-            else -> null
-        }
-    }
-
-    private fun normalizeExpiryMillis(expiry: Long): Long {
-        return if (expiry in 1 until 1_000_000_000_000L) expiry * 1000L else expiry
     }
 
     override fun onPause() {

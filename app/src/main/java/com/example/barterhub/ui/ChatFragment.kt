@@ -31,7 +31,10 @@ import com.example.barterhub.ui.viewmodel.TradeData
 import com.example.barterhub.utils.*
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.io.File
@@ -58,6 +61,11 @@ class ChatFragment : Fragment() {
     private var partnerProfilePic: String? = null
     private var currentPhotoPath: String? = null
     private var isFragmentActive = false
+    private var deletedAtForCurrentUser = 0L
+    private var deletedAtListener: ValueEventListener? = null
+    private val chatDatabase by lazy {
+        FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
+    }
     private val takePictureLauncher = registerForActivityResult(
         ActivityResultContracts.TakePicture()
     ) { success ->
@@ -108,6 +116,7 @@ class ChatFragment : Fragment() {
         setupFirebaseAndViewModel()
         setupUI()
         loadCurrentUserName()
+        observeDeletedAtForCurrentUser()
         observeViewModel()
     }
 
@@ -118,15 +127,20 @@ class ChatFragment : Fragment() {
         itemId = arguments?.getString("itemId").orEmpty()
         itemTitle = arguments?.getString("itemTitle").orEmpty()
 
+        Log.d(
+            "CHAT_SEND_ARGS",
+            "ChatFragment args chatId=$chatId partnerId=$partnerId partnerName=$partnerName " +
+                    "itemId=$itemId itemTitle=$itemTitle"
+        )
         Log.d("DEBUG_CHAT", "setupArguments: chatId=$chatId, partnerId=$partnerId, partnerName=$partnerName")
     }
 
     private fun setupFirebaseAndViewModel() {
         val auth = FirebaseAuth.getInstance()
         currentUserId = auth.currentUser?.uid ?: ""
+        Log.d("CHAT_SEND_ARGS", "Current auth uid=$currentUserId")
 
-        val database = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
-        val repository = ChatRepository(database)
+        val repository = ChatRepository(chatDatabase)
 
         viewModel = ChatViewModel(
             chatRepository = repository,
@@ -266,6 +280,10 @@ class ChatFragment : Fragment() {
             setOnViewProfileClickListener { senderId ->
                 openUserProfile(senderId)
             }
+
+            setOnRatingCommentFocusChangedListener { hasFocus ->
+                setChatInputVisible(!hasFocus)
+            }
         }
 
         binding.messagesRecyclerView.apply {
@@ -295,16 +313,32 @@ class ChatFragment : Fragment() {
     }
 
     private fun updateScrollButtonPosition() {
-        binding.inputContainer.post {
-            val params = binding.scrollToBottomButton.layoutParams as FrameLayout.LayoutParams
+        val safeBinding = _binding ?: return
+
+        safeBinding.inputContainer.post {
+            val b = _binding ?: return@post
+
+            val params = b.scrollToBottomButton.layoutParams as FrameLayout.LayoutParams
 
             val extraSpacingDp = 4
             val extraSpacingPx = (extraSpacingDp * resources.displayMetrics.density).toInt()
 
             params.gravity = android.view.Gravity.BOTTOM or android.view.Gravity.CENTER_HORIZONTAL
-            params.bottomMargin = binding.inputContainer.height + extraSpacingPx
+            params.bottomMargin = b.inputContainer.height + extraSpacingPx
 
-            binding.scrollToBottomButton.layoutParams = params
+            b.scrollToBottomButton.layoutParams = params
+        }
+    }
+
+    private fun setChatInputVisible(visible: Boolean) {
+        if (!isFragmentActive || _binding == null) return
+
+        binding.inputContainer.visibility = if (visible) View.VISIBLE else View.GONE
+
+        if (visible) {
+            updateScrollButtonPosition()
+        } else {
+            binding.scrollToBottomButton.visibility = View.GONE
         }
     }
 
@@ -447,7 +481,7 @@ class ChatFragment : Fragment() {
 
         // Update messages
         messagesList.clear()
-        messagesList.addAll(state.messages)
+        messagesList.addAll(filterMessagesAfterDelete(state.messages))
         messagesAdapter.notifyDataSetChanged()
 
         if (shouldAutoScroll && messagesList.isNotEmpty()) {
@@ -485,6 +519,47 @@ class ChatFragment : Fragment() {
             is ChatEvent.NavigateToProfile -> openUserProfile(event.userId)
             is ChatEvent.NavigateToPartnerProfile -> openPartnerProfile()
             ChatEvent.NavigateBack -> requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
+    }
+
+    private fun observeDeletedAtForCurrentUser() {
+        if (currentUserId.isBlank() || chatId.isBlank()) return
+
+        val deletedAtRef = chatDatabase
+            .getReference("user_inbox")
+            .child(currentUserId)
+            .child(chatId)
+            .child("deletedAt")
+
+        deletedAtListener?.let { deletedAtRef.removeEventListener(it) }
+        deletedAtListener = deletedAtRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                deletedAtForCurrentUser = snapshot.asLong() ?: 0L
+                if (_binding != null) {
+                    updateUI(viewModel.state.value)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("ChatFragment", "Failed to read deletedAt: ${error.message}")
+            }
+        })
+    }
+
+    private fun filterMessagesAfterDelete(messages: List<Message>): List<Message> {
+        if (deletedAtForCurrentUser <= 0L) return messages
+        return messages.filter { message ->
+            (message.timestamp ?: 0L) > deletedAtForCurrentUser
+        }
+    }
+
+    private fun DataSnapshot.asLong(): Long? {
+        return when (val value = getValue()) {
+            is Long -> value
+            is Int -> value.toLong()
+            is Double -> value.toLong()
+            is String -> value.toLongOrNull()
+            else -> null
         }
     }
 
@@ -607,6 +682,16 @@ class ChatFragment : Fragment() {
         super.onDestroyView()
         if (ActiveChatTracker.currentChatId == chatId) {
             ActiveChatTracker.currentChatId = null
+        }
+        if (currentUserId.isNotBlank() && chatId.isNotBlank()) {
+            deletedAtListener?.let {
+                chatDatabase.getReference("user_inbox")
+                    .child(currentUserId)
+                    .child(chatId)
+                    .child("deletedAt")
+                    .removeEventListener(it)
+            }
+            deletedAtListener = null
         }
         isFragmentActive = false
         viewModel.clearListeners()
