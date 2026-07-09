@@ -7,11 +7,9 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.MutableData
+import com.google.firebase.database.ServerValue
 import com.google.firebase.database.Transaction
 import kotlinx.coroutines.tasks.await
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 object ChatInboxUpdater {
     private const val TAG = "ChatInboxUpdater"
@@ -71,61 +69,21 @@ object ChatInboxUpdater {
         lastMessageTime: Long,
         incrementUnread: Boolean
     ) {
-        val inboxEntryRef = inboxRef.child(userId).child(chatId)
+        val updates = mutableMapOf<String, Any>(
+            "chatId" to chatId,
+            "partnerId" to partnerId,
+            "partnerName" to partnerName,
+            "lastMessage" to lastMessage,
+            "lastMessageTime" to lastMessageTime,
+            "unreadCount" to if (incrementUnread) ServerValue.increment(1) else 0,
+            "deleted" to false
+        )
 
-        suspendCoroutine<Unit> { continuation ->
-            inboxEntryRef.runTransaction(object : Transaction.Handler {
-                override fun doTransaction(currentData: MutableData): Transaction.Result {
-                    val currentUnread = currentData.child("unreadCount").asInt() ?: 0
-                    val currentDeletedAt = currentData.child("deletedAt").asLong()
-                    val currentPartnerName =
-                        currentData.child("partnerName").getValue(String::class.java).orEmpty()
-
-                    val nextValue = mutableMapOf<String, Any>(
-                        "chatId" to chatId,
-                        "partnerId" to partnerId,
-                        "partnerName" to currentPartnerName.ifBlank { partnerName },
-                        "lastMessage" to lastMessage,
-                        "lastMessageTime" to lastMessageTime,
-                        "unreadCount" to if (incrementUnread) currentUnread + 1 else currentUnread,
-                        "deleted" to false
-                    )
-
-                    if (currentDeletedAt != null) {
-                        nextValue["deletedAt"] = currentDeletedAt
-                    }
-
-                    currentData.value = nextValue
-
-                    return Transaction.success(currentData)
-                }
-
-                override fun onComplete(
-                    error: DatabaseError?,
-                    committed: Boolean,
-                    currentData: DataSnapshot?
-                ) {
-                    when {
-                        error != null -> continuation.resumeWithException(error.toException())
-                        !committed -> continuation.resumeWithException(
-                            IllegalStateException("Inbox transaction was not committed")
-                        )
-                        else -> continuation.resume(Unit)
-                    }
-                }
-            })
-        }
+        inboxRef.child(userId).child(chatId).updateChildren(updates).await()
     }
 
     private fun MutableData.asInt(): Int? {
         return getValue(Int::class.java) ?: getValue(Long::class.java)?.toInt()
-    }
-
-    private fun MutableData.asLong(): Long? {
-        return getValue(Long::class.java)
-            ?: getValue(Int::class.java)?.toLong()
-            ?: getValue(Double::class.java)?.toLong()
-            ?: getValue(String::class.java)?.toLongOrNull()
     }
 
     private fun incrementUnreadCounter(counterRef: DatabaseReference) {
