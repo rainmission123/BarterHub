@@ -27,7 +27,33 @@ object TrendingItemsLoader {
                     val activeItems = snapshot.children.mapNotNull { itemSnapshot ->
                         val item = itemSnapshot.getValue(FeaturedItem::class.java) ?: return@mapNotNull null
                         item.itemId = itemSnapshot.key ?: item.itemId
-                        item.ownerId = itemSnapshot.child("ownerId").getValue(String::class.java).orEmpty()
+                        item.ownerId = itemSnapshot.firstString(
+                            "ownerId",
+                            "userId",
+                            "sellerId",
+                            "ownerUserId",
+                            "postedBy"
+                        )
+                        item.ownerName = item.ownerName.takeUnless { it.isGenericDisplayName() }
+                            ?: itemSnapshot.firstString(
+                                "ownerName",
+                                "username",
+                                "ownerUsername",
+                                "sellerName",
+                                "sellerUsername",
+                                "postedByName"
+                            )
+                        item.ownerProfileImage = item.ownerProfileImage.ifBlank {
+                            itemSnapshot.firstString(
+                                "ownerProfileImage",
+                                "ownerProfileImageUrl",
+                                "profileImage",
+                                "profileImageUrl",
+                                "sellerProfileImage",
+                                "sellerProfileImageUrl"
+                            )
+                        }
+                        item.location = itemSnapshot.resolveItemLocation(item.location)
                         item.likeCount = itemSnapshot.child("likeCount").asInt() ?: 0
                         item.timestamp = itemSnapshot.child("timestamp").asLong() ?: 0L
 
@@ -127,13 +153,87 @@ object TrendingItemsLoader {
                     ?: userSnapshot.child("imageUrl").getValue(String::class.java)?.takeIf { it.isNotBlank() }
                     ?: userSnapshot.child("avatar").getValue(String::class.java)?.takeIf { it.isNotBlank() }
 
-            if (item.ownerName.isBlank() && !fetchedName.isNullOrBlank()) {
+            val fetchedLocation = userSnapshot.resolveUserLocation()
+
+            if (item.ownerName.isGenericDisplayName() && !fetchedName.isNullOrBlank()) {
                 item.ownerName = fetchedName
             }
             if (item.ownerProfileImage.isBlank() && !fetchedProfile.isNullOrBlank()) {
                 item.ownerProfileImage = fetchedProfile
             }
+            if (item.location.isGenericLocation() && fetchedLocation.isNotBlank()) {
+                item.location = fetchedLocation
+            }
         }
+    }
+
+    private fun DataSnapshot.resolveItemLocation(existingLocation: String): String {
+        val directLocation = existingLocation.takeUnless { it.isGenericLocation() }
+            ?: firstLocationString(
+                "location",
+                "itemLocation",
+                "pickupLocation",
+                "addressText",
+                "address"
+            )
+        if (directLocation.isNotBlank()) return directLocation
+
+        return joinLocationParts(
+            firstString("cityMunicipality", "city"),
+            firstString("province")
+        )
+    }
+
+    private fun DataSnapshot.resolveUserLocation(): String {
+        val directLocation = firstLocationString("location", "addressText", "address")
+        if (directLocation.isNotBlank()) return directLocation
+
+        return joinLocationParts(
+            firstString("cityMunicipality", "city"),
+            firstString("province")
+        )
+    }
+
+    private fun DataSnapshot.firstString(vararg keys: String): String {
+        for (key in keys) {
+            val value = child(key).getValue(String::class.java)?.trim().orEmpty()
+            if (value.isNotBlank()) return value
+        }
+        return ""
+    }
+
+    private fun DataSnapshot.firstLocationString(vararg keys: String): String {
+        for (key in keys) {
+            val value = child(key).getValue(String::class.java)?.trim().orEmpty()
+            if (!value.isGenericLocation()) return value
+        }
+        return ""
+    }
+
+    private fun joinLocationParts(city: String, province: String): String {
+        return listOf(city, province)
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
+            .joinToString(", ")
+    }
+
+    private fun String.isGenericDisplayName(): Boolean {
+        val normalized = trim().lowercase()
+        return normalized.isBlank() ||
+            normalized == "user" ||
+            normalized == "unknown" ||
+            normalized == "unknown user" ||
+            normalized == "barterhub user"
+    }
+
+    private fun String.isGenericLocation(): Boolean {
+        val normalized = trim().lowercase()
+        return normalized.isBlank() ||
+            normalized == "location not specified" ||
+            normalized == "not specified" ||
+            normalized == "not provided" ||
+            normalized == "unknown" ||
+            normalized == "manila, philippines"
     }
 
     private fun List<FeaturedItem>.sortedByLikesThenTime(): List<FeaturedItem> {
