@@ -224,7 +224,7 @@ class WalletFragment : Fragment() {
     private fun loadTransactionHistory() {
         val uid = auth.currentUser?.uid ?: return
 
-        val ref = database.getReference("transactions")
+        val ref = database.getReference("coin_transactions")
             .child(uid)
 
         ref.orderByChild("timestamp")

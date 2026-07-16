@@ -144,23 +144,23 @@
 
         <activity
             android:name=".ui.LoginActivity"
-            android:exported="true"
+            android:exported="false"
             android:theme="@style/Theme.BarterHub" />
 
         <activity
             android:name=".ui.HomeActivity"
             android:launchMode="singleTop"
-            android:exported="true" />
+            android:exported="false" />
 
         <activity
             android:name=".ui.SignupActivity"
-            android:exported="true"
+            android:exported="false"
             android:windowSoftInputMode="adjustResize|stateHidden"
             android:theme="@style/Theme.BarterHub" />
 
         <activity
             android:name=".ui.EditProfileActivity"
-            android:exported="true"
+            android:exported="false"
             android:windowSoftInputMode="adjustResize|stateHidden"
             android:theme="@style/Theme.BarterHub" />
 
