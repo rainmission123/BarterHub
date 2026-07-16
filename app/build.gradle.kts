@@ -88,6 +88,7 @@ dependencies {
     implementation(libs.play.services.location)
     implementation("com.google.android.gms:play-services-ads:24.9.0")
     implementation(libs.play.services.wallet)
+    implementation(libs.play.billing.ktx)
 
     // Navigation
     implementation(libs.androidx.navigation.fragment.ktx)
