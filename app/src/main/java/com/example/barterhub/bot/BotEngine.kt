@@ -2359,31 +2359,146 @@ object BotEngine {
         )
     }
 
-    // Add remaining handlers (they follow similar pattern)
-    private fun handleRefund(): BotResponse { /* ... */ return TODO("Provide the return value")
+    private fun handleRefund(): BotResponse {
+        return topicResponse(
+            intent = BotIntent.REFUND,
+            title = "Refund and Return Help",
+            body = "For refunds or returns, keep the chat, photos, receipts, and meetup/payment proof. Contact support if a trade partner will not resolve the issue.",
+            quickReplies = listOf("Report issue", "Contact support", "Safety tips", "Trade help"),
+            action = BotAction.OPEN_SUPPORT
+        )
     }
-    private fun handleVerification(): BotResponse { /* ... */ return TODO("Provide the return value")
+
+    private fun handleVerification(): BotResponse {
+        return topicResponse(
+            intent = BotIntent.VERIFICATION,
+            title = "Verification Help",
+            body = "Use profile verification to build trust. Upload clear ID photos only through the verification screen and wait for admin review.",
+            quickReplies = listOf("Open profile", "ID verification", "Safety tips", "Contact support"),
+            action = BotAction.OPEN_PROFILE
+        )
     }
-    private fun handleFeedback(): BotResponse { /* ... */ return TODO("Provide the return value")
+
+    private fun handleFeedback(): BotResponse {
+        return topicResponse(
+            intent = BotIntent.FEEDBACK,
+            title = "Feedback Help",
+            body = "After a trade, leave honest feedback about item accuracy, communication, meetup timing, and overall experience.",
+            quickReplies = listOf("Rating guide", "Report issue", "Contact support", "Trade help")
+        )
     }
-    private fun handleTradeHistory(): BotResponse { /* ... */ return TODO("Provide the return value")
+
+    private fun handleTradeHistory(): BotResponse {
+        return topicResponse(
+            intent = BotIntent.TRADE_HISTORY,
+            title = "Trade History",
+            body = "Your past trades and receipts help you review completed swaps, ratings, and transaction details.",
+            quickReplies = listOf("Open wallet", "Receipts", "Rating guide", "Trade help"),
+            action = BotAction.OPEN_WALLET
+        )
     }
-    private fun handleFavorites(): BotResponse { /* ... */ return TODO("Provide the return value")
+
+    private fun handleFavorites(): BotResponse {
+        return topicResponse(
+            intent = BotIntent.FAVORITES,
+            title = "Favorites and Saved Items",
+            body = "Save items you like so you can compare them later, revisit sellers, and continue trade conversations faster.",
+            quickReplies = listOf("Search items", "Buying tips", "Categories", "Trade help"),
+            action = BotAction.OPEN_SEARCH
+        )
     }
-    private fun handleNotifications(): BotResponse { /* ... */ return TODO("Provide the return value")
+
+    private fun handleNotifications(): BotResponse {
+        return topicResponse(
+            intent = BotIntent.NOTIFICATIONS,
+            title = "Notifications",
+            body = "Notifications help you catch new messages, trade updates, ratings, and account alerts. Check app and phone notification settings if alerts are missing.",
+            quickReplies = listOf("Account settings", "Message alerts", "Trade updates", "Contact support"),
+            action = BotAction.OPEN_PROFILE
+        )
     }
-    private fun handleLanguage(): BotResponse { /* ... */ return TODO("Provide the return value")
+
+    private fun handleLanguage(): BotResponse {
+        return topicResponse(
+            intent = BotIntent.LANGUAGE,
+            title = "Language Help",
+            body = "You can ask me in English, Tagalog, or mixed Taglish. I will do my best to answer clearly.",
+            quickReplies = listOf("English help", "Tagalog help", "Trading help", "Account help")
+        )
     }
-    private fun handleTerms(): BotResponse { /* ... */ return TODO("Provide the return value")
+
+    private fun handleTerms(): BotResponse {
+        return topicResponse(
+            intent = BotIntent.TERMS,
+            title = "Terms and Rules",
+            body = "Follow BarterHub rules: trade honestly, avoid prohibited items, respect other users, and keep proof of every transaction.",
+            quickReplies = listOf("Safety tips", "Report issue", "Privacy", "Contact support"),
+            action = BotAction.OPEN_SAFETY_GUIDE
+        )
     }
-    private fun handlePrivacy(): BotResponse { /* ... */ return TODO("Provide the return value")
+
+    private fun handlePrivacy(): BotResponse {
+        return topicResponse(
+            intent = BotIntent.PRIVACY,
+            title = "Privacy Help",
+            body = "Protect personal data by sharing only what is needed for the trade. Avoid posting sensitive IDs, passwords, or private payment details in chat.",
+            quickReplies = listOf("Account settings", "Safety tips", "Report issue", "Contact support"),
+            action = BotAction.OPEN_PROFILE
+        )
     }
-    private fun handleAppFeedback(): BotResponse { /* ... */ return TODO("Provide the return value")
+
+    private fun handleAppFeedback(): BotResponse {
+        return topicResponse(
+            intent = BotIntent.APP_FEEDBACK,
+            title = "App Feedback",
+            body = "Suggestions help improve BarterHub. Send clear details about the screen, problem, or feature idea so support can review it.",
+            quickReplies = listOf("Contact support", "Report issue", "Feature idea", "Help"),
+            action = BotAction.OPEN_SUPPORT
+        )
     }
-    private fun handlePromotions(): BotResponse { /* ... */ return TODO("Provide the return value")
+
+    private fun handlePromotions(): BotResponse {
+        return topicResponse(
+            intent = BotIntent.PROMOTIONS,
+            title = "Promotions",
+            body = "Check announcements and notifications for active promos, rewards, boosts, and limited-time offers.",
+            quickReplies = listOf("Notifications", "Wallet", "How to earn", "Referral"),
+            action = BotAction.OPEN_WALLET
+        )
     }
-    private fun handleReferral(): BotResponse { /* ... */ return TODO("Provide the return value")
+
+    private fun handleReferral(): BotResponse {
+        return topicResponse(
+            intent = BotIntent.REFERRAL,
+            title = "Referral Help",
+            body = "Invite trusted friends to BarterHub and follow the referral instructions in the app to qualify for rewards.",
+            quickReplies = listOf("How to earn", "Wallet", "Invite friends", "Contact support"),
+            action = BotAction.OPEN_WALLET
+        )
     }
-    private fun handleHowToEarn(): BotResponse { /* ... */ return TODO("Provide the return value")
+
+    private fun handleHowToEarn(): BotResponse {
+        return topicResponse(
+            intent = BotIntent.HOW_TO_EARN,
+            title = "How to Earn",
+            body = "Earn by completing trades, keeping good ratings, joining eligible rewards, and inviting friends when referral rewards are available.",
+            quickReplies = listOf("Open wallet", "Referral", "Trade tips", "Promotions"),
+            action = BotAction.OPEN_WALLET
+        )
+    }
+
+    private fun topicResponse(
+        intent: BotIntent,
+        title: String,
+        body: String,
+        quickReplies: List<String>,
+        action: BotAction? = null
+    ): BotResponse {
+        return BotResponse(
+            message = "**$title**\n\n$body",
+            quickReplies = quickReplies,
+            action = action,
+            intent = intent
+        )
     }
 }
