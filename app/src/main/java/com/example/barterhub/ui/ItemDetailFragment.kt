@@ -8,8 +8,10 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.barterhub.R
+import com.example.barterhub.data.repository.ChatRepository
 import com.example.barterhub.databinding.FragmentItemDetailBinding
 import com.example.barterhub.utils.ImageGalleryManager
 import com.example.barterhub.utils.MapManager
@@ -17,7 +19,7 @@ import com.example.barterhub.utils.RatingHelper
 import com.example.barterhub.utils.TextHelper
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
-import com.example.barterhub.utils.ChatUtils
+import kotlinx.coroutines.launch
 
 class ItemDetailFragment : Fragment() {
     private var _binding: FragmentItemDetailBinding? = null
@@ -35,6 +37,7 @@ class ItemDetailFragment : Fragment() {
     private var itemLatitude: Double = 0.0
     private var itemLongitude: Double = 0.0
     private var isLiked = false
+    private var likeWriteInProgress = false
 
     private fun isUiActive(): Boolean {
         return isAdded && _binding != null && context != null
@@ -434,78 +437,80 @@ class ItemDetailFragment : Fragment() {
             Toast.makeText(requireContext(), "Item not found", Toast.LENGTH_SHORT).show()
             return
         }
+        if (likeWriteInProgress) return
 
         val db = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
         val likeRef = db.getReference("itemLikes").child(itemId).child(currentUserId)
-        val itemRef = db.getReference("items").child(itemId)
         val favoritesRef = db.getReference("favorites").child(currentUserId).child(itemId)
+        val previousLiked = isLiked
+
+        fun finishLikeWrite() {
+            likeWriteInProgress = false
+            if (isUiActive()) {
+                binding.btnLike.isEnabled = true
+            }
+        }
+
+        fun restorePreviousState(message: String) {
+            if (!isUiActive()) {
+                finishLikeWrite()
+                return
+            }
+
+            isLiked = previousLiked
+            updateLikeButton(previousLiked)
+            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+            finishLikeWrite()
+        }
+
+        likeWriteInProgress = true
+        binding.btnLike.isEnabled = false
 
         likeRef.get().addOnSuccessListener { snap ->
-            if (!isAdded || _binding == null || context == null) return@addOnSuccessListener
+            if (!isUiActive()) {
+                finishLikeWrite()
+                return@addOnSuccessListener
+            }
+
             val alreadyLiked = snap.exists()
 
             if (alreadyLiked) {
-                // UNLIKE
-                likeRef.removeValue().addOnSuccessListener {
-                    if (!isAdded || _binding == null || context == null) return@addOnSuccessListener
-                    itemRef.child("likeCount").runTransaction(object : com.google.firebase.database.Transaction.Handler {
-                        override fun doTransaction(currentData: com.google.firebase.database.MutableData): com.google.firebase.database.Transaction.Result {
-                            val current = (currentData.getValue(Long::class.java) ?: 0L)
-                            currentData.value = kotlin.math.max(0L, current - 1L)
-                            return com.google.firebase.database.Transaction.success(currentData)
+                likeRef.removeValue()
+                    .addOnSuccessListener {
+                        if (!isUiActive()) {
+                            finishLikeWrite()
+                            return@addOnSuccessListener
                         }
 
-                        override fun onComplete(
-                            error: com.google.firebase.database.DatabaseError?,
-                            committed: Boolean,
-                            currentData: com.google.firebase.database.DataSnapshot?
-                        ) {
-                            if (!isUiActive()) return
-
-                            if (error != null) {
-                                Toast.makeText(requireContext(), "Failed to unlike", Toast.LENGTH_SHORT).show()
-                                return
-                            }
-                            favoritesRef.removeValue() // optional
-                            isLiked = false
-                            updateLikeButton(isLiked)
-                            Toast.makeText(requireContext(), "Item unliked", Toast.LENGTH_SHORT).show()
-                        }
-                    })
-                }
+                        favoritesRef.removeValue()
+                        isLiked = false
+                        updateLikeButton(false)
+                        Toast.makeText(requireContext(), "Item unliked", Toast.LENGTH_SHORT).show()
+                        finishLikeWrite()
+                    }
+                    .addOnFailureListener {
+                        restorePreviousState("Failed to unlike")
+                    }
             } else {
-                // LIKE
-                likeRef.setValue(true).addOnSuccessListener {
-                    if (!isAdded || _binding == null || context == null) return@addOnSuccessListener
-                    itemRef.child("likeCount").runTransaction(object : com.google.firebase.database.Transaction.Handler {
-                        override fun doTransaction(currentData: com.google.firebase.database.MutableData): com.google.firebase.database.Transaction.Result {
-                            val current = (currentData.getValue(Long::class.java) ?: 0L)
-                            currentData.value = current + 1L
-                            return com.google.firebase.database.Transaction.success(currentData)
+                likeRef.setValue(true)
+                    .addOnSuccessListener {
+                        if (!isUiActive()) {
+                            finishLikeWrite()
+                            return@addOnSuccessListener
                         }
 
-                        override fun onComplete(
-                            error: com.google.firebase.database.DatabaseError?,
-                            committed: Boolean,
-                            currentData: com.google.firebase.database.DataSnapshot?
-                        ) {
-                            if (!isUiActive()) return
-
-                            if (error != null) {
-                                Toast.makeText(requireContext(), "Failed to like", Toast.LENGTH_SHORT).show()
-                                return
-                            }
-
-                            favoritesRef.setValue(true) // optional
-                            isLiked = true
-                            updateLikeButton(isLiked)
-                            Toast.makeText(requireContext(), "Item liked!", Toast.LENGTH_SHORT).show()
-
-
-                        }
-                    })
-                }
+                        favoritesRef.setValue(true)
+                        isLiked = true
+                        updateLikeButton(true)
+                        Toast.makeText(requireContext(), "Item liked!", Toast.LENGTH_SHORT).show()
+                        finishLikeWrite()
+                    }
+                    .addOnFailureListener {
+                        restorePreviousState("Failed to like")
+                    }
             }
+        }.addOnFailureListener {
+            restorePreviousState(if (previousLiked) "Failed to unlike" else "Failed to like")
         }
     }
 
@@ -542,15 +547,37 @@ class ItemDetailFragment : Fragment() {
     }
 
     private fun navigateToChat() {
-        val chatId = ChatUtils.generateChatId(currentUserId, ownerId)
-        val bundle = Bundle().apply {
-            putString("chatId", chatId)
-            putString("partnerId", ownerId)
-            putString("partnerName", ownerName)
-            putString("itemId", itemId)
-            putString("itemTitle", itemTitle)
+        val ctx = context ?: return
+        binding.btnChat.isEnabled = false
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            val database = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
+            val chatRepository = ChatRepository(database)
+            val chatId = chatRepository.getOrCreateDirectChat(
+                currentUserId = currentUserId,
+                partnerId = ownerId,
+                itemId = itemId,
+                itemTitle = itemTitle,
+                partnerName = ownerName
+            )
+
+            if (!isUiActive()) return@launch
+            binding.btnChat.isEnabled = true
+
+            if (chatId.isBlank()) {
+                Toast.makeText(ctx, "Unable to open chat. Please try again.", Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+
+            val bundle = Bundle().apply {
+                putString("chatId", chatId)
+                putString("partnerId", ownerId)
+                putString("partnerName", ownerName)
+                putString("itemId", itemId)
+                putString("itemTitle", itemTitle)
+            }
+            findNavController().navigate(R.id.action_itemDetailFragment_to_chatFragment, bundle)
         }
-        findNavController().navigate(R.id.action_itemDetailFragment_to_chatFragment, bundle)
     }
 
     private fun showOfferDialog() {
@@ -576,17 +603,33 @@ class ItemDetailFragment : Fragment() {
             return
         }
 
-        userDatabase.child(currentUserId).get().addOnSuccessListener { snapshot ->
-            if (!isAdded || _binding == null || context == null) return@addOnSuccessListener
-            if (snapshot.exists()) {
-                val isIDVerified = snapshot.child("isIDVerified").getValue(String::class.java)
-                onComplete(isIDVerified == "verified")
-            } else {
+        FirebaseDatabase
+            .getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
+            .getReference("users")
+            .child(currentUserId)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                if (!isAdded || _binding == null || context == null) return@addOnSuccessListener
+                if (snapshot.exists()) {
+                    val isIDVerified = snapshot.child("isIDVerified").value
+                    onComplete(isVerifiedStatus(isIDVerified))
+                } else {
+                    onComplete(false)
+                }
+            }.addOnFailureListener {
+                if (!isAdded || _binding == null || context == null) return@addOnFailureListener
                 onComplete(false)
             }
-        }.addOnFailureListener {
-            if (!isAdded || _binding == null || context == null) return@addOnFailureListener
-            onComplete(false)
+    }
+
+    private fun isVerifiedStatus(value: Any?): Boolean {
+        return when (value) {
+            is String -> value.equals("verified", ignoreCase = true)
+            is Boolean -> value
+            is Int -> value == 1
+            is Long -> value == 1L
+            is Double -> value == 1.0
+            else -> false
         }
     }
 

@@ -1,58 +1,530 @@
 {
   "rules": {
-    ".read": "auth != null",
+    ".read": false,
     ".write": false,
 
     "users": {
+      ".read": "auth != null && root.child('admin_users').child(auth.uid).val() == true",
+      ".indexOn": ["referralCode"],
       "$uid": {
-        ".write": "auth != null && auth.uid === $uid && (!data.exists() || (newData.child('isPremium').val() === data.child('isPremium').val() && newData.child('premiumExpiry').val() === data.child('premiumExpiry').val() && (!newData.child('isIDVerified').exists() || newData.child('isIDVerified').val() === data.child('isIDVerified').val() || newData.child('isIDVerified').val() === 'pending')))",
+        ".read": "auth != null && (auth.uid == $uid || root.child('admin_users').child(auth.uid).val() == true)",
+        ".write": "auth != null && auth.uid == $uid && !data.exists()",
+
+        "wallet": {
+          "coins": {
+            ".read": "auth != null && (auth.uid == $uid || root.child('admin_users').child(auth.uid).val() == true)",
+            ".write": false
+          },
+          "$other": {
+            ".write": false
+          }
+        },
+
         "isPremium": {
-          ".validate": "newData.val() === false || newData.val() === data.val()"
+          ".write": false,
+          ".validate": "newData.isBoolean()"
         },
         "premiumExpiry": {
-          ".validate": "newData.val() === 0 || newData.val() === data.val()"
+          ".write": false,
+          ".validate": "newData.isNumber()"
         },
         "isIDVerified": {
-          ".validate": "newData.val() === 'none' || newData.val() === 'pending' || newData.val() === data.val()"
+          ".write": "auth != null && auth.uid == $uid && (newData.val() == 'none' || newData.val() == 'pending' || newData.val() == data.val())"
         },
-        "idFrontUrl": {
-          ".validate": "!newData.exists() || newData.val() === data.val()"
+        "rating": {
+          ".write": false,
+          ".validate": "newData.isNumber()"
         },
-        "idBackUrl": {
-          ".validate": "!newData.exists() || newData.val() === data.val()"
+        "reviewsCount": {
+          ".write": false,
+          ".validate": "newData.isNumber()"
         },
-        "idFrontPath": {
-          ".validate": "newData.isString() && newData.val().beginsWith('id_verifications/' + $uid + '/front/')"
+        "tradesCompleted": {
+          ".write": false,
+          ".validate": "newData.isNumber()"
         },
-        "idBackPath": {
-          ".validate": "newData.isString() && newData.val().beginsWith('id_verifications/' + $uid + '/back/')"
+        "totalTrades": {
+          ".write": false,
+          ".validate": "newData.isNumber()"
+        },
+        "failedTrades": {
+          ".write": false,
+          ".validate": "newData.isNumber()"
+        },
+        "successRate": {
+          ".write": false,
+          ".validate": "newData.isNumber()"
+        },
+        "weeklyTrades": {
+          ".write": false,
+          ".validate": "newData.isNumber()"
+        },
+        "weeklyReviews": {
+          ".write": false,
+          ".validate": "newData.isNumber()"
+        },
+        "lastRated": {
+          ".write": false,
+          ".validate": "newData.isNumber()"
+        },
+        "verifiedAt": {
+          ".write": false,
+          ".validate": "newData.isNumber()"
+        },
+        "verifiedBy": {
+          ".write": false,
+          ".validate": "newData.isString()"
+        },
+        "freeLuckySpins": {
+          ".write": false
+        },
+        "mysteryBoxes": {
+          ".write": false
+        },
+        "badges": {
+          ".write": false
+        },
+        "daily_challenges": {
+          ".read": "auth != null && auth.uid == $uid",
+          ".write": "auth != null && auth.uid == $uid"
+        },
+        "$other": {
+          ".write": "auth != null && auth.uid == $uid"
         }
       }
     },
 
     "public_users": {
       "$uid": {
-        ".write": "auth != null && auth.uid === $uid && (!data.exists() || (newData.child('isPremium').val() === data.child('isPremium').val() && newData.child('premiumExpiry').val() === data.child('premiumExpiry').val() && newData.child('isIDVerified').val() === data.child('isIDVerified').val()))",
+        ".read": true,
+        ".write": "auth != null && auth.uid == $uid && !data.exists()",
         "isPremium": {
-          ".validate": "newData.val() === false || newData.val() === data.val()"
+          ".write": false,
+          ".validate": "newData.isBoolean()"
         },
         "premiumExpiry": {
-          ".validate": "newData.val() === 0 || newData.val() === data.val()"
+          ".write": false,
+          ".validate": "newData.isNumber()"
         },
         "isIDVerified": {
-          ".validate": "newData.val() === 'none' || newData.val() === data.val()"
+          ".write": false
+        },
+        "rating": {
+          ".write": false
+        },
+        "reviewsCount": {
+          ".write": false
+        },
+        "badges": {
+          ".write": false,
+          ".validate": false
+        },
+        "$other": {
+          ".write": "auth != null && auth.uid == $uid"
         }
       }
     },
 
     "usernames": {
       "$username": {
-        ".write": "auth != null"
+        ".read": true,
+        ".write": "auth != null && ((!data.exists() && newData.val() == auth.uid) || (data.val() == auth.uid && !newData.exists()))",
+        ".validate": "!newData.exists() || newData.isString()"
       }
     },
 
+    "admin_users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": false
+      }
+    },
+    "admin_transactions": {
+      ".read": "auth != null && root.child('admin_users').child(auth.uid).val() == true",
+      ".write": false,
+      ".indexOn": ["timestamp", "type", "status", "source"]
+    },
+    "admin_stats": {
+      ".read": "auth != null && root.child('admin_users').child(auth.uid).val() == true",
+      ".write": false
+    },
+    "account_deletion_requests": {
+      ".read": "auth != null && root.child('admin_users').child(auth.uid).val() == true",
+      ".write": false
+    },
+    "premium_transactions": {
+      ".read": "auth != null && root.child('admin_users').child(auth.uid).val() == true",
+      ".write": false
+    },
+    "paymongo_checkout_sessions": {
+      ".read": "auth != null && root.child('admin_users').child(auth.uid).val() == true",
+      ".write": false
+    },
+    "processed_paymongo_payments": {
+      ".read": "auth != null && root.child('admin_users').child(auth.uid).val() == true",
+      ".write": false
+    },
+    "paymongo_payments": {
+      ".read": "auth != null && root.child('admin_users').child(auth.uid).val() == true",
+      ".write": false
+    },
+
+    "coin_transactions": {
+      "$uid": {
+        ".indexOn": ["timestamp"],
+        ".read": "auth != null && (auth.uid == $uid || root.child('admin_users').child(auth.uid).val() == true)",
+        ".write": false
+      }
+    },
+    "coin_payments": {
+      "$paymentId": {
+        ".read": "auth != null && (data.child('userId').val() == auth.uid || data.child('uid').val() == auth.uid || root.child('admin_users').child(auth.uid).val() == true)",
+        ".write": false
+      }
+    },
+    "transactions": {
+      ".indexOn": ["userId", "timestamp"],
+      "$txnId": {
+        ".indexOn": ["timestamp"],
+        ".read": "auth != null && (auth.uid == $txnId || data.child('userId').val() == auth.uid || root.child('admin_users').child(auth.uid).val() == true)",
+        ".write": false
+      }
+    },
+    "payments": {
+      "$paymentId": {
+        ".read": "auth != null && (data.child('userId').val() == auth.uid || root.child('admin_users').child(auth.uid).val() == true)",
+        ".write": false
+      }
+    },
+    "purchases": {
+      "$purchaseId": {
+        ".read": "auth != null && (data.child('userId').val() == auth.uid || root.child('admin_users').child(auth.uid).val() == true)",
+        ".write": false
+      }
+    },
+    "orders": {
+      "$orderId": {
+        ".read": "auth != null && (data.child('userId').val() == auth.uid || root.child('admin_users').child(auth.uid).val() == true)",
+        ".write": false
+      }
+    },
+    "post_rewards": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid == $uid || root.child('admin_users').child(auth.uid).val() == true)",
+        ".write": false
+      }
+    },
+    "referrals": {
+      "$inviterUid": {
+        ".read": "auth != null && (auth.uid == $inviterUid || root.child('admin_users').child(auth.uid).val() == true)",
+        ".write": false
+      }
+    },
+
+    "status": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid == $uid",
+        ".validate": "newData.hasChildren(['state', 'lastSeen', 'isOnline']) && (newData.child('state').val() == 'online' || newData.child('state').val() == 'offline') && newData.child('isOnline').isBoolean()"
+      }
+    },
+    "favorites": {
+      "$userId": {
+        ".read": "auth != null && auth.uid == $userId",
+        "$itemId": {
+          ".write": "auth != null && auth.uid == $userId",
+          ".validate": "newData.val() == true || !newData.exists()"
+        }
+      }
+    },
+    "items": {
+      ".read": true,
+      ".indexOn": ["category", "timestamp", "likeCount", "ownerId"],
+      "$itemId": {
+        ".write": "auth != null && ((!data.exists() && newData.exists() && newData.child('ownerId').val() == auth.uid) || (data.exists() && data.child('ownerId').val() == auth.uid && (!newData.exists() || newData.child('ownerId').val() == data.child('ownerId').val())))",
+        "itemId": {
+          ".validate": "newData.isString() && newData.val() == $itemId"
+        },
+        "ownerId": {
+          ".validate": "newData.isString() && newData.val() == auth.uid"
+        },
+        "title": {
+          ".validate": "newData.isString()"
+        },
+        "description": {
+          ".validate": "newData.isString()"
+        },
+        "category": {
+          ".validate": "newData.isString()"
+        },
+        "condition": {
+          ".validate": "newData.isString()"
+        },
+        "price": {
+          ".validate": "newData.isNumber()"
+        },
+        "displayPrice": {
+          ".validate": "newData.isString()"
+        },
+        "imageUrls": {
+          ".validate": "newData.isString()"
+        },
+        "location": {
+          ".validate": "newData.isString()"
+        },
+        "addressText": {
+          ".validate": "newData.isString()"
+        },
+        "cityMunicipality": {
+          ".validate": "newData.isString()"
+        },
+        "province": {
+          ".validate": "newData.isString()"
+        },
+        "latitude": {
+          ".validate": "newData.isNumber()"
+        },
+        "longitude": {
+          ".validate": "newData.isNumber()"
+        },
+        "timestamp": {
+          ".validate": "(!data.exists() && newData.isNumber()) || (data.exists() && newData.val() == data.val())"
+        },
+        "likeCount": {
+          ".validate": "(!data.exists() && newData.isNumber() && newData.val() == 0) || (data.exists() && newData.val() == data.val())"
+        },
+        "likedBy": {
+          ".validate": "data.exists() && newData.val() == data.val()"
+        },
+        "isActive": {
+          ".validate": "newData.isBoolean()"
+        },
+        "isArchived": {
+          ".validate": "newData.isBoolean()"
+        },
+        "rankingScore": {
+          ".validate": "data.exists() && newData.val() == data.val()"
+        },
+        "trendingScore": {
+          ".validate": "data.exists() && newData.val() == data.val()"
+        },
+        "moderationStatus": {
+          ".validate": "data.exists() && newData.val() == data.val()"
+        },
+        "moderatedAt": {
+          ".validate": "data.exists() && newData.val() == data.val()"
+        },
+        "moderatedBy": {
+          ".validate": "data.exists() && newData.val() == data.val()"
+        },
+        "featuredScore": {
+          ".validate": "data.exists() && newData.val() == data.val()"
+        },
+        "boostScore": {
+          ".validate": "data.exists() && newData.val() == data.val()"
+        }
+      }
+    },
+    "itemLikes": {
+      "$itemId": {
+        ".read": "auth != null && root.child('items').child($itemId).child('ownerId').val() == auth.uid",
+        "$uid": {
+          ".read": "auth != null && auth.uid == $uid",
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isBoolean() || !newData.exists()"
+        }
+      }
+    },
+    "notifications": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        "$notifId": {
+          ".write": false,
+          "read": {
+            ".write": "auth != null && auth.uid == $uid && root.child('notifications').child($uid).child($notifId).exists() && newData.isBoolean()"
+          },
+          "dismissed": {
+            ".write": "auth != null && auth.uid == $uid && root.child('notifications').child($uid).child($notifId).exists()",
+            ".validate": "newData.isBoolean()"
+          },
+          "status": {
+            ".write": "auth != null && auth.uid == $uid && root.child('notifications').child($uid).child($notifId).exists() && newData.isString() && (newData.val() == 'pending' || newData.val() == 'accepted' || newData.val() == 'declined' || newData.val() == 'read')"
+          },
+          "actionStatus": {
+            ".write": "auth != null && auth.uid == $uid && root.child('notifications').child($uid).child($notifId).exists() && newData.isString() && (newData.val() == 'pending' || newData.val() == 'accepted' || newData.val() == 'declined')"
+          },
+          "$other": {
+            ".write": false
+          }
+        }
+      }
+    },
+    "fcm_tokens": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    },
+    "trade_rating_messages_created": {
+      "$tradeId": {
+        ".read": "auth != null",
+        ".write": false,
+        ".validate": "newData.isBoolean()"
+      }
+    },
+    "user_inbox": {
+      "$userId": {
+        ".read": "auth != null && auth.uid == $userId",
+        "$chatId": {
+          ".read": "auth != null && auth.uid == $userId",
+          ".write": "auth != null && (auth.uid == $userId || newData.child('userId').val() == auth.uid || newData.child('partnerId').val() == auth.uid || data.child('partnerId').val() == auth.uid)",
+          ".validate": "!newData.exists() || newData.hasChildren(['chatId', 'partnerId', 'partnerName', 'lastMessage', 'lastMessageTime', 'unreadCount'])"
+        }
+      }
+    },
+    "chats": {
+      "$chatId": {
+        ".read": "auth != null && (!data.exists() || data.child('participants').child(auth.uid).val() == true || data.child('participantIds').child(auth.uid).val() == true || data.child('buyerId').val() == auth.uid || data.child('sellerId').val() == auth.uid || data.child('senderId').val() == auth.uid || data.child('receiverId').val() == auth.uid || data.child('user1Id').val() == auth.uid || data.child('user2Id').val() == auth.uid)",
+        ".write": "auth != null && !data.exists() && (newData.child('participants').child(auth.uid).val() == true || newData.child('participantIds').child(auth.uid).val() == true || newData.child('buyerId').val() == auth.uid || newData.child('sellerId').val() == auth.uid || newData.child('senderId').val() == auth.uid || newData.child('receiverId').val() == auth.uid || newData.child('user1Id').val() == auth.uid || newData.child('user2Id').val() == auth.uid)",
+        "messages": {
+          "$messageId": {
+            ".read": "auth != null && (root.child('chats').child($chatId).child('participants').child(auth.uid).val() == true || root.child('chats').child($chatId).child('participantIds').child(auth.uid).val() == true || root.child('chats').child($chatId).child('buyerId').val() == auth.uid || root.child('chats').child($chatId).child('sellerId').val() == auth.uid || root.child('chats').child($chatId).child('senderId').val() == auth.uid || root.child('chats').child($chatId).child('receiverId').val() == auth.uid || root.child('chats').child($chatId).child('user1Id').val() == auth.uid || root.child('chats').child($chatId).child('user2Id').val() == auth.uid)",
+
+            ".write": "auth != null && newData.child('senderId').val() == auth.uid && (root.child('chats').child($chatId).child('participants').child(auth.uid).val() == true || root.child('chats').child($chatId).child('participantIds').child(auth.uid).val() == true || root.child('chats').child($chatId).child('buyerId').val() == auth.uid || root.child('chats').child($chatId).child('sellerId').val() == auth.uid || root.child('chats').child($chatId).child('senderId').val() == auth.uid || root.child('chats').child($chatId).child('receiverId').val() == auth.uid || root.child('chats').child($chatId).child('user1Id').val() == auth.uid || root.child('chats').child($chatId).child('user2Id').val() == auth.uid)",
+
+            "reactions": {
+              "$emoji": {
+                "$reactingUid": {
+                  ".write": "auth != null && auth.uid == $reactingUid && (root.child('chats').child($chatId).child('participants').child(auth.uid).val() == true || root.child('chats').child($chatId).child('participantIds').child(auth.uid).val() == true || root.child('chats').child($chatId).child('buyerId').val() == auth.uid || root.child('chats').child($chatId).child('sellerId').val() == auth.uid || root.child('chats').child($chatId).child('senderId').val() == auth.uid || root.child('chats').child($chatId).child('receiverId').val() == auth.uid || root.child('chats').child($chatId).child('user1Id').val() == auth.uid || root.child('chats').child($chatId).child('user2Id').val() == auth.uid)",
+                  ".validate": "newData.val() == true || !newData.exists()"
+                }
+              }
+            }
+          }
+        },
+        "lastMessage": {
+          ".write": "auth != null && (root.child('chats').child($chatId).child('participants').child(auth.uid).val() == true || root.child('chats').child($chatId).child('participantIds').child(auth.uid).val() == true || root.child('chats').child($chatId).child('buyerId').val() == auth.uid || root.child('chats').child($chatId).child('sellerId').val() == auth.uid || root.child('chats').child($chatId).child('senderId').val() == auth.uid || root.child('chats').child($chatId).child('receiverId').val() == auth.uid || root.child('chats').child($chatId).child('user1Id').val() == auth.uid || root.child('chats').child($chatId).child('user2Id').val() == auth.uid)"
+        },
+        "lastMessageTime": {
+          ".write": "auth != null && (root.child('chats').child($chatId).child('participants').child(auth.uid).val() == true || root.child('chats').child($chatId).child('participantIds').child(auth.uid).val() == true || root.child('chats').child($chatId).child('buyerId').val() == auth.uid || root.child('chats').child($chatId).child('sellerId').val() == auth.uid || root.child('chats').child($chatId).child('senderId').val() == auth.uid || root.child('chats').child($chatId).child('receiverId').val() == auth.uid || root.child('chats').child($chatId).child('user1Id').val() == auth.uid || root.child('chats').child($chatId).child('user2Id').val() == auth.uid)"
+        },
+        "unreadCount": {
+          "$uid": {
+            ".write": "auth != null && (auth.uid == $uid || root.child('chats').child($chatId).child('participants').child(auth.uid).val() == true || root.child('chats').child($chatId).child('participantIds').child(auth.uid).val() == true || root.child('chats').child($chatId).child('buyerId').val() == auth.uid || root.child('chats').child($chatId).child('sellerId').val() == auth.uid || root.child('chats').child($chatId).child('senderId').val() == auth.uid || root.child('chats').child($chatId).child('receiverId').val() == auth.uid || root.child('chats').child($chatId).child('user1Id').val() == auth.uid || root.child('chats').child($chatId).child('user2Id').val() == auth.uid)"
+          }
+        },
+        "archivedBy": {
+          "$uid": {
+            ".write": "auth != null && auth.uid == $uid"
+          }
+        }
+      }
+    },
+    "trade_requests": {
+      "$requestId": {
+        ".read": "auth != null && (data.child('fromUserId').val() == auth.uid || data.child('toUserId').val() == auth.uid || data.child('requesterId').val() == auth.uid || data.child('receiverId').val() == auth.uid || data.child('fromUser').child('userId').val() == auth.uid || data.child('toUser').child('userId').val() == auth.uid)",
+        ".write": "auth != null && ((!data.exists() && newData.exists() && newData.child('status').val() != 'Completed' && (newData.child('fromUserId').val() == auth.uid || newData.child('requesterId').val() == auth.uid || newData.child('fromUser').child('userId').val() == auth.uid) && (newData.child('toUserId').isString() || newData.child('receiverId').isString() || newData.child('toUser').child('userId').isString())) || (data.exists() && newData.exists() && !(newData.child('status').val() == 'Completed' && data.child('status').val() != 'Completed') && (data.child('fromUserId').val() == auth.uid || data.child('toUserId').val() == auth.uid || data.child('requesterId').val() == auth.uid || data.child('receiverId').val() == auth.uid || data.child('fromUser').child('userId').val() == auth.uid || data.child('toUser').child('userId').val() == auth.uid) && newData.child('fromUserId').val() == data.child('fromUserId').val() && newData.child('toUserId').val() == data.child('toUserId').val() && newData.child('requesterId').val() == data.child('requesterId').val() && newData.child('receiverId').val() == data.child('receiverId').val()))",
+        "requestId": { ".validate": "newData.isString() && newData.val() == $requestId" },
+        "itemId": { ".validate": "newData.isString()" },
+        "owner": { ".validate": "newData.isString()" },
+        "requester": { ".validate": "newData.isString()" },
+        "fromUserId": { ".validate": "newData.isString()" },
+        "toUserId": { ".validate": "newData.isString()" },
+        "requesterId": { ".validate": "newData.isString()" },
+        "receiverId": { ".validate": "newData.isString()" },
+        "buyerId": { ".validate": "newData.isString()" },
+        "sellerId": { ".validate": "newData.isString()" },
+        "fromUser": { ".validate": "newData.hasChildren(['userId']) && newData.child('userId').isString()" },
+        "toUser": { ".validate": "newData.hasChildren(['userId']) && newData.child('userId').isString()" },
+        "targetItem": { ".validate": "newData.hasChildren(['itemId', 'title']) && newData.child('itemId').isString() && newData.child('title').isString()" },
+        "offeredItem": { ".validate": "newData.hasChildren(['title']) && newData.child('title').isString()" },
+        "message": { ".validate": "newData.isString()" },
+        "status": { ".validate": "newData.isString() && (newData.val() == 'Pending' || newData.val() == 'Accepted' || newData.val() == 'Declined' || newData.val() == 'Rejected' || newData.val() == 'Completed' || newData.val() == 'Cancelled')" },
+        "preferredMeetup": { ".validate": "newData.isString()" },
+        "date": { ".validate": "newData.isNumber()" },
+        "timestamp": { ".validate": "newData.isNumber()" },
+        "createdAt": { ".validate": "newData.isNumber()" },
+        "updatedAt": { ".validate": "newData.isNumber()" },
+        "completedAt": { ".validate": "newData.isNumber()" },
+        "ratings": { ".validate": "newData.hasChildren() || !newData.exists()" },
+        "additionalPhotos": { ".validate": "newData.isString()" },
+        "hasAdditionalPhotos": { ".validate": "newData.isBoolean()" },
+        "chatId": { ".validate": "newData.isString()" },
+        "tradeId": { ".validate": "newData.isString()" },
+        "$other": { ".validate": false }
+      }
+    },
+    "trades": {
+      "$uid": {
+        "$tradeId": {
+          ".read": "auth != null && (auth.uid == $uid || data.child('fromUserId').val() == auth.uid || data.child('toUserId').val() == auth.uid || data.child('requesterId').val() == auth.uid || data.child('receiverId').val() == auth.uid || data.child('buyerId').val() == auth.uid || data.child('sellerId').val() == auth.uid || root.child('trade_requests').child($tradeId).child('fromUserId').val() == auth.uid || root.child('trade_requests').child($tradeId).child('toUserId').val() == auth.uid || root.child('trade_requests').child($tradeId).child('requesterId').val() == auth.uid || root.child('trade_requests').child($tradeId).child('receiverId').val() == auth.uid || root.child('trade_requests').child($tradeId).child('fromUser').child('userId').val() == auth.uid || root.child('trade_requests').child($tradeId).child('toUser').child('userId').val() == auth.uid)",
+          ".write": "auth != null && (auth.uid == $uid || newData.child('fromUserId').val() == auth.uid || newData.child('toUserId').val() == auth.uid || newData.child('requesterId').val() == auth.uid || newData.child('receiverId').val() == auth.uid || newData.child('buyerId').val() == auth.uid || newData.child('sellerId').val() == auth.uid || data.child('fromUserId').val() == auth.uid || data.child('toUserId').val() == auth.uid || data.child('requesterId').val() == auth.uid || data.child('receiverId').val() == auth.uid || data.child('buyerId').val() == auth.uid || data.child('sellerId').val() == auth.uid || root.child('trade_requests').child($tradeId).child('fromUserId').val() == auth.uid || root.child('trade_requests').child($tradeId).child('toUserId').val() == auth.uid || root.child('trade_requests').child($tradeId).child('requesterId').val() == auth.uid || root.child('trade_requests').child($tradeId).child('receiverId').val() == auth.uid || root.child('trade_requests').child($tradeId).child('fromUser').child('userId').val() == auth.uid || root.child('trade_requests').child($tradeId).child('toUser').child('userId').val() == auth.uid)"
+        }
+      }
+    },
+    "trade_events": {
+      ".read": "auth != null",
+      "$eventId": {
+        ".write": "auth != null && newData.child('fromUserId').val() == auth.uid",
+        ".validate": "newData.hasChildren(['type', 'toUserId', 'fromUserId', 'chatId', 'timestamp'])"
+      }
+    },
+    "receipts": {
+      ".indexOn": ["tradeRequestId"],
+      "$receiptId": {
+        ".read": "auth != null && (data.child('fromUserId').val() == auth.uid || data.child('toUserId').val() == auth.uid)",
+        ".write": false
+      }
+    },
+    "receipts_by_trade": {
+      "$tradeId": {
+        ".read": "auth != null && (root.child('trade_requests').child($tradeId).child('fromUserId').val() == auth.uid || root.child('trade_requests').child($tradeId).child('toUserId').val() == auth.uid || root.child('trade_requests').child($tradeId).child('requesterId').val() == auth.uid || root.child('trade_requests').child($tradeId).child('receiverId').val() == auth.uid || root.child('trade_requests').child($tradeId).child('fromUser').child('userId').val() == auth.uid || root.child('trade_requests').child($tradeId).child('toUser').child('userId').val() == auth.uid)",
+        ".write": false
+      }
+    },
+    "user_actions": {
+      "$tradeId": {
+        "$uid": {
+          ".read": "auth != null && auth.uid == $uid",
+          ".write": false
+        }
+      }
+    },
+    "trade_completion_locks": {
+      "$tradeId": {
+        ".read": false,
+        ".write": false
+      }
+    },
+
+    "user_trade_requests": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        "$requestId": {
+          ".write": "auth != null && ((auth.uid == $uid && (newData.val() == true || !newData.exists())) || (!data.exists() && newData.val() == true && (root.child('trade_requests').child($requestId).child('fromUserId').val() == auth.uid || root.child('trade_requests').child($requestId).child('requesterId').val() == auth.uid || root.child('trade_requests').child($requestId).child('fromUser').child('userId').val() == auth.uid) && (root.child('trade_requests').child($requestId).child('toUserId').val() == $uid || root.child('trade_requests').child($requestId).child('receiverId').val() == $uid || root.child('trade_requests').child($requestId).child('toUser').child('userId').val() == $uid)))",
+          ".validate": "newData.val() == true || !newData.exists()"
+        }
+      }
+    },
+    "hidden_trade_requests": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        "$requestId": {
+          ".write": "auth != null && auth.uid == $uid && (newData.val() == true || !newData.exists())",
+          ".validate": "newData.val() == true || !newData.exists()"
+        }
+      }
+    },
+
+    "reviews": {
+      ".indexOn": ["reviewedUserId", "tradeId"],
+      ".read": "auth != null",
+      ".write": false
+    },
+
     "$other": {
-      ".write": "auth != null"
+      ".read": false,
+      ".write": false
     }
   }
 }

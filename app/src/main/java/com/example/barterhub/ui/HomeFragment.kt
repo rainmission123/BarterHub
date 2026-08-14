@@ -6,7 +6,10 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.Toast
@@ -50,6 +53,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private lateinit var featuredAdapter: FeaturedAdapter
     private var isCategoriesExpanded = false
     private var trendingSliderManager: TrendingSliderManager? = null
+    private var wishlistBadgeRef: DatabaseReference? = null
+    private var wishlistBadgeListener: ValueEventListener? = null
+    private var tradeRequestBadgeRef: DatabaseReference? = null
+    private var tradeRequestBadgeListener: ValueEventListener? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -111,13 +118,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun setupWishlistBadgeListener() {
+        clearWishlistBadgeListener()
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
         val ref = FirebaseDatabase.getInstance()
             .getReference("favorites")
             .child(currentUserId)
 
-        ref.addValueEventListener(object : ValueEventListener {
+        val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (!isAdded || _binding == null) return
 
@@ -134,7 +142,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             override fun onCancelled(error: DatabaseError) {
                 Log.e("WishlistBadge", "Error: ${error.message}")
             }
-        })
+        }
+
+        wishlistBadgeRef = ref
+        wishlistBadgeListener = listener
+        ref.addValueEventListener(listener)
     }
 
     private fun loadTrendingItemsFromFirebase() {
@@ -307,7 +319,22 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
         binding.searchIcon.setOnClickListener {
-            binding.searchInput.requestFocus()
+            if (!submitHomeSearch()) {
+                focusHomeSearchInput()
+            }
+        }
+
+        binding.searchInput.setOnEditorActionListener { _, actionId, event ->
+            val isSearchAction = actionId == EditorInfo.IME_ACTION_SEARCH
+            val isEnter = event?.keyCode == KeyEvent.KEYCODE_ENTER &&
+                event.action == KeyEvent.ACTION_DOWN
+
+            if (isSearchAction || isEnter) {
+                submitHomeSearch()
+                true
+            } else {
+                false
+            }
         }
 
         binding.Toolcamera.setOnClickListener {
@@ -316,6 +343,32 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         setupCategoryClicks()
         setupFilterButton()
+    }
+
+    private fun submitHomeSearch(): Boolean {
+        val query = binding.searchInput.text?.toString()?.trim().orEmpty()
+        if (query.isBlank()) return false
+
+        hideHomeSearchKeyboard()
+        findNavController().navigate(
+            R.id.searchResultsFragment,
+            Bundle().apply { putString("query", query) }
+        )
+        return true
+    }
+
+    private fun focusHomeSearchInput() {
+        binding.searchInput.requestFocus()
+        binding.searchInput.post {
+            if (_binding == null || !isAdded) return@post
+            val inputManager = requireContext().getSystemService(InputMethodManager::class.java)
+            inputManager?.showSoftInput(binding.searchInput, InputMethodManager.SHOW_IMPLICIT)
+        }
+    }
+
+    private fun hideHomeSearchKeyboard() {
+        val inputManager = requireContext().getSystemService(InputMethodManager::class.java)
+        inputManager?.hideSoftInputFromWindow(binding.searchInput.windowToken, 0)
     }
 
     private fun navigateToAddPhotos() {
@@ -394,11 +447,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun setupTradeRequestBadgeListener() {
+        clearTradeRequestBadgeListener()
         val currentUserId = auth.currentUser?.uid ?: return
         val db = FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/").reference
         val ref = db.child("user_trade_requests").child(currentUserId)
 
-        ref.addValueEventListener(object : ValueEventListener {
+        val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (!isAdded || _binding == null) return
 
@@ -442,8 +496,29 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             override fun onCancelled(error: DatabaseError) {
                 Log.e("HomeFragment", "Failed to load trade request index: ${error.message}")
             }
-        })
+        }
+
+        tradeRequestBadgeRef = ref
+        tradeRequestBadgeListener = listener
+        ref.addValueEventListener(listener)
     }
+
+    private fun clearWishlistBadgeListener() {
+        wishlistBadgeListener?.let { listener ->
+            wishlistBadgeRef?.removeEventListener(listener)
+        }
+        wishlistBadgeListener = null
+        wishlistBadgeRef = null
+    }
+
+    private fun clearTradeRequestBadgeListener() {
+        tradeRequestBadgeListener?.let { listener ->
+            tradeRequestBadgeRef?.removeEventListener(listener)
+        }
+        tradeRequestBadgeListener = null
+        tradeRequestBadgeRef = null
+    }
+
     private fun updateTradeRequestBadge(count: Int) {
         if (!isAdded || _binding == null) return
         binding.tradeRequestBadge.visibility = if (count > 0) {
@@ -508,6 +583,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         trendingSliderManager = null
 
         _binding?.coinGlow?.animate()?.cancel()
+        clearWishlistBadgeListener()
+        clearTradeRequestBadgeListener()
 
         _binding = null
         super.onDestroyView()
@@ -593,8 +670,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun showLockedDailyBanner() {
         if (_binding == null || !isAdded) return
 
-        binding.tvDailyBannerTitle.text = "Premium Challenges ðŸ”’"
-        binding.tvDailyBannerSubtitle.text = "Upgrade to Premium to earn daily coins ðŸ’°"
+        binding.tvDailyBannerTitle.text = "Premium Challenges"
+        binding.tvDailyBannerSubtitle.text = "Upgrade to Premium to earn daily coins"
         binding.dailyChallengeBanner.alpha = 0.85f
 
         binding.dailyChallengeBanner.setOnClickListener {

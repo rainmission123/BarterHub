@@ -2,6 +2,7 @@ package com.example.barterhub.ui.profile
 
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -21,23 +22,41 @@ class ProfileBadgeManager(private val fragment: Fragment) {
 
     private val auth = FirebaseAuth.getInstance()
     private val database: DatabaseReference = FirebaseDatabase.getInstance().reference
+    private var userBadgesRef: DatabaseReference? = null
+    private var userBadgesListener: ValueEventListener? = null
+
+    companion object {
+        private val ACTIVE_BADGE_IDS = setOf("verified", "first_trade")
+    }
 
     fun loadUserBadges(badgesContainer: LinearLayout) {
+        clear()
         val userId = auth.currentUser?.uid ?: return
-        Log.d("ProfileDebug", "🔄 Setting up real-time badges listener for user: $userId")
+        Log.d("ProfileDebug", "Setting up active badge listener for user: $userId")
 
-        database.child("users").child(userId)
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    if (!fragment.isAdded) return
-                    Log.d("ProfileDebug", "📊 User data updated, recalculating badges...")
-                    recreateBadgesFromUserData(userId, snapshot, badgesContainer)
-                }
+        val ref = database.child("users").child(userId)
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (!fragment.isAdded) return
+                recreateBadgesFromUserData(userId, snapshot, badgesContainer)
+            }
 
-                override fun onCancelled(error: DatabaseError) {
-                    Log.e("ProfileDebug", "Error getting user data: ${error.message}")
-                }
-            })
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("ProfileDebug", "Error getting user data: ${error.message}")
+            }
+        }
+
+        userBadgesRef = ref
+        userBadgesListener = listener
+        ref.addValueEventListener(listener)
+    }
+
+    fun clear() {
+        userBadgesListener?.let { listener ->
+            userBadgesRef?.removeEventListener(listener)
+        }
+        userBadgesListener = null
+        userBadgesRef = null
     }
 
     private fun recreateBadgesFromUserData(
@@ -45,116 +64,60 @@ class ProfileBadgeManager(private val fragment: Fragment) {
         userSnapshot: DataSnapshot,
         badgesContainer: LinearLayout
     ) {
-        Log.d("ProfileDebug", "🔄 Recreating badges from user data")
-
         val verificationStatus = userSnapshot.child("isIDVerified").getValue(String::class.java)
-        val leaderboardRank = userSnapshot.child("leaderboardRank").getValue(Int::class.java) ?: 0
+        val badges = mutableMapOf(
+            "verified" to (verificationStatus == "verified")
+        )
 
-        val currentBadgesMap = userSnapshot.child("badges").value
-        val currentBadges = if (currentBadgesMap is Map<*, *>) {
-            @Suppress("UNCHECKED_CAST")
-            currentBadgesMap as? Map<String, Boolean>
-        } else {
-            null
-        }
-
-        val badges = currentBadges?.toMutableMap() ?: mutableMapOf()
-        badges.remove("top_trader")
-
-        badges["verified"] = verificationStatus == "verified"
-        badges["top_1"] = leaderboardRank == 1
-        badges["top_2"] = leaderboardRank == 2
-        badges["top_3"] = leaderboardRank == 3
-        badges["top_4"] = leaderboardRank == 4
-        badges["top_5"] = leaderboardRank == 5
-        badges["top_6"] = leaderboardRank == 6
-        badges["top_7"] = leaderboardRank == 7
-        badges["top_8"] = leaderboardRank == 8
-        badges["top_9"] = leaderboardRank == 9
-        badges["top_10"] = leaderboardRank == 10
-
-        checkFirstTradeBadge(userId) { hasFirstTrade ->
+        checkFirstTradeBadge(userId, userSnapshot) { hasFirstTrade ->
             badges["first_trade"] = hasFirstTrade
-
-            if (!badges.containsKey("community")) badges["community"] = false
-            if (!badges.containsKey("friendly")) badges["friendly"] = false
-            if (!badges.containsKey("reliable")) badges["reliable"] = false
-
-            Log.d("ProfileDebug", "🎯 Final badges: $badges")
-
-            val needsUpdate = currentBadges == null ||
-                    currentBadges["verified"] != badges["verified"] ||
-                    currentBadges["top_1"] != badges["top_1"] ||
-                    currentBadges["top_2"] != badges["top_2"] ||
-                    currentBadges["top_3"] != badges["top_3"] ||
-                    currentBadges["top_4"] != badges["top_4"] ||
-                    currentBadges["top_5"] != badges["top_5"] ||
-                    currentBadges["top_6"] != badges["top_6"] ||
-                    currentBadges["top_7"] != badges["top_7"] ||
-                    currentBadges["top_8"] != badges["top_8"] ||
-                    currentBadges["top_9"] != badges["top_9"] ||
-                    currentBadges["top_10"] != badges["top_10"] ||
-                    currentBadges["first_trade"] != hasFirstTrade
-
-            if (needsUpdate) {
-                database.child("users").child(userId).child("badges")
-                    .setValue(badges)
-                    .addOnSuccessListener {
-                        Log.d("ProfileDebug", "✅ Updated badges")
-                        displayBadgesFromMap(badges, badgesContainer)
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e("ProfileDebug", "❌ Failed to update badges: ${e.message}")
-                        displayBadgesFromMap(badges, badgesContainer)
-                    }
-            } else {
-                Log.d("ProfileDebug", "No changes needed")
-                displayBadgesFromMap(badges, badgesContainer)
-            }
+            displayBadgesFromMap(badges, badgesContainer, hideWhenEmpty = false)
         }
     }
 
-    private fun checkFirstTradeBadge(userId: String, callback: (Boolean) -> Unit) {
+    private fun checkFirstTradeBadge(
+        userId: String,
+        userSnapshot: DataSnapshot,
+        callback: (Boolean) -> Unit
+    ) {
         database.child("reviews")
             .orderByChild("reviewedUserId")
             .equalTo(userId)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val reviewCount = snapshot.childrenCount.toInt()
-                    database.child("users").child(userId).child("rating")
-                        .addListenerForSingleValueEvent(object : ValueEventListener {
-                            override fun onDataChange(ratingSnapshot: DataSnapshot) {
-                                val rating = ratingSnapshot.getValue(Float::class.java) ?: 0f
-                                val hasFirstTrade = reviewCount > 0 || rating > 0
-                                callback(hasFirstTrade)
-                            }
-
-                            override fun onCancelled(error: DatabaseError) {
-                                callback(reviewCount > 0)
-                            }
-                        })
+                    val rating = userSnapshot.child("rating").getValue(Float::class.java) ?: 0f
+                    callback(reviewCount > 0 || rating > 0)
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    callback(false)
+                    val rating = userSnapshot.child("rating").getValue(Float::class.java) ?: 0f
+                    callback(rating > 0)
                 }
             })
     }
 
-    private fun displayBadgesFromMap(badges: Map<String, Boolean>, container: LinearLayout) {
+    private fun displayBadgesFromMap(
+        badges: Map<String, Boolean>,
+        container: LinearLayout,
+        hideWhenEmpty: Boolean,
+        section: View? = null
+    ) {
         if (!fragment.isAdded) return
 
-        val badgeList = mutableListOf<Badge>()
-
-        badges.forEach { (key, value) ->
-            if (value) {
+        val badgeList = filterActiveBadges(badges)
+            .filterValues { it }
+            .map { (key, _) ->
                 val badgeInfo = getBadgeInfo(key)
-                badgeList.add(Badge(key, badgeInfo.first, badgeInfo.second, true))
+                Badge(key, badgeInfo.first, badgeInfo.second, true)
             }
-        }
 
         if (badgeList.isNotEmpty()) {
+            section?.visibility = View.VISIBLE
             displayBadges(badgeList, container)
+        } else if (hideWhenEmpty) {
+            container.removeAllViews()
+            section?.visibility = View.GONE
         } else {
             showNoBadgesMessage(container)
         }
@@ -171,16 +134,9 @@ class ProfileBadgeManager(private val fragment: Fragment) {
             val badgeText = badgeView.findViewById<TextView>(R.id.badgeText)
 
             badgeIcon.setImageResource(badge.iconResId)
+            badgeIcon.scaleX = 1.0f
+            badgeIcon.scaleY = 1.0f
             badgeText.text = badge.name
-
-            // 🔥 FIX SIZE ISSUE
-            if (badge.id.startsWith("top_")) {
-                badgeIcon.scaleX = 1.5f
-                badgeIcon.scaleY = 1.5f
-            } else {
-                badgeIcon.scaleX = 1.0f
-                badgeIcon.scaleY = 1.0f
-            }
 
             badgeIcon.alpha = if (badge.achieved) 1.0f else 0.4f
             badgeText.alpha = if (badge.achieved) 1.0f else 0.4f
@@ -249,59 +205,47 @@ class ProfileBadgeManager(private val fragment: Fragment) {
     }
 
     fun loadUserBadgesForUserId(userId: String, badgesContainer: LinearLayout) {
-        if (userId.isBlank()) return
+        loadPublicUserBadgesForUserId(userId, badgesContainer)
+    }
 
-        database.child("users").child(userId)
+    fun loadPublicUserBadgesForUserId(
+        userId: String,
+        badgesContainer: LinearLayout,
+        badgesSection: View? = null
+    ) {
+        if (userId.isBlank()) {
+            badgesSection?.visibility = View.GONE
+            return
+        }
+
+        database.child("public_users").child(userId).child("badges")
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (!fragment.isAdded) return
-                    displayBadgesFromUserSnapshot(userId, snapshot, badgesContainer)
+
+                    val badges = mutableMapOf<String, Boolean>()
+                    snapshot.children.forEach { child ->
+                        val key = child.key ?: return@forEach
+                        badges[key] = child.getValue(Boolean::class.java) ?: false
+                    }
+
+                    displayBadgesFromMap(
+                        badges = badges,
+                        container = badgesContainer,
+                        hideWhenEmpty = badgesSection != null,
+                        section = badgesSection
+                    )
                 }
 
-                override fun onCancelled(error: DatabaseError) {}
+                override fun onCancelled(error: DatabaseError) {
+                    badgesContainer.removeAllViews()
+                    badgesSection?.visibility = View.GONE
+                }
             })
     }
 
-    private fun displayBadgesFromUserSnapshot(
-        userId: String,
-        userSnapshot: DataSnapshot,
-        badgesContainer: LinearLayout
-    ) {
-        val verificationStatus = userSnapshot.child("isIDVerified").getValue(String::class.java)
-        val leaderboardRank = userSnapshot.child("leaderboardRank").getValue(Int::class.java) ?: 0
-
-        val currentBadgesMap = userSnapshot.child("badges").value
-        val currentBadges = if (currentBadgesMap is Map<*, *>) {
-            @Suppress("UNCHECKED_CAST")
-            currentBadgesMap as? Map<String, Boolean>
-        } else {
-            null
-        }
-
-        val badges = currentBadges?.toMutableMap() ?: mutableMapOf()
-        badges.remove("top_trader")
-
-        badges["verified"] = verificationStatus == "verified"
-        badges["top_1"] = leaderboardRank == 1
-        badges["top_2"] = leaderboardRank == 2
-        badges["top_3"] = leaderboardRank == 3
-        badges["top_4"] = leaderboardRank == 4
-        badges["top_5"] = leaderboardRank == 5
-        badges["top_6"] = leaderboardRank == 6
-        badges["top_7"] = leaderboardRank == 7
-        badges["top_8"] = leaderboardRank == 8
-        badges["top_9"] = leaderboardRank == 9
-        badges["top_10"] = leaderboardRank == 10
-
-        checkFirstTradeBadge(userId) { hasFirstTrade ->
-            badges["first_trade"] = hasFirstTrade
-
-            if (!badges.containsKey("community")) badges["community"] = false
-            if (!badges.containsKey("friendly")) badges["friendly"] = false
-            if (!badges.containsKey("reliable")) badges["reliable"] = false
-
-            displayBadgesFromMap(badges, badgesContainer)
-        }
+    private fun filterActiveBadges(badges: Map<String, Boolean>): Map<String, Boolean> {
+        return badges.filterKeys { it in ACTIVE_BADGE_IDS }
     }
 
     private fun showBadgeInfo(badge: Badge) {

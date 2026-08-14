@@ -11,12 +11,12 @@ import com.bumptech.glide.Glide
 import com.example.barterhub.R
 import com.google.firebase.database.*
 import de.hdodenhof.circleimageview.CircleImageView
-import com.example.barterhub.ui.profile.ProfileBadgeManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.navigation.fragment.findNavController
 import com.example.barterhub.adapters.OwnerItemUi
 import com.example.barterhub.adapters.OwnerProfileItemsAdapter
+import com.example.barterhub.ui.profile.ProfileBadgeManager
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -35,6 +35,7 @@ class OwnerProfileFragment : Fragment(R.layout.fragment_owner_profile) {
     private lateinit var reviewsCountText: TextView
     private lateinit var memberSinceText: TextView
     private lateinit var locationTextView: TextView
+    private lateinit var badgesSection: View
     private lateinit var badgesContainer: LinearLayout
     private lateinit var reviewsContainer: LinearLayout
     private lateinit var tvNoReviews: TextView
@@ -46,6 +47,9 @@ class OwnerProfileFragment : Fragment(R.layout.fragment_owner_profile) {
     private var itemsExpanded = false
     private var itemLocationFallback = ""
     private var reviewsExpanded = false
+    private var ownerItemsQuery: Query? = null
+    private var ownerItemsListener: ValueEventListener? = null
+    private lateinit var badgeManager: ProfileBadgeManager
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -58,6 +62,7 @@ class OwnerProfileFragment : Fragment(R.layout.fragment_owner_profile) {
         reviewsCountText = view.findViewById(R.id.reviewsCountText)
         memberSinceText = view.findViewById(R.id.memberSinceText)
         locationTextView = view.findViewById(R.id.locationTextView)
+        badgesSection = view.findViewById(R.id.badgesSection)
         badgesContainer = view.findViewById(R.id.badgesContainer)
         reviewsContainer = view.findViewById(R.id.reviewsContainer)
         tvNoReviews = view.findViewById(R.id.tvNoReviews)
@@ -79,20 +84,19 @@ class OwnerProfileFragment : Fragment(R.layout.fragment_owner_profile) {
         rvOwnerItems.adapter = itemsAdapter
 
         ownerId = arguments?.getString("ownerId") ?: ""
+        badgeManager = ProfileBadgeManager(this)
 
         if (ownerId.isEmpty()) {
             Toast.makeText(requireContext(), "Owner ID not found!", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val badgeManager = ProfileBadgeManager(this)
-        badgeManager.loadUserBadgesForUserId(ownerId, badgesContainer)
-
         database = FirebaseDatabase
             .getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
             .reference
 
         showLoading(true)
+        badgeManager.loadPublicUserBadgesForUserId(ownerId, badgesContainer, badgesSection)
         loadOwnerInfo()
         loadOwnerStats()
         loadOwnerItems()
@@ -105,10 +109,11 @@ class OwnerProfileFragment : Fragment(R.layout.fragment_owner_profile) {
     }
 
     private fun loadOwnerItems() {
-        database.child("items")
+        clearOwnerItemsListener()
+        val query = database.child("items")
             .orderByChild("ownerId")
             .equalTo(ownerId)
-            .addValueEventListener(object : ValueEventListener {
+        val listener = object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (!isAdded) return
 
@@ -167,7 +172,24 @@ class OwnerProfileFragment : Fragment(R.layout.fragment_owner_profile) {
                     tvItemsCount.text = "0"
                     tvNoItems.visibility = View.VISIBLE
                 }
-            })
+            }
+
+        ownerItemsQuery = query
+        ownerItemsListener = listener
+        query.addValueEventListener(listener)
+    }
+
+    private fun clearOwnerItemsListener() {
+        ownerItemsListener?.let { listener ->
+            ownerItemsQuery?.removeEventListener(listener)
+        }
+        ownerItemsListener = null
+        ownerItemsQuery = null
+    }
+
+    override fun onDestroyView() {
+        clearOwnerItemsListener()
+        super.onDestroyView()
     }
 
     private fun renderOwnerItems() {
@@ -252,61 +274,11 @@ class OwnerProfileFragment : Fragment(R.layout.fragment_owner_profile) {
                         .error(R.drawable.ic_profile_placeholder)
                         .into(profileImage)
 
-                    loadOwnerPrivateFallback(profileUrl, publicLocation)
-
                     showLoading(false)
                 }
 
                 override fun onCancelled(error: DatabaseError) {
                     showLoading(false)
-                }
-            })
-    }
-
-    private fun loadOwnerPrivateFallback(publicProfileUrl: String, publicLocation: String) {
-        database.child("users").child(ownerId)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    if (!isAdded) return
-
-                    if (publicProfileUrl.isBlank()) {
-                        val fallbackProfileUrl =
-                            snapshot.child("profileImageUrl").getValue(String::class.java)
-                                ?.takeIf { it.isNotBlank() }
-                                ?: snapshot.child("profileImage").getValue(String::class.java)
-                                    ?.takeIf { it.isNotBlank() }
-                                ?: ""
-
-                        if (fallbackProfileUrl.isNotBlank()) {
-                            Glide.with(this@OwnerProfileFragment)
-                                .load(fallbackProfileUrl)
-                                .placeholder(R.drawable.ic_profile_placeholder)
-                                .error(R.drawable.ic_profile_placeholder)
-                                .into(profileImage)
-                        }
-                    }
-
-                    if (publicLocation.isBlank()) {
-                        val fallbackLocation =
-                            snapshot.child("addressText").getValue(String::class.java)
-                                ?.takeIf { it.isNotBlank() }
-                                ?: listOf(
-                                    snapshot.child("cityMunicipality")
-                                        .getValue(String::class.java)
-                                        .orEmpty(),
-                                    snapshot.child("province")
-                                        .getValue(String::class.java)
-                                        .orEmpty()
-                                ).filter { it.isNotBlank() }.joinToString(", ")
-
-                        locationTextView.text =
-                            fallbackLocation.ifBlank { "Not Provided" }
-                        applyItemLocationFallback()
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    applyItemLocationFallback()
                 }
             })
     }
@@ -564,34 +536,6 @@ class OwnerProfileFragment : Fragment(R.layout.fragment_owner_profile) {
 
         database.child("public_users")
             .child(review.reviewerId)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    if (!isAdded) return
-
-                    val fallbackImageUrl =
-                        snapshot.child("profileImageUrl").getValue(String::class.java)
-                            ?: snapshot.child("profileImage").getValue(String::class.java)
-                            ?: ""
-
-                    if (fallbackImageUrl.isBlank()) {
-                        loadReviewAvatarFromPrivateUser(imageView, review.reviewerId)
-                        return
-                    }
-
-                    Glide.with(this@OwnerProfileFragment)
-                        .load(fallbackImageUrl)
-                        .placeholder(R.drawable.ic_profile_placeholder)
-                        .error(R.drawable.ic_profile_placeholder)
-                        .into(imageView)
-                }
-
-                override fun onCancelled(error: DatabaseError) = Unit
-            })
-    }
-
-    private fun loadReviewAvatarFromPrivateUser(imageView: CircleImageView, reviewerId: String) {
-        database.child("users")
-            .child(reviewerId)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (!isAdded) return
