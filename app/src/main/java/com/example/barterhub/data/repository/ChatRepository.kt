@@ -128,7 +128,9 @@ class ChatRepository @Inject constructor(
             return ""
         }
 
-        val messageId = messagesRef.child(chatId).child("messages").push().key ?: return ""
+        val messageId = message.messageId.takeIf {
+            it.isNotBlank() && !it.startsWith("local_")
+        } ?: messagesRef.child(chatId).child("messages").push().key ?: return ""
         message.messageId = messageId
 
         try {
@@ -513,7 +515,34 @@ class ChatRepository @Inject constructor(
     }
 
     override suspend fun clearChatForUser(chatId: String, userId: String) {
-        inboxRef.child(userId).child(chatId).removeValue().await()
+        val inboxEntryRef = inboxRef.child(userId).child(chatId)
+        val existingInbox = inboxEntryRef.get().await()
+        val chatSnapshot = messagesRef.child(chatId).get().await()
+        val now = System.currentTimeMillis()
+
+        val partnerId = existingInbox.child("partnerId").getValue(String::class.java)
+            ?: resolveOtherParticipantId(chatSnapshot, userId)
+            ?: ""
+        val partnerName = existingInbox.child("partnerName").getValue(String::class.java).orEmpty()
+        val lastMessage = existingInbox.child("lastMessage").getValue(String::class.java)
+            ?: chatSnapshot.child("lastMessage").getValue(String::class.java)
+            ?: ""
+        val lastMessageTime = existingInbox.child("lastMessageTime").longValue()
+            ?: chatSnapshot.child("lastMessageTime").longValue()
+            ?: now
+
+        val tombstone = mapOf(
+            "chatId" to chatId,
+            "partnerId" to partnerId,
+            "partnerName" to partnerName,
+            "lastMessage" to lastMessage,
+            "lastMessageTime" to lastMessageTime,
+            "unreadCount" to 0,
+            "deleted" to true,
+            "deletedAt" to ServerValue.TIMESTAMP
+        )
+
+        inboxEntryRef.setValue(tombstone).await()
     }
 
     override fun observePartnerStatus(userId: String, onStatusChange: (String) -> Unit): ValueEventListener {
@@ -602,6 +631,39 @@ class ChatRepository @Inject constructor(
         ).any { field ->
             chatSnap.child(field).getValue(String::class.java) == userId
         }
+    }
+
+    private fun resolveOtherParticipantId(chatSnap: DataSnapshot, userId: String): String? {
+        chatSnap.child("participants").children
+            .mapNotNull { it.key }
+            .firstOrNull { it != userId }
+            ?.let { return it }
+
+        chatSnap.child("participantIds").children
+            .mapNotNull { it.key }
+            .firstOrNull { it != userId }
+            ?.let { return it }
+
+        return listOf(
+            "user1Id",
+            "user2Id",
+            "user1",
+            "user2",
+            "buyerId",
+            "sellerId",
+            "senderId",
+            "receiverId",
+            "ownerId",
+            "requesterId"
+        )
+            .mapNotNull { field -> chatSnap.child(field).getValue(String::class.java) }
+            .firstOrNull { it != userId }
+    }
+
+    private fun DataSnapshot.longValue(): Long? {
+        return getValue(Long::class.java)
+            ?: getValue(Int::class.java)?.toLong()
+            ?: getValue(Double::class.java)?.toLong()
     }
 
     private fun incrementUnreadCounter(counterRef: DatabaseReference) {

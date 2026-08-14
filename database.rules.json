@@ -377,7 +377,7 @@
         ".read": "auth != null && auth.uid == $userId",
         "$chatId": {
           ".read": "auth != null && auth.uid == $userId",
-          ".write": "auth != null && (auth.uid == $userId || newData.child('userId').val() == auth.uid || newData.child('partnerId').val() == auth.uid || data.child('partnerId').val() == auth.uid)",
+          ".write": "auth != null && auth.uid == $userId",
           ".validate": "!newData.exists() || newData.hasChildren(['chatId', 'partnerId', 'partnerName', 'lastMessage', 'lastMessageTime', 'unreadCount'])"
         }
       }

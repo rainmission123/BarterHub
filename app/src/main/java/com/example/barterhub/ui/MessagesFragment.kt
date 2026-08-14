@@ -590,111 +590,49 @@ class MessagesFragment : Fragment() {
     ) {
         val userId = auth.currentUser?.uid ?: return
 
-        database.child("users").child(partnerId).get()
-            .addOnSuccessListener { userSnapshot ->
-                database.child("public_users").child(partnerId).get()
-                    .addOnSuccessListener { publicSnapshot ->
-                        if (_binding == null) return@addOnSuccessListener
+        database.child("public_users").child(partnerId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (_binding == null) return
 
-                        val partnerName = firstNonBlank(
-                            publicSnapshot.child("fullName").getValue(String::class.java),
-                            userSnapshot.child("fullName").getValue(String::class.java),
-                            publicSnapshot.child("username").getValue(String::class.java),
-                            userSnapshot.child("username").getValue(String::class.java)
-                        ) ?: "Chat Partner"
+                    val partnerName = firstNonBlank(
+                        snapshot.child("fullName").getValue(String::class.java),
+                        snapshot.child("username").getValue(String::class.java)
+                    ) ?: "Chat Partner"
 
-                        val partnerProfilePic = firstNonBlank(
-                            userSnapshot.child("profileImageUrl").getValue(String::class.java),
-                            userSnapshot.child("profileImage").getValue(String::class.java),
-                            publicSnapshot.child("profileImageUrl").getValue(String::class.java),
-                            publicSnapshot.child("profileImage").getValue(String::class.java),
-                            publicSnapshot.child("profilePicture").getValue(String::class.java)
-                        ).orEmpty()
+                    val partnerProfilePic = firstNonBlank(
+                        snapshot.child("profileImageUrl").getValue(String::class.java),
+                        snapshot.child("profileImage").getValue(String::class.java),
+                        snapshot.child("profilePicture").getValue(String::class.java)
+                    ).orEmpty()
 
-                        upsertConversation(
-                            chatId = chatId,
-                            userId = userId,
-                            partnerId = partnerId,
-                            partnerName = partnerName,
-                            partnerProfilePic = partnerProfilePic,
-                            lastMessage = lastMessage,
-                            lastMessageTime = lastMessageTime,
-                            unreadCount = unreadCount,
-                            isArchived = isArchived
-                        )
-                    }
-                    .addOnFailureListener {
-                        if (_binding == null) return@addOnFailureListener
+                    upsertConversation(
+                        chatId = chatId,
+                        userId = userId,
+                        partnerId = partnerId,
+                        partnerName = partnerName,
+                        partnerProfilePic = partnerProfilePic,
+                        lastMessage = lastMessage,
+                        lastMessageTime = lastMessageTime,
+                        unreadCount = unreadCount,
+                        isArchived = isArchived
+                    )
+                }
 
-                        val partnerName = firstNonBlank(
-                            userSnapshot.child("fullName").getValue(String::class.java),
-                            userSnapshot.child("username").getValue(String::class.java)
-                        ) ?: "Chat Partner"
-
-                        val partnerProfilePic = firstNonBlank(
-                            userSnapshot.child("profileImageUrl").getValue(String::class.java),
-                            userSnapshot.child("profileImage").getValue(String::class.java)
-                        ).orEmpty()
-
-                        upsertConversation(
-                            chatId = chatId,
-                            userId = userId,
-                            partnerId = partnerId,
-                            partnerName = partnerName,
-                            partnerProfilePic = partnerProfilePic,
-                            lastMessage = lastMessage,
-                            lastMessageTime = lastMessageTime,
-                            unreadCount = unreadCount,
-                            isArchived = isArchived
-                        )
-                    }
-            }
-            .addOnFailureListener {
-                database.child("public_users").child(partnerId)
-                    .addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onDataChange(snapshot: DataSnapshot) {
-                            if (_binding == null) return
-
-                            val partnerName =
-                                snapshot.child("fullName").getValue(String::class.java)
-                                    ?: snapshot.child("username").getValue(String::class.java)
-                                    ?: "Chat Partner"
-
-                            val partnerProfilePic =
-                                firstNonBlank(
-                                    snapshot.child("profileImageUrl").getValue(String::class.java),
-                                    snapshot.child("profileImage").getValue(String::class.java),
-                                    snapshot.child("profilePicture").getValue(String::class.java)
-                                ).orEmpty()
-
-                            upsertConversation(
-                                chatId = chatId,
-                                userId = userId,
-                                partnerId = partnerId,
-                                partnerName = partnerName,
-                                partnerProfilePic = partnerProfilePic,
-                                lastMessage = lastMessage,
-                                lastMessageTime = lastMessageTime,
-                                unreadCount = unreadCount,
-                                isArchived = isArchived
-                            )
-                        }
-
-                        override fun onCancelled(error: DatabaseError) {
-                            upsertConversation(
-                                chatId = chatId,
-                                userId = userId,
-                                partnerId = partnerId,
-                                partnerName = "Chat Partner",
-                                partnerProfilePic = "",
-                                lastMessage = lastMessage,
-                                lastMessageTime = lastMessageTime,
-                                unreadCount = unreadCount,
-                                isArchived = isArchived
-                            )
-                        }
-                    })
-            }
+                override fun onCancelled(error: DatabaseError) {
+                    upsertConversation(
+                        chatId = chatId,
+                        userId = userId,
+                        partnerId = partnerId,
+                        partnerName = "Chat Partner",
+                        partnerProfilePic = "",
+                        lastMessage = lastMessage,
+                        lastMessageTime = lastMessageTime,
+                        unreadCount = unreadCount,
+                        isArchived = isArchived
+                    )
+                }
+            })
     }
 
     private fun upsertConversation(

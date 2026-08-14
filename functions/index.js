@@ -1198,6 +1198,9 @@ exports.sendTradeEventNotification =
 exports.syncItemLikeCount =
   require("./syncItemLikeCount").syncItemLikeCount;
 
+exports.syncChatInboxOnMessageCreate =
+  require("./syncChatInboxOnMessageCreate").syncChatInboxOnMessageCreate;
+
 const publicBadges = require("./syncPublicUserBadges");
 exports.syncPublicUserBadgesFromUser =
   publicBadges.syncPublicUserBadgesFromUser;

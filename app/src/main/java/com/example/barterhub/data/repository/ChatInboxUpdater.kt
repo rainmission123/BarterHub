@@ -2,13 +2,9 @@ package com.example.barterhub.data.repository
 
 import android.util.Log
 import com.example.barterhub.data.models.Message
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.MutableData
 import com.google.firebase.database.ServerValue
-import com.google.firebase.database.Transaction
 import kotlinx.coroutines.tasks.await
 
 object ChatInboxUpdater {
@@ -41,22 +37,7 @@ object ChatInboxUpdater {
             incrementUnread = false
         )
 
-        writeInboxEntry(
-            inboxRef = inboxRef,
-            userId = message.receiverId,
-            chatId = chatId,
-            partnerId = message.senderId,
-            partnerName = message.senderName,
-            lastMessage = preview,
-            lastMessageTime = timestamp,
-            incrementUnread = message.senderId != message.receiverId
-        )
-
-        if (message.senderId != message.receiverId) {
-            incrementUnreadCounter(
-                messagesRef.child(chatId).child("unreadCount").child(message.receiverId)
-            )
-        }
+        Log.d(TAG, "Client updated sender inbox only; receiver inbox sync is backend-owned")
     }
 
     private suspend fun writeInboxEntry(
@@ -80,30 +61,6 @@ object ChatInboxUpdater {
         )
 
         inboxRef.child(userId).child(chatId).updateChildren(updates).await()
-    }
-
-    private fun MutableData.asInt(): Int? {
-        return getValue(Int::class.java) ?: getValue(Long::class.java)?.toInt()
-    }
-
-    private fun incrementUnreadCounter(counterRef: DatabaseReference) {
-        counterRef.runTransaction(object : Transaction.Handler {
-            override fun doTransaction(currentData: MutableData): Transaction.Result {
-                val currentCount = currentData.asInt() ?: 0
-                currentData.value = currentCount + 1
-                return Transaction.success(currentData)
-            }
-
-            override fun onComplete(
-                error: DatabaseError?,
-                committed: Boolean,
-                currentData: DataSnapshot?
-            ) {
-                if (error != null) {
-                    Log.e(TAG, "Failed to increment unread count: ${error.message}")
-                }
-            }
-        })
     }
 
     private fun getMessagePreview(message: Message): String {
