@@ -8,11 +8,21 @@ interface IChatRepository {
     suspend fun getLastMessageAfterDeletion(chatId: String, userId: String): Pair<String, Long>?
     suspend fun hideMessageForUser(chatId: String, messageId: String, userId: String)
     fun observeMessages(chatId: String, onMessageAdded: (Message) -> Unit, onMessageChanged: (Message) -> Unit, onMessageRemoved: (String) -> Unit): ChildEventListener
+    suspend fun chatExists(chatId: String): Boolean
+    suspend fun canCurrentUserAccessChat(chatId: String): Boolean
 
     // Message sending
     suspend fun sendMessage(chatId: String, message: Message): String
 
     // Chat creation
+    suspend fun getOrCreateDirectChat(
+        currentUserId: String,
+        partnerId: String,
+        itemId: String,
+        itemTitle: String,
+        partnerName: String
+    ): String
+
     suspend fun createChat(userId1: String, userId2: String, itemId: String, itemTitle: String, firstMessage: Message): String
 
     // Chat updates
