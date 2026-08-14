@@ -61,6 +61,7 @@ class ChatFragment : Fragment() {
     private var partnerProfilePic: String? = null
     private var currentPhotoPath: String? = null
     private var isFragmentActive = false
+    private var hasPerformedInitialScroll = false
     private var deletedAtForCurrentUser = 0L
     private var deletedAtListener: ValueEventListener? = null
     private val chatDatabase by lazy {
@@ -105,6 +106,7 @@ class ChatFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentChatBinding.inflate(inflater, container, false)
+        hasPerformedInitialScroll = false
         return binding.root
     }
 
@@ -484,8 +486,20 @@ class ChatFragment : Fragment() {
         messagesList.addAll(filterMessagesAfterDelete(state.messages))
         messagesAdapter.notifyDataSetChanged()
 
-        if (shouldAutoScroll && messagesList.isNotEmpty()) {
-            binding.messagesRecyclerView.scrollToPosition(messagesList.size - 1)
+        if (messagesList.isNotEmpty() && !hasPerformedInitialScroll) {
+            hasPerformedInitialScroll = true
+            binding.messagesRecyclerView.post {
+                if (_binding != null && messagesList.isNotEmpty()) {
+                    binding.messagesRecyclerView.scrollToPosition(messagesList.size - 1)
+                }
+            }
+            binding.scrollToBottomButton.visibility = View.GONE
+        } else if (shouldAutoScroll && messagesList.isNotEmpty()) {
+            binding.messagesRecyclerView.post {
+                if (_binding != null && messagesList.isNotEmpty()) {
+                    binding.messagesRecyclerView.scrollToPosition(messagesList.size - 1)
+                }
+            }
             binding.scrollToBottomButton.visibility = View.GONE
         } else {
             binding.scrollToBottomButton.visibility = View.VISIBLE

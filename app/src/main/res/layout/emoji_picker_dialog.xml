@@ -129,12 +129,55 @@
         android:clipToPadding="false"
         android:background="@color/white" />
 
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/gray_300"/>
+
+    <!-- Message Actions -->
+    <LinearLayout
+        android:id="@+id/messageActionsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@android:color/white"
+        android:paddingVertical="8dp">
+
+        <TextView
+            android:id="@+id/btnCopyMessage"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="20dp"
+            android:text="📋 Copy Message"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:textColor="@android:color/black"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/btnDeleteMessage"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="20dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:text="🗑 Delete for me"
+            android:textColor="#D32F2F"
+            android:textSize="15sp" />
+
+    </LinearLayout>
+
     <!-- Close Button -->
     <Button
         android:id="@+id/btnClose"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:text="CLOSE"
+        android:text="Cancel"
         android:textColor="@color/white"
         android:textStyle="bold"
         android:background="@color/colorPrimary"
