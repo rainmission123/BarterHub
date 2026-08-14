@@ -48,6 +48,7 @@ class MessagesAdapter(
     private var onViewProfileClickListener: ((String) -> Unit)? = null
     private var onTradeCompletedListener: ((TradeRequest) -> Unit)? = null
     private var onMessageDeletedListener: ((Message, Int) -> Unit)? = null
+    private var onRatingCommentFocusChangedListener: ((Boolean) -> Unit)? = null
     private val ratingStatusMap = mutableMapOf<String, RatingStatus>()
     private var reviewsListener: ValueEventListener? = null
     private val reactionListeners = mutableMapOf<String, ValueEventListener>()
@@ -112,6 +113,10 @@ class MessagesAdapter(
         onViewProfileClickListener = listener
     }
 
+
+    fun setOnRatingCommentFocusChangedListener(listener: (Boolean) -> Unit) {
+        onRatingCommentFocusChangedListener = listener
+    }
     fun setProfilePictures(currentUserPic: String?, partnerPic: String?) {
         currentUserProfilePic = currentUserPic
         partnerProfilePic = partnerPic

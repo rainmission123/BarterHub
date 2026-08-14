@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="270"
+        android:centerColor="@color/bh_home_bg_mid"
+        android:endColor="@color/bh_home_bg_bottom"
+        android:startColor="@color/bh_home_bg_top" />
+</shape>

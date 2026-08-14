@@ -266,5 +266,16 @@
     <color name="trending_indicator_default">#666666</color>
     <color name="splash_bg">#101826</color>
 
-
+    <!-- Home Premium 3D UI -->
+    <color name="bh_home_bg_top">#FBF7FF</color>
+    <color name="bh_home_bg_mid">#FFFFFF</color>
+    <color name="bh_home_bg_bottom">#F4F7FB</color>
+    <color name="bh_home_surface_high">#FFFFFF</color>
+    <color name="bh_home_surface_low">#EEF1F7</color>
+    <color name="bh_home_search_start">#FFFFFF</color>
+    <color name="bh_home_search_end">#F3EEF8</color>
+    <color name="bh_home_chip_start">#FFFFFF</color>
+    <color name="bh_home_chip_end">#F0EDF5</color>
+    <color name="bh_home_outline">#D8D0E5</color>
+    <color name="bh_home_outline_soft">#ECE6F3</color>
 </resources>
