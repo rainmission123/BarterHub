@@ -30,6 +30,15 @@ data class Message(
     var itemId: String? = null,
     var tradeDetails: Map<String, Any>? = null,
 
+    // SYSTEM / TRADE COMPATIBILITY
+    var message: String? = null,
+    var type: String? = null,
+    var requestId: String? = null,
+    var partnerId: String? = null,
+    var receiptId: String? = null,
+    var tradeId: String? = null,
+    var fromUserProfilePic: String? = null,
+
     // REACTIONS
     var reactions: Map<String, Map<String, Boolean>> = emptyMap(),
 

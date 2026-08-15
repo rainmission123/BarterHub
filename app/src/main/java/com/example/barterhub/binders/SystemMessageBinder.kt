@@ -12,16 +12,15 @@ import com.example.barterhub.data.models.TradeItem
 import com.example.barterhub.data.models.TradeRequest
 import com.example.barterhub.data.models.TradeUser
 import com.example.barterhub.managers.TradeCompletionManager
-import com.example.barterhub.managers.TradeNotificationManager
 import com.example.barterhub.viewholders.SystemMessageViewHolder
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 
 class SystemMessageBinder(
     private val currentUserId: String,
     private val chatId: String,
     private val onTradeCompletedListener: ((TradeRequest) -> Unit)? = null,
-    private val onMessageUpdated: (() -> Unit)? = null
+    private val onMessageUpdated: (() -> Unit)? = null,
+    private val onRatingCommentFocusChanged: ((Boolean) -> Unit)? = null
 ) : MessageBinder {
 
     companion object {
@@ -29,7 +28,6 @@ class SystemMessageBinder(
     }
 
     private val completionManager = TradeCompletionManager()
-    private val notificationManager = TradeNotificationManager()
 
     override fun bind(holder: RecyclerView.ViewHolder, message: Message, position: Int) {
         if (holder !is SystemMessageViewHolder) return
@@ -48,7 +46,7 @@ class SystemMessageBinder(
             return
         }
 
-        bindTradeDetails(holder, tradeRequest)
+        bindTradeDetails(holder, tradeRequest, currentMessageId)
 
         val statusFromDetails = (message.tradeDetails as? Map<*, *>)?.get("status") as? String
 
@@ -72,36 +70,10 @@ class SystemMessageBinder(
                 return@checkUserActionStatus
             }
 
-            when {
-                currentUserRated && partnerRated -> {
-                    completionManager.updateTradeStatusToCompleted(
-                        currentUserId = currentUserId,
-                        chatId = chatId,
-                        tradeId = tradeRequest.requestId,
-                        messageId = currentMessageId,
-                        request = tradeRequest,
-                        onCompleted = {
-                            showCompletedUI(holder)
-                            onTradeCompletedListener?.invoke(tradeRequest)
-                            onMessageUpdated?.invoke()
-                        },
-                        onFailure = { error ->
-                            Toast.makeText(holder.itemView.context, error, Toast.LENGTH_SHORT).show()
-                        }
-                    )
-                }
-
-                userClickedCompleted || currentUserRated -> {
-                    if (currentUserRated) {
-                        showWaitingForPartnerUI(holder, tradeRequest)
-                    } else {
-                        showRatingUI(holder, tradeRequest, currentMessageId)
-                    }
-                }
-
-                else -> {
-                    showInitialUI(holder, tradeRequest, currentMessageId)
-                }
+            if (userClickedCompleted) {
+                showWaitingUI(holder)
+            } else {
+                showInitialUI(holder, tradeRequest, currentMessageId)
             }
         }
     }
@@ -110,7 +82,6 @@ class SystemMessageBinder(
         holder.tradeActionButtons.visibility = View.GONE
         holder.btnCompleted.visibility = View.GONE
         holder.btnReportIssue.visibility = View.GONE
-        holder.ratingContainer.visibility = View.GONE
         holder.waitingText.visibility = View.GONE
         holder.tradeReminderWarning.visibility = View.VISIBLE
         holder.instructionText.visibility = View.VISIBLE
@@ -124,30 +95,38 @@ class SystemMessageBinder(
         holder.tradeReminderWarning.visibility = View.VISIBLE
         holder.instructionText.visibility = View.VISIBLE
         holder.tradeActionButtons.visibility = View.VISIBLE
-        holder.btnCompleted.visibility = View.VISIBLE
-        holder.btnReportIssue.visibility = View.VISIBLE
-        holder.ratingContainer.visibility = View.GONE
         holder.waitingText.visibility = View.GONE
+        holder.btnCompleted.visibility = View.VISIBLE
+        holder.btnCompleted.isEnabled = true
+        holder.btnCompleted.alpha = 1f
+
+        holder.btnReportIssue.visibility = View.VISIBLE
+        holder.btnReportIssue.isEnabled = true
+        holder.btnReportIssue.alpha = 1f
 
         holder.btnCompleted.setOnClickListener {
-            completionManager.saveUserClickedCompleted(
-                currentUserId = currentUserId,
-                tradeId = request.requestId,
-                messageId = messageId,
-                onSuccess = {
-                    notificationManager.notifyCompletedClicked(
-                        currentUserId = currentUserId,
-                        chatId = chatId,
-                        request = request
-                    )
+            holder.btnCompleted.isEnabled = false
 
-                    holder.ratingContainer.visibility = View.VISIBLE
+            completionManager.confirmTradeCompletion(
+                tradeId = request.requestId,
+                chatId = chatId,
+                messageId = messageId,
+                onSuccess = { result ->
                     holder.btnCompleted.visibility = View.GONE
                     holder.btnReportIssue.visibility = View.GONE
+                    holder.tradeActionButtons.visibility = View.GONE
 
-                    setupRating(holder, request, messageId)
+                    if (result.completed) {
+                        showCompletedUI(holder)
+                        onTradeCompletedListener?.invoke(request.copy(status = "Completed"))
+                    } else {
+                        showWaitingUI(holder)
+                    }
+
+                    onMessageUpdated?.invoke()
                 },
                 onFailure = { error ->
+                    holder.btnCompleted.isEnabled = true
                     Toast.makeText(holder.itemView.context, error, Toast.LENGTH_SHORT).show()
                 }
             )
@@ -158,203 +137,55 @@ class SystemMessageBinder(
         }
     }
 
-    private fun showRatingUI(
-        holder: SystemMessageViewHolder,
-        request: TradeRequest,
-        messageId: String
-    ) {
-        holder.tradeReminderWarning.visibility = View.VISIBLE
-        holder.tradeActionButtons.visibility = View.GONE
+    private fun showWaitingUI(holder: SystemMessageViewHolder) {
         holder.btnCompleted.visibility = View.GONE
         holder.btnReportIssue.visibility = View.GONE
-        holder.ratingContainer.visibility = View.VISIBLE
-        holder.waitingText.visibility = View.GONE
-
-        setupRating(holder, request, messageId)
-    }
-
-    private fun showWaitingForPartnerUI(
-        holder: SystemMessageViewHolder,
-        request: TradeRequest
-    ) {
-        holder.tradeReminderWarning.visibility = View.VISIBLE
         holder.tradeActionButtons.visibility = View.GONE
-        holder.ratingContainer.visibility = View.GONE
-        holder.btnCompleted.visibility = View.GONE
-        holder.btnReportIssue.visibility = View.GONE
+        holder.tradeReminderWarning.visibility = View.GONE
+        holder.instructionText.visibility = View.VISIBLE
         holder.waitingText.visibility = View.VISIBLE
 
-        val partnerName = getPartnerName(request)
-        holder.waitingText.text = "✅ You have rated\n⏳ Waiting for $partnerName to rate..."
+        holder.acceptedByText.text = "Waiting for partner confirmation"
+        holder.waitingText.text = "Waiting for your barter partner to confirm completion."
     }
 
     private fun showCompletedUI(holder: SystemMessageViewHolder) {
         holder.btnCompleted.visibility = View.GONE
         holder.btnReportIssue.visibility = View.GONE
         holder.tradeActionButtons.visibility = View.GONE
-        holder.ratingContainer.visibility = View.GONE
         holder.waitingText.visibility = View.GONE
         holder.tradeReminderWarning.visibility = View.GONE
 
-        holder.acceptedByText.text = "✅ Transaction Completed"
+        holder.acceptedByText.text = "Transaction Completed"
         holder.instructionText.visibility = View.GONE
     }
 
     private fun bindTradeDetails(
         holder: SystemMessageViewHolder,
-        request: TradeRequest
+        request: TradeRequest,
+        messageId: String
     ) {
         holder.acceptedByText.text = "${request.toUser.username} accepted the trade"
         holder.offeredByText.text = request.fromUser.username
         holder.acceptedByUserText.text = request.toUser.username
         holder.offeredItemText.text = request.offeredItem.title
         holder.targetItemText.text = request.targetItem.title
-    }
 
-    private fun setupRating(
-        holder: SystemMessageViewHolder,
-        request: TradeRequest,
-        messageId: String
-    ) {
-        val currentUser = FirebaseAuth.getInstance().currentUser ?: return
-
-        val partner = when (currentUser.uid) {
-            request.fromUser.userId -> request.toUser
-            request.toUser.userId -> request.fromUser
-            else -> return
+        ChatDisplayNameResolver.resolve(
+            uid = request.fromUser.userId,
+            fallbackUsername = request.fromUser.username
+        ) { fromDisplayName ->
+            if (holder.itemView.tag != messageId) return@resolve
+            holder.offeredByText.text = fromDisplayName
         }
 
-        holder.tvRateUserName.text = "Rate ${partner.username}"
-        holder.ratingBar.rating = 0f
-        holder.btnSubmitRating.isEnabled = true
-        holder.btnSkipRating.isEnabled = true
-
-        holder.btnSubmitRating.setOnClickListener {
-            val rating = holder.ratingBar.rating
-
-            if (rating == 0f) {
-                Toast.makeText(
-                    holder.itemView.context,
-                    "Please select a rating",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@setOnClickListener
-            }
-
-            holder.btnSubmitRating.isEnabled = false
-            holder.btnSkipRating.isEnabled = false
-
-            submitRating(
-                holder = holder,
-                request = request,
-                partner = partner,
-                rating = rating,
-                comment = "",
-                messageId = messageId
-            )
-        }
-
-        holder.btnSkipRating.setOnClickListener {
-            holder.btnSubmitRating.isEnabled = false
-            holder.btnSkipRating.isEnabled = false
-
-            submitRating(
-                holder = holder,
-                request = request,
-                partner = partner,
-                rating = 0f,
-                comment = "Rating skipped",
-                messageId = messageId
-            )
-        }
-    }
-
-    private fun submitRating(
-        holder: SystemMessageViewHolder,
-        request: TradeRequest,
-        partner: TradeUser,
-        rating: Float,
-        comment: String,
-        messageId: String
-    ) {
-        val db = FirebaseDatabase.getInstance().reference
-        val currentUser = FirebaseAuth.getInstance().currentUser ?: return
-        val reviewId = db.child("reviews").push().key ?: return
-
-        val reviewData = hashMapOf<String, Any>(
-            "reviewId" to reviewId,
-            "tradeId" to request.requestId,
-            "reviewerId" to currentUser.uid,
-            "reviewerName" to (currentUser.displayName ?: "Anonymous"),
-            "reviewedUserId" to partner.userId,
-            "reviewedUserName" to partner.username,
-            "rating" to rating,
-            "comment" to comment,
-            "timestamp" to System.currentTimeMillis()
-        )
-
-        db.child("reviews")
-            .child(reviewId)
-            .setValue(reviewData)
-            .addOnSuccessListener {
-                Log.d(TAG, "✅ Rating saved")
-
-                notificationManager.notifyRated(
-                    currentUserId = currentUserId,
-                    chatId = chatId,
-                    request = request,
-                    rating = rating.toInt()
-                )
-
-                completionManager.checkUserActionStatus(
-                    currentUserId = currentUserId,
-                    tradeId = request.requestId
-                ) { _, currentUserRated, partnerRated ->
-
-                    if (currentUserRated && partnerRated) {
-                        completionManager.updateTradeStatusToCompleted(
-                            currentUserId = currentUserId,
-                            chatId = chatId,
-                            tradeId = request.requestId,
-                            messageId = messageId,
-                            request = request,
-                            onCompleted = {
-                                showCompletedUI(holder)
-                                onTradeCompletedListener?.invoke(request)
-                                onMessageUpdated?.invoke()
-                            },
-                            onFailure = { error ->
-                                Toast.makeText(holder.itemView.context, error, Toast.LENGTH_SHORT).show()
-                                resetButtons(holder)
-                            }
-                        )
-                    } else {
-                        showWaitingForPartnerUI(holder, request)
-                        onMessageUpdated?.invoke()
-                    }
-                }
-            }
-            .addOnFailureListener { e ->
-                Log.e(TAG, "❌ Failed to save rating: ${e.message}")
-                Toast.makeText(
-                    holder.itemView.context,
-                    "Failed to submit rating: ${e.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
-                resetButtons(holder)
-            }
-    }
-
-    private fun resetButtons(holder: SystemMessageViewHolder) {
-        holder.btnSubmitRating.isEnabled = true
-        holder.btnSkipRating.isEnabled = true
-    }
-
-    private fun getPartnerName(request: TradeRequest): String {
-        return if (request.fromUser.userId == currentUserId) {
-            request.toUser.username
-        } else {
-            request.fromUser.username
+        ChatDisplayNameResolver.resolve(
+            uid = request.toUser.userId,
+            fallbackUsername = request.toUser.username
+        ) { toDisplayName ->
+            if (holder.itemView.tag != messageId) return@resolve
+            holder.acceptedByText.text = "$toDisplayName accepted the trade"
+            holder.acceptedByUserText.text = toDisplayName
         }
     }
 
@@ -404,16 +235,16 @@ class SystemMessageBinder(
                 timestamp = System.currentTimeMillis()
             )
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Error extracting trade request: ${e.message}")
+            Log.e(TAG, "Error extracting trade request: ${e.message}")
             null
         }
     }
 
     private fun openEmailReport(context: Context, request: TradeRequest) {
-        val partnerName = when (FirebaseAuth.getInstance().currentUser?.uid) {
-            request.fromUser.userId -> request.toUser.username
-            request.toUser.userId -> request.fromUser.username
-            else -> "Unknown"
+        val partnerName = if (request.fromUser.userId == currentUserId) {
+            request.toUser.username
+        } else {
+            request.fromUser.username
         }
 
         val email = "barterhubph.support@gmail.com"
@@ -439,5 +270,53 @@ class SystemMessageBinder(
         } catch (_: Exception) {
             Toast.makeText(context, "No email app found", Toast.LENGTH_SHORT).show()
         }
+    }
+}
+
+internal object ChatDisplayNameResolver {
+    private const val DATABASE_URL = "https://barterhub-3c947-default-rtdb.firebaseio.com/"
+    private val database = FirebaseDatabase.getInstance(DATABASE_URL).reference
+    private val cache = mutableMapOf<String, String>()
+
+    fun resolve(uid: String, fallbackUsername: String, onResolved: (String) -> Unit) {
+        val fallback = fallbackUsername.ifBlank { "Trade partner" }
+        if (uid.isBlank()) {
+            onResolved(fallback)
+            return
+        }
+
+        cache[uid]?.let {
+            onResolved(it)
+            return
+        }
+
+        database.child("public_users").child(uid).child("fullName").get()
+            .addOnSuccessListener { publicSnapshot ->
+                val publicName = publicSnapshot.getValue(String::class.java).orEmpty().trim()
+                if (publicName.isNotBlank()) {
+                    cache[uid] = publicName
+                    onResolved(publicName)
+                    return@addOnSuccessListener
+                }
+
+                resolveUserFullName(uid, fallback, onResolved)
+            }
+            .addOnFailureListener {
+                resolveUserFullName(uid, fallback, onResolved)
+            }
+    }
+
+    private fun resolveUserFullName(uid: String, fallback: String, onResolved: (String) -> Unit) {
+        database.child("users").child(uid).child("fullName").get()
+            .addOnSuccessListener { userSnapshot ->
+                val userName = userSnapshot.getValue(String::class.java).orEmpty().trim()
+                val displayName = userName.ifBlank { fallback }
+                cache[uid] = displayName
+                onResolved(displayName)
+            }
+            .addOnFailureListener {
+                cache[uid] = fallback
+                onResolved(fallback)
+            }
     }
 }

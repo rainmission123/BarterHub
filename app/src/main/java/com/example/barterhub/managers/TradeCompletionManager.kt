@@ -1,11 +1,11 @@
 package com.example.barterhub.managers
 
 import android.util.Log
-import com.example.barterhub.data.models.TradeRequest
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.functions.FirebaseFunctions
 
 class TradeCompletionManager {
 
@@ -14,33 +14,47 @@ class TradeCompletionManager {
     }
 
     private val db = FirebaseDatabase.getInstance().reference
-    private val receiptManager = TradeReceiptManager()
-    private val statsManager = TradeStatsManager()
+    private val functions = FirebaseFunctions.getInstance("asia-southeast1")
 
-    fun saveUserClickedCompleted(
-        currentUserId: String,
+    data class CompletionResult(
+        val completed: Boolean,
+        val waiting: Boolean,
+        val receiptId: String?
+    )
+
+    fun confirmTradeCompletion(
         tradeId: String,
+        chatId: String,
         messageId: String,
-        onSuccess: (() -> Unit)? = null,
+        onSuccess: ((CompletionResult) -> Unit)? = null,
         onFailure: ((String) -> Unit)? = null
     ) {
-        val actionData = hashMapOf<String, Any>(
-            "clicked_completed" to true,
-            "timestamp" to System.currentTimeMillis(),
+        val data = hashMapOf(
+            "tradeId" to tradeId,
+            "chatId" to chatId,
             "messageId" to messageId
         )
 
-        db.child("user_actions")
-            .child(tradeId)
-            .child(currentUserId)
-            .setValue(actionData)
-            .addOnSuccessListener {
-                Log.d(TAG, "✅ User clicked completed saved")
-                onSuccess?.invoke()
+        functions
+            .getHttpsCallable("confirmTradeCompletion")
+            .call(data)
+            .addOnSuccessListener { result ->
+                val response = result.data as? Map<*, *>
+                val completionResult = CompletionResult(
+                    completed = response?.get("completed") as? Boolean ?: false,
+                    waiting = response?.get("waiting") as? Boolean ?: false,
+                    receiptId = response?.get("receiptId") as? String
+                )
+
+                Log.d(
+                    TAG,
+                    "Completion confirmed by Cloud: completed=${completionResult.completed}, waiting=${completionResult.waiting}"
+                )
+                onSuccess?.invoke(completionResult)
             }
             .addOnFailureListener { e ->
-                Log.e(TAG, "❌ Failed clicked completed: ${e.message}")
-                onFailure?.invoke(e.message ?: "Failed to save action")
+                Log.e(TAG, "Cloud completion failed: ${e.message}", e)
+                onFailure?.invoke(e.message ?: "Failed to confirm completion")
             }
     }
 
@@ -67,8 +81,10 @@ class TradeCompletionManager {
                             var partnerRated = false
 
                             for (reviewSnap in snapshot.children) {
-                                val reviewerId = reviewSnap.child("reviewerId").getValue(String::class.java)
-                                val reviewedUserId = reviewSnap.child("reviewedUserId").getValue(String::class.java)
+                                val reviewerId =
+                                    reviewSnap.child("reviewerId").getValue(String::class.java)
+                                val reviewedUserId =
+                                    reviewSnap.child("reviewedUserId").getValue(String::class.java)
 
                                 if (reviewerId == currentUserId) {
                                     currentUserRated = true
@@ -87,131 +103,14 @@ class TradeCompletionManager {
                         }
 
                         override fun onCancelled(error: DatabaseError) {
-                            Log.e(TAG, "❌ Reviews check cancelled: ${error.message}")
+                            Log.e(TAG, "Reviews check cancelled: ${error.message}")
                             callback(false, false, false)
                         }
                     })
             }
             .addOnFailureListener { e ->
-                Log.e(TAG, "❌ User action check failed: ${e.message}")
+                Log.e(TAG, "User action check failed: ${e.message}")
                 callback(false, false, false)
             }
-    }
-
-    fun updateTradeStatusToCompleted(
-        currentUserId: String,
-        chatId: String,
-        tradeId: String,
-        messageId: String,
-        request: TradeRequest,
-        onCompleted: (() -> Unit)? = null,
-        onFailure: ((String) -> Unit)? = null
-    ) {
-        db.child("trade_requests")
-            .child(tradeId)
-            .child("status")
-            .get()
-            .addOnSuccessListener { snapshot ->
-                val currentStatus = snapshot.getValue(String::class.java)
-
-                if (currentStatus == "Completed") {
-                    Log.d(TAG, "⚠️ Trade already completed")
-
-                    receiptManager.ensureReceiptExists(
-                        currentUserId = currentUserId,
-                        chatId = chatId,
-                        request = request
-                    )
-
-                    onCompleted?.invoke()
-                    return@addOnSuccessListener
-                }
-
-                proceedWithTradeCompletion(
-                    currentUserId = currentUserId,
-                    chatId = chatId,
-                    tradeId = tradeId,
-                    messageId = messageId,
-                    request = request,
-                    onCompleted = onCompleted,
-                    onFailure = onFailure
-                )
-            }
-            .addOnFailureListener { e ->
-                Log.e(TAG, "❌ Failed checking trade status: ${e.message}")
-                onFailure?.invoke(e.message ?: "Failed checking trade status")
-            }
-    }
-
-    private fun proceedWithTradeCompletion(
-        currentUserId: String,
-        chatId: String,
-        tradeId: String,
-        messageId: String,
-        request: TradeRequest,
-        onCompleted: (() -> Unit)?,
-        onFailure: ((String) -> Unit)?
-    ) {
-        db.child("trade_requests")
-            .child(tradeId)
-            .child("status")
-            .setValue("Completed")
-            .addOnSuccessListener {
-                Log.d(TAG, "✅ Trade status updated to Completed")
-
-                statsManager.saveTradeHistory(request)
-                statsManager.updateUserTradeStats(request)
-
-                receiptManager.createTradeReceiptIfMissing(
-                    currentUserId = currentUserId,
-                    chatId = chatId,
-                    request = request
-                )
-
-                updateSystemMessageToCompleted(
-                    chatId = chatId,
-                    messageId = messageId,
-                    tradeId = tradeId,
-                    request = request,
-                    onCompleted = onCompleted,
-                    onFailure = onFailure
-                )
-            }
-            .addOnFailureListener { e ->
-                Log.e(TAG, "❌ Failed to update trade status: ${e.message}")
-                onFailure?.invoke(e.message ?: "Failed to complete trade")
-            }
-    }
-
-    private fun updateSystemMessageToCompleted(
-        chatId: String,
-        messageId: String,
-        tradeId: String,
-        request: TradeRequest,
-        onCompleted: (() -> Unit)?,
-        onFailure: ((String) -> Unit)?
-    ) {
-        val updatedTradeDetails = hashMapOf<String, Any>(
-            "tradeRequestId" to tradeId,
-            "fromUserId" to request.fromUser.userId,
-            "toUserId" to request.toUser.userId,
-            "offeredBy" to request.fromUser.username,
-            "acceptedBy" to request.toUser.username,
-            "offeredItemId" to request.offeredItem.itemId,
-            "offeredItemName" to request.offeredItem.title,
-            "offeredItemDescription" to request.offeredItem.description,
-            "offeredItemImage" to request.offeredItem.image,
-            "offeredItemCategory" to request.offeredItem.category,
-            "offeredItemCondition" to request.offeredItem.condition,
-            "targetItemId" to request.targetItem.itemId,
-            "targetItemName" to request.targetItem.title,
-            "targetItemDescription" to request.targetItem.description,
-            "targetItemImage" to request.targetItem.image,
-            "targetItemCategory" to request.targetItem.category,
-            "targetItemCondition" to request.targetItem.condition,
-            "status" to "Completed"
-        )
-        Log.d(TAG, "✅ Trade completed. Chat message will be created by Cloud Function.")
-        onCompleted?.invoke()
     }
 }

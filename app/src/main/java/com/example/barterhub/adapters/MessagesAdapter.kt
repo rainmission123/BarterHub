@@ -19,14 +19,12 @@ import com.example.barterhub.adapters.message.reactions.ReactionPickerDialog
 import com.example.barterhub.binders.ImageMessageBinder
 import com.example.barterhub.binders.SystemMessageBinder
 import com.example.barterhub.binders.TextMessageBinder
+import com.example.barterhub.binders.TradeRatingBinder
 import com.example.barterhub.binders.VideoMessageBinder
 import com.example.barterhub.data.models.Message
 import com.example.barterhub.data.models.TradeRequest
 import com.example.barterhub.viewholders.SystemMessageViewHolder
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.example.barterhub.viewholders.TradeRatingViewHolder
 
 @SuppressLint("NotifyDataSetChanged")
 class MessagesAdapter(
@@ -43,6 +41,7 @@ class MessagesAdapter(
         private const val VIEW_TYPE_SYSTEM = 3
         private const val VIEW_TYPE_IMAGE = 4
         private const val VIEW_TYPE_VIDEO = 5
+        private const val VIEW_TYPE_TRADE_RATING = 6
 
         private const val TAG = "MessagesAdapter"
     }
@@ -88,25 +87,18 @@ class MessagesAdapter(
 
     private var onRatingCommentFocusChangedListener:
             ((Boolean) -> Unit)? = null
-
-    private val ratingStatusMap = mutableMapOf<String, RatingStatus>()
-    private var reviewsListener: ValueEventListener? = null
-
-    private val database = FirebaseDatabase.getInstance().reference
-
-
     private lateinit var textMessageBinder: TextMessageBinder
     private lateinit var imageMessageBinder: ImageMessageBinder
     private lateinit var videoMessageBinder: VideoMessageBinder
 
     private val systemMessageBinder: SystemMessageBinder
+    private val tradeRatingBinder: TradeRatingBinder
 
     private val reactionController: MessageReactionController
 
     private val reactionBinder: MessageReactionBinder
 
     private val reactionPickerDialog: ReactionPickerDialog
-
 
     init {
         reactionController = MessageReactionController(
@@ -165,13 +157,28 @@ class MessagesAdapter(
             },
             onMessageUpdated = {
                 notifyDataSetChanged()
+            },
+            onRatingCommentFocusChanged = { hasFocus ->
+                onRatingCommentFocusChangedListener?.invoke(
+                    hasFocus
+                )
             }
         )
 
-
+        tradeRatingBinder = TradeRatingBinder(
+            currentUserId = currentUserId,
+            chatId = chatId,
+            onMessageUpdated = {
+                notifyDataSetChanged()
+            },
+            onRatingCommentFocusChanged = { hasFocus ->
+                onRatingCommentFocusChangedListener?.invoke(
+                    hasFocus
+                )
+            }
+        )
 
         rebuildMessageBinders()
-        setupRealTimeRatingMonitor()
     }
 
     private fun rebuildMessageBinders() {
@@ -283,19 +290,35 @@ class MessagesAdapter(
     ): Int {
         val message = messages[position]
 
+        val type =
+            if (
+                message.messageType.isNotBlank() &&
+                message.messageType != "text"
+            ) {
+                message.messageType
+            } else {
+                message.type ?: message.messageType
+            }
+
         return when {
+            type == "system_trade_rating" -> {
+                VIEW_TYPE_TRADE_RATING
+            }
+
             message.isSystemMessage ||
                     message.senderId == "system" ||
-                    message.messageType == "system_trade_accepted" ||
-                    message.messageType == "system_trade_completed" -> {
+                    type == "system_trade_accepted" ||
+                    type == "system_trade_completed" ||
+                    type == "trade_accepted" ||
+                    type == "trade_completed" -> {
                 VIEW_TYPE_SYSTEM
             }
 
-            message.messageType == "video" -> {
+            type == "video" -> {
                 VIEW_TYPE_VIDEO
             }
 
-            message.messageType == "image" -> {
+            type == "image" -> {
                 VIEW_TYPE_IMAGE
             }
 
@@ -367,6 +390,15 @@ class MessagesAdapter(
                 )
             }
 
+            VIEW_TYPE_TRADE_RATING -> {
+                TradeRatingViewHolder(
+                    inflater.inflate(
+                        R.layout.item_trade_rating,
+                        parent,
+                        false
+                    )
+                )
+            }
 
             else -> {
                 throw IllegalArgumentException(
@@ -393,6 +425,13 @@ class MessagesAdapter(
         )
 
         when (holder) {
+            is TradeRatingViewHolder -> {
+                tradeRatingBinder.bind(
+                    holder,
+                    message,
+                    position
+                )
+            }
 
             is ReceivedMessageViewHolder -> {
                 holder.boundMessageId =
@@ -546,42 +585,6 @@ class MessagesAdapter(
         }
     }
 
-    data class RatingStatus(
-        var currentUserRated: Boolean = false,
-        var partnerRated: Boolean = false,
-        var totalRatings: Int = 0
-    )
-
-    private fun setupRealTimeRatingMonitor() {
-        val db = FirebaseDatabase.getInstance().reference
-        reviewsListener = db.child("reviews").addValueEventListener(object : ValueEventListener {
-            @SuppressLint("NotifyDataSetChanged")
-            override fun onDataChange(snapshot: DataSnapshot) {
-                ratingStatusMap.clear()
-                val ratingsByTrade = mutableMapOf<String, MutableList<String>>()
-                for (reviewSnapshot in snapshot.children) {
-                    val tradeId = reviewSnapshot.child("tradeId").getValue(String::class.java)
-                    val reviewerId = reviewSnapshot.child("reviewerId").getValue(String::class.java)
-                    if (tradeId != null && reviewerId != null) {
-                        ratingsByTrade.getOrPut(tradeId) { mutableListOf() }.add(reviewerId)
-                    }
-                }
-                for ((tradeId, reviewerIds) in ratingsByTrade) {
-                    val status = RatingStatus(
-                        currentUserRated = reviewerIds.contains(currentUserId),
-                        partnerRated = reviewerIds.any { it != currentUserId },
-                        totalRatings = reviewerIds.size
-                    )
-                    ratingStatusMap[tradeId] = status
-                }
-                notifyDataSetChanged()
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e(TAG, "Error monitoring ratings: ${error.message}")
-            }
-        })
-    }
     private fun handleSingleReactionClick(
         context: Context,
         message: Message

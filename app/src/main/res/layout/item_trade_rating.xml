@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ratingMessageContainer"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="4dp"
+    android:orientation="vertical"
+    android:padding="10dp"
+    android:background="@drawable/message_background_received">
+
+    <TextView
+        android:id="@+id/tvRatingTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Rate this barter"
+        android:textStyle="bold"
+        android:textSize="15sp"
+        android:textColor="@android:color/white" />
+
+    <TextView
+        android:id="@+id/tvRateUserName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:text="Rate user"
+        android:textSize="12sp"
+        android:textColor="@color/White" />
+
+    <RatingBar
+        android:id="@+id/ratingBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:numStars="5"
+        android:stepSize="1"
+        android:rating="0"
+        android:scaleX="1.1"
+        android:scaleY="1.1"
+        android:transformPivotX="0dp"
+        android:transformPivotY="0dp" />
+
+    <EditText
+        android:id="@+id/etRatingComment"
+        android:layout_width="295dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:background="@drawable/rounded_input_background"
+        android:gravity="top"
+        android:hint="Write a comment..."
+        android:inputType="textMultiLine"
+        android:maxLength="250"
+        android:minHeight="56dp"
+        android:padding="8dp"
+        android:textColor="@color/black"
+        android:textColorHint="@color/black" />
+
+    <Button
+        android:id="@+id/btnSubmitRating"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_marginTop="8dp"
+        android:text="Rate"
+        android:textAllCaps="false"
+        android:textSize="13sp" />
+
+</LinearLayout>
