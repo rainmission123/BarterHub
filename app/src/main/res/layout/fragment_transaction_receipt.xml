@@ -1,190 +1,460 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/bg_transaction_receipt_screen"
+    android:clipToPadding="false"
     android:fitsSystemWindows="true"
     android:paddingStart="@dimen/form_screen_horizontal_padding"
-    android:paddingTop="16dp"
+    android:paddingTop="20dp"
     android:paddingEnd="@dimen/form_screen_horizontal_padding"
-    android:paddingBottom="16dp">
+    android:paddingBottom="28dp"
+    tools:context=".ui.TransactionReceiptFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Receipt Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="8dp"
-            android:layout_marginBottom="24dp">
+            android:layout_marginBottom="18dp"
+            app:cardBackgroundColor="@android:color/transparent"
+            app:cardCornerRadius="26dp"
+            app:cardElevation="10dp"
+            app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?attr/colorSurface"
+                android:background="@drawable/bg_transaction_receipt_card"
                 android:orientation="vertical"
-                android:padding="24dp">
+                android:padding="22dp">
 
-                <!-- Header -->
-                <ImageView
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/ic_check_circle"
-                    android:contentDescription="Success Icon"
-                    android:layout_marginBottom="16dp"/>
+                <FrameLayout
+                    android:layout_width="78dp"
+                    android:layout_height="78dp"
+                    android:layout_gravity="center_horizontal"
+                    android:background="@drawable/bg_receipt_gold_icon"
+                    android:elevation="8dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="TRANSACTION RECEIPT"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="?attr/colorOnSurface"
-                    android:layout_marginBottom="24dp"/>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="?attr/colorOnSurfaceVariant"
-                    android:layout_marginBottom="16dp"/>
-
-                <!-- Transaction Details -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Transaction Type"
-                    android:textSize="12sp"
-                    android:textColor="?attr/colorOnSurfaceVariant"/>
+                    <ImageView
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="@string/transaction_receipt"
+                        android:src="@drawable/ic_check"
+                        app:tint="#14351F" />
+                </FrameLayout>
 
                 <TextView
                     android:id="@+id/tvReceiptTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Purchase Coins"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="?attr/colorOnSurface"
-                    android:layout_marginBottom="16dp"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Coins"
-                    android:textSize="12sp"
-                    android:textColor="?attr/colorOnSurfaceVariant"/>
-
-                <TextView
-                    android:id="@+id/tvReceiptCoins"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="+50 Coins"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center"
+                    android:text="Payment Successful"
+                    android:textColor="#F9FAFB"
                     android:textSize="24sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/green_dark"
-                    android:layout_marginBottom="16dp"/>
+                    android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/tvReceiptAmount"
+                    android:id="@+id/tvReceiptStatusBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_transaction_success_badge"
+                    android:paddingStart="16dp"
+                    android:paddingTop="7dp"
+                    android:paddingEnd="16dp"
+                    android:paddingBottom="7dp"
+                    android:text="SECURE PAYMENT CONFIRMED"
+                    android:textColor="#BFFFD4"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="₱25.00"
+                    android:layout_marginTop="22dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:background="@drawable/bg_transaction_receipt_row">
+
+                    <ImageView
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:contentDescription="Coins"
+                        android:src="@drawable/ic_barter_coins" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvReceiptCoinsLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Coins Received"
+                            android:textColor="#9CA3AF"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvReceiptCoins"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="+500 Coins"
+                            android:textColor="#58D68D"
+                            android:textSize="26sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/rowPaymentDetails"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="7dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_transaction_receipt_row"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Amount Paid"
+                            android:textColor="#9CA3AF"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvReceiptAmount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="₱250.00"
+                            android:textColor="#F6C85F"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="7dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_transaction_receipt_row"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="14dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Payment Method"
+                                android:textColor="#9CA3AF"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/tvReceiptPaymentMethod"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:maxLines="1"
+                                android:text="Card"
+                                android:textColor="#F9FAFB"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tvReceiptPaymentMethodIcon"
+                            android:layout_width="50dp"
+                            android:layout_height="38dp"
+                            android:layout_marginStart="8dp"
+                            android:background="@drawable/bg_payment_method_card"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:text="💳"
+                            android:textColor="#FFFFFF"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/rowSender"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:background="@drawable/bg_transaction_receipt_row"
+                    android:orientation="vertical"
+                    android:padding="14dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/tvSender"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="#F9FAFB"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/rowReceiver"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:background="@drawable/bg_transaction_receipt_row"
+                    android:orientation="vertical"
+                    android:padding="14dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/tvReceiver"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="#F9FAFB"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:background="@drawable/bg_transaction_receipt_row"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+
+                    <TextView
+                        android:id="@+id/tvReceiptWalletBalanceLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Wallet Balance After Payment"
+                        android:textColor="#9CA3AF"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/tvReceiptWalletBalance"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="1,605 Coins"
+                        android:textColor="#F9FAFB"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="7dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_transaction_receipt_row"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Status"
+                            android:textColor="#9CA3AF"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvReceiptStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Completed"
+                            android:textColor="#58D68D"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="7dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_transaction_receipt_row"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Date &amp; Time"
+                            android:textColor="#9CA3AF"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvReceiptDate"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="June 28, 2026 • 09:45 AM"
+                            android:textColor="#F9FAFB"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:background="@drawable/bg_transaction_receipt_row"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="14dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Transaction ID"
+                            android:textColor="#9CA3AF"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvReceiptTransactionId"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="pay_123456789"
+                            android:textColor="#F9FAFB"
+                            android:textIsSelectable="true"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <ImageButton
+                        android:id="@+id/btnCopyTransactionId"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="10dp"
+                        android:background="@drawable/bg_receipt_copy_button"
+                        android:contentDescription="Copy Transaction ID"
+                        android:padding="10dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_copy"
+                        app:tint="#F6C85F" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:background="@drawable/bg_transaction_receipt_row"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="14dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Reference Number"
+                            android:textColor="#9CA3AF"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvReceiptReferenceNo"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="COIN-123456-ABCDEF"
+                            android:textColor="#F9FAFB"
+                            android:textIsSelectable="true"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <ImageButton
+                        android:id="@+id/btnCopyReferenceNo"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="10dp"
+                        android:background="@drawable/bg_receipt_copy_button"
+                        android:contentDescription="Copy Reference Number"
+                        android:padding="10dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_copy"
+                        app:tint="#F6C85F" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnBackToWallet"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="22dp"
+                    android:background="@drawable/bg_receipt_primary_button"
+                    android:text="Back to Wallet"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
                     android:textSize="16sp"
-                    android:textColor="?attr/colorOnSurface"
-                    android:layout_marginBottom="16dp"/>
-
-                <TextView
-                    android:id="@+id/tvSender"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text=""
-                    android:textSize="14sp"
                     android:textStyle="bold"
-                    android:textColor="?attr/colorOnSurface"
-                    android:layout_marginBottom="16dp"
-                    android:visibility="gone"/>
+                    app:backgroundTint="@null"
+                    app:cornerRadius="18dp" />
 
-                <TextView
-                    android:id="@+id/tvReceiver"
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnShareReceipt"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text=""
-                    android:textSize="14sp"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_receipt_secondary_button"
+                    android:text="Download / Share Receipt"
+                    android:textAllCaps="false"
+                    android:textColor="#F6C85F"
+                    android:textSize="16sp"
                     android:textStyle="bold"
-                    android:textColor="?attr/colorOnSurface"
-                    android:layout_marginBottom="16dp"
-                    android:visibility="gone"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Date &amp; Time"
-                    android:textSize="12sp"
-                    android:textColor="?attr/colorOnSurfaceVariant"/>
-
-                <TextView
-                    android:id="@+id/tvReceiptDate"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Nov 21, 2025 12:00"
-                    android:textSize="14sp"
-                    android:textColor="?attr/colorOnSurface"
-                    android:layout_marginBottom="16dp"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Status"
-                    android:textSize="12sp"
-                    android:textColor="?attr/colorOnSurfaceVariant"/>
-
-                <TextView
-                    android:id="@+id/tvReceiptStatus"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="COMPLETED"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="16dp"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Transaction ID"
-                    android:textSize="12sp"
-                    android:textColor="?attr/colorOnSurfaceVariant"/>
-
-                <TextView
-                    android:id="@+id/tvReceiptTransactionId"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="TXN123456789"
-                    android:textSize="12sp"
-                    android:textColor="?attr/colorOnSurface"
-                    android:layout_marginBottom="16dp"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Reference No."
-                    android:textSize="12sp"
-                    android:textColor="?attr/colorOnSurfaceVariant"/>
-
-                <TextView
-                    android:id="@+id/tvReceiptReferenceNo"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="REF12345678"
-                    android:textSize="12sp"
-                    android:textColor="?attr/colorOnSurface"/>
+                    app:backgroundTint="@null"
+                    app:cornerRadius="18dp"
+                    app:strokeColor="#F6C85F"
+                    app:strokeWidth="1dp" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
-
     </LinearLayout>
 </ScrollView>

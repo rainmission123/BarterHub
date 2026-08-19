@@ -46,9 +46,6 @@ class TransactionAdapter(
             else -> holder.tvTitle.text = transaction.title
         }
 
-        // Basic data
-        holder.tvTitle.text = transaction.title
-
         // Show coins instead of pesos
         val coinAmount = transaction.coins
         val formattedAmount = when {

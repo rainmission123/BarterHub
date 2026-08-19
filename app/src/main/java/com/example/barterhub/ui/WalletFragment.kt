@@ -224,66 +224,18 @@ class WalletFragment : Fragment() {
     private fun loadTransactionHistory() {
         val uid = auth.currentUser?.uid ?: return
 
-        val ref = database.getReference("transactions")
+        val ref = database.getReference("coin_transactions")
             .child(uid)
 
         ref.orderByChild("timestamp")
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    val transactionList = snapshot.children.mapNotNull { ts ->
-                        val type = ts.child("type").getValue(String::class.java) ?: "buy_coins"
-                        val coins = ts.child("coins").getValue(Int::class.java) ?: 0
-                        val amount = ts.child("amount").getValue(Double::class.java) ?: 0.0
-                        val timestamp = ts.child("timestamp").getValue(Long::class.java) ?: 0L
-                        val status = ts.child("status").getValue(String::class.java) ?: "completed"
-                        val transactionId = ts.child("transactionId").getValue(String::class.java) ?: ts.key.orEmpty()
-                        val referenceNo = ts.child("referenceNo").getValue(String::class.java) ?: ""
-                        val fromName = ts.child("fromName").getValue(String::class.java) ?: ""
-                        val toName = ts.child("toName").getValue(String::class.java) ?: ""
-                        val titleFromDb = ts.child("title").getValue(String::class.java)
+                    val transactionList = parseTransactionSnapshot(snapshot)
 
-                        val date = java.text.SimpleDateFormat(
-                            "MMM dd, yyyy HH:mm",
-                            java.util.Locale.getDefault()
-                        ).format(java.util.Date(timestamp))
-
-                        val title = when (type) {
-                            "buy_coins", "purchase" -> "Buy Coins"
-                            "cash-in" -> "Cash In"
-                            "send" -> "Sent Coins"
-                            "receive" -> "Received Coins"
-                            "post_reward" -> "Post Reward"
-                            else -> titleFromDb ?: "Transaction"
-                        }
-
-                        val coinAmount = when (type) {
-                            "send" -> -coins
-                            else -> coins
-                        }
-
-                        TransactionModel(
-                            title = title,
-                            type = type,
-                            amount = amount,
-                            coins = coinAmount,
-                            date = date,
-                            status = status,
-                            transactionId = transactionId,
-                            referenceNo = referenceNo,
-                            fromName = fromName,
-                            toName = toName
-                        )
-                    }.sortedByDescending { it.date }
-
-                    rvTransactions.adapter = TransactionAdapter(transactionList) { transaction ->
-                        val bundle = Bundle().apply {
-                            putSerializable("transaction", transaction)
-                        }
-
-                        findNavController().navigate(
-                            R.id.action_walletFragment_to_transactionReceiptFragment,
-                            bundle
-                        )
+                    if (transactionList.isEmpty()) {
+                        loadLegacyTransactionHistory(uid)
+                    } else {
+                        bindTransactionHistoryWithPaymentMethods(transactionList)
                     }
                 }
 
@@ -291,6 +243,261 @@ class WalletFragment : Fragment() {
                     Log.e(TAG, "Error loading transactions: ${error.message}")
                 }
             })
+    }
+
+    private fun loadLegacyTransactionHistory(uid: String) {
+        database.getReference("transactions")
+            .child(uid)
+            .orderByChild("timestamp")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    bindTransactionHistoryWithPaymentMethods(parseTransactionSnapshot(snapshot))
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e(TAG, "Error loading legacy transactions: ${error.message}")
+                }
+            })
+    }
+
+    private fun parseTransactionSnapshot(snapshot: DataSnapshot): List<TransactionModel> {
+        return snapshot.children.mapNotNull { ts ->
+            val type = ts.child("type").getValue(String::class.java) ?: "buy_coins"
+            if (type.startsWith("game_", ignoreCase = true)) {
+                return@mapNotNull null
+            }
+            val coins = ts.child("coins").asInt()
+            val amount = ts.child("amount").asDouble()
+            val timestamp = ts.child("timestamp").asLong()
+            val status = ts.child("status").getValue(String::class.java) ?: "completed"
+            val paymentId = ts.child("paymentId").getValue(String::class.java).orEmpty()
+            val provider = ts.child("provider").getValue(String::class.java).orEmpty()
+            val checkoutSessionId = ts.child("checkoutSessionId").getValue(String::class.java).orEmpty()
+            val transactionId = ts.child("transactionId").getValue(String::class.java)
+                ?.takeIf { it.isNotBlank() }
+                ?: paymentId.takeIf { it.isNotBlank() }
+                ?: ts.key.orEmpty()
+            val rawReferenceNo = ts.child("referenceNo").getValue(String::class.java) ?: ""
+            val paymentMethod = ts.child("paymentMethod").getValue(String::class.java)
+                ?: ts.child("method").getValue(String::class.java)
+                ?: ""
+            val walletBalanceAfter =
+                ts.child("walletBalanceAfter").asIntOrNull()
+                    ?: ts.child("balanceAfter").asIntOrNull()
+                    ?: ts.child("finalCoins").asIntOrNull()
+            val fromName = ts.child("fromName").getValue(String::class.java) ?: ""
+            val toName = ts.child("toName").getValue(String::class.java) ?: ""
+            val titleFromDb = ts.child("title").getValue(String::class.java)
+
+            val date = java.text.SimpleDateFormat(
+                "MMM dd, yyyy HH:mm",
+                java.util.Locale.getDefault()
+            ).format(java.util.Date(timestamp))
+
+            val title = when (type) {
+                "buy_coins", "purchase" -> "Buy Coins"
+                "cash-in" -> "Cash In"
+                "send" -> "Sent Coins"
+                "receive" -> "Received Coins"
+                "post_reward" -> "Post Reward"
+                else -> titleFromDb ?: "Transaction"
+            }
+
+            val coinAmount = when {
+                type == "send" && coins > 0 -> -coins
+                else -> coins
+            }
+
+            TransactionModel(
+                title = title,
+                type = type,
+                amount = amount,
+                coins = coinAmount,
+                date = date,
+                status = status,
+                transactionId = formatDisplayTransactionId(
+                    transactionId = transactionId,
+                    referenceNo = rawReferenceNo,
+                    timestamp = timestamp
+                ),
+                referenceNo = normalizeReferenceNo(rawReferenceNo, transactionId),
+                paymentMethod = paymentMethod,
+                paymentId = paymentId,
+                provider = provider,
+                checkoutSessionId = checkoutSessionId,
+                walletBalanceAfter = walletBalanceAfter,
+                timestamp = timestamp,
+                fromName = fromName,
+                toName = toName
+            )
+        }.sortedByDescending { it.timestamp }
+    }
+
+    private fun formatDisplayTransactionId(
+        transactionId: String,
+        referenceNo: String,
+        timestamp: Long
+    ): String {
+        val trimmedTransactionId = transactionId.trim()
+        if (
+            trimmedTransactionId.startsWith("BH-TXN-", ignoreCase = true) ||
+            !trimmedTransactionId.startsWith("-")
+        ) {
+            return trimmedTransactionId
+        }
+
+        val datePart = if (timestamp > 0L) {
+            java.text.SimpleDateFormat(
+                "yyyyMMdd",
+                java.util.Locale.getDefault()
+            ).format(java.util.Date(timestamp))
+        } else {
+            java.text.SimpleDateFormat(
+                "yyyyMMdd",
+                java.util.Locale.getDefault()
+            ).format(java.util.Date())
+        }
+
+        val suffix = referenceNo
+            .substringAfterLast("-", missingDelimiterValue = "")
+            .filter { it.isLetterOrDigit() }
+            .takeIf { it.isNotBlank() }
+            ?: trimmedTransactionId
+                .filter { it.isLetterOrDigit() }
+                .takeLast(6)
+                .uppercase(java.util.Locale.getDefault())
+
+        return "BH-TXN-$datePart-${suffix.uppercase(java.util.Locale.getDefault())}"
+    }
+
+    private fun bindTransactionHistoryWithPaymentMethods(
+        transactionList: List<TransactionModel>
+    ) {
+        val missingPaymentMethods = transactionList.withIndex().filter { (_, transaction) ->
+            transaction.paymentMethod.isBlank() && transaction.paymentId.isNotBlank()
+        }
+
+        if (missingPaymentMethods.isEmpty()) {
+            bindTransactionHistory(
+                transactionList.map { transaction ->
+                    transaction.withPayMongoMethodFallback()
+                }
+            )
+            return
+        }
+
+        val enrichedTransactions = transactionList.toMutableList()
+        var pendingLookups = missingPaymentMethods.size
+
+        fun finishLookupIfReady() {
+            pendingLookups -= 1
+            if (pendingLookups == 0) {
+                bindTransactionHistory(
+                    enrichedTransactions.map { transaction ->
+                        transaction.withPayMongoMethodFallback()
+                    }
+                )
+            }
+        }
+
+        missingPaymentMethods.forEach { (index, transaction) ->
+            database.getReference("coin_payments")
+                .child(transaction.paymentId)
+                .child("paymentMethod")
+                .get()
+                .addOnSuccessListener { snapshot ->
+                    val paymentMethod = snapshot.getValue(String::class.java).orEmpty()
+                    if (paymentMethod.isNotBlank()) {
+                        enrichedTransactions[index] = transaction.copy(
+                            paymentMethod = paymentMethod
+                        )
+                    }
+                    finishLookupIfReady()
+                }
+                .addOnFailureListener { error ->
+                    Log.e(TAG, "Error loading payment method: ${error.message}")
+                    finishLookupIfReady()
+                }
+        }
+    }
+
+    private fun TransactionModel.withPayMongoMethodFallback(): TransactionModel {
+        if (paymentMethod.isNotBlank()) return this
+
+        if (provider.equals("google_play", ignoreCase = true)) {
+            return copy(paymentMethod = "google_play")
+        }
+
+        val isPayMongoTransaction = provider.equals("paymongo", ignoreCase = true) ||
+            paymentId.isNotBlank() ||
+            checkoutSessionId.isNotBlank()
+
+        return if (isPayMongoTransaction) {
+            copy(paymentMethod = "paymongo_checkout")
+        } else {
+            this
+        }
+    }
+
+    private fun bindTransactionHistory(transactionList: List<TransactionModel>) {
+        rvTransactions.adapter = TransactionAdapter(transactionList) { transaction ->
+            val bundle = Bundle().apply {
+                putSerializable("transaction", transaction)
+            }
+
+            findNavController().navigate(
+                R.id.action_walletFragment_to_transactionReceiptFragment,
+                bundle
+            )
+        }
+    }
+
+    private fun DataSnapshot.asInt(): Int = asIntOrNull() ?: 0
+
+    private fun DataSnapshot.asIntOrNull(): Int? {
+        return when (val rawValue = value) {
+            is Number -> rawValue.toInt()
+            is String -> rawValue.toIntOrNull()
+            else -> null
+        }
+    }
+
+    private fun DataSnapshot.asLong(): Long {
+        return when (val rawValue = value) {
+            is Number -> rawValue.toLong()
+            is String -> rawValue.toLongOrNull()
+            else -> null
+        } ?: 0L
+    }
+
+    private fun DataSnapshot.asDouble(): Double {
+        return when (val rawValue = value) {
+            is Number -> rawValue.toDouble()
+            is String -> rawValue.toDoubleOrNull()
+            else -> null
+        } ?: 0.0
+    }
+
+    private fun normalizeReferenceNo(referenceNo: String, transactionId: String): String {
+        val trimmedReferenceNo = referenceNo.trim()
+        val trimmedTransactionId = transactionId.trim()
+
+        if (trimmedReferenceNo.isBlank()) return ""
+
+        val isPayMongoPaymentId = trimmedReferenceNo.startsWith(
+            prefix = "pay_",
+            ignoreCase = true
+        )
+        val isSameAsTransactionId = trimmedReferenceNo.equals(
+            trimmedTransactionId,
+            ignoreCase = true
+        )
+
+        return if (isPayMongoPaymentId || isSameAsTransactionId) {
+            ""
+        } else {
+            trimmedReferenceNo
+        }
     }
 
     override fun onResume() {

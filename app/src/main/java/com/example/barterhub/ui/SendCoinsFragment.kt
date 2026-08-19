@@ -9,10 +9,11 @@ import androidx.fragment.app.Fragment
 import com.example.barterhub.R
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.functions.ktx.functions
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.functions.functions
+import java.util.UUID
 
 class SendCoinsFragment : Fragment(R.layout.fragment_send_coins) {
 
@@ -25,7 +26,22 @@ class SendCoinsFragment : Fragment(R.layout.fragment_send_coins) {
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseDatabase.getInstance().reference
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    /*
+     * Idempotency retry state.
+     *
+     * Kapag hindi malinaw kung successful ba ang request
+     * dahil halimbawa nag-timeout ang connection,
+     * gagamitin ulit natin ang parehong requestId kapag
+     * parehong username at amount ang ni-retry ng user.
+     */
+    private var pendingRequestId: String? = null
+    private var pendingUsername: String? = null
+    private var pendingAmount: Int? = null
+
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         etUsername = view.findViewById(R.id.etUsername)
@@ -50,35 +66,82 @@ class SendCoinsFragment : Fragment(R.layout.fragment_send_coins) {
             .child("coins")
             .get()
             .addOnSuccessListener { snapshot ->
-                val balance = snapshot.getValue(Int::class.java) ?: 0
+                val balance =
+                    snapshot.getValue(Int::class.java) ?: 0
+
                 tvCurrentBalance.text = "$balance coins"
             }
             .addOnFailureListener {
                 tvCurrentBalance.text = "0 coins"
-                Toast.makeText(requireContext(), "Error loading balance", Toast.LENGTH_SHORT).show()
+
+                if (isAdded) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Error loading balance",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
     }
 
     private fun sendCoins() {
-        val username = etUsername.text.toString().trim().lowercase()
-        val coinsToSend = etCoins.text.toString().trim().toIntOrNull() ?: 0
+        val username =
+            etUsername.text
+                ?.toString()
+                ?.trim()
+                ?.lowercase()
+                .orEmpty()
+
+        val coinsToSend =
+            etCoins.text
+                ?.toString()
+                ?.trim()
+                ?.toIntOrNull()
+                ?: 0
 
         if (username.isEmpty()) {
-            etUsername.error = "Please enter recipient username"
+            etUsername.error =
+                "Please enter recipient username"
             return
         }
 
         if (coinsToSend <= 0) {
-            etCoins.error = "Enter a valid amount"
+            etCoins.error =
+                "Enter a valid amount"
             return
         }
 
-        showLoading(true)
+        /*
+         * Reuse requestId only when retrying
+         * exactly the same transfer.
+         *
+         * Different username or amount =
+         * brand-new requestId.
+         */
+        val requestId =
+            if (
+                pendingRequestId != null &&
+                pendingUsername == username &&
+                pendingAmount == coinsToSend
+            ) {
+                pendingRequestId!!
+            } else {
+                UUID.randomUUID()
+                    .toString()
+                    .also { newRequestId ->
+                        pendingRequestId = newRequestId
+                        pendingUsername = username
+                        pendingAmount = coinsToSend
+                    }
+            }
 
-        val data = hashMapOf(
+        val data = hashMapOf<String, Any>(
             "username" to username,
-            "amount" to coinsToSend
+            "amount" to coinsToSend,
+            "requestId" to requestId
         )
+
+        showLoading(true)
 
         Firebase.functions("us-central1")
             .getHttpsCallable("sendCoins")
@@ -86,38 +149,98 @@ class SendCoinsFragment : Fragment(R.layout.fragment_send_coins) {
             .addOnSuccessListener { result ->
                 showLoading(false)
 
-                val response = result.data as? Map<*, *>
-                val message = response?.get("message")?.toString()
-                    ?: "Coins sent successfully"
-                val newBalance = response?.get("newBalance")?.toString() ?: "0"
+                val response =
+                    result.data as? Map<*, *>
 
-                Toast.makeText(
-                    requireContext(),
-                    "✅ $message",
-                    Toast.LENGTH_LONG
-                ).show()
+                val message =
+                    response
+                        ?.get("message")
+                        ?.toString()
+                        ?: "Coins sent successfully"
+
+                val newBalance =
+                    response
+                        ?.get("newBalance")
+                        ?.toString()
+                        ?: "0"
+
+                /*
+                 * Confirmed success:
+                 * this transfer is finished.
+                 *
+                 * The next Send action must receive
+                 * a brand-new requestId.
+                 */
+                clearPendingRequest()
+
+                if (isAdded) {
+                    Toast.makeText(
+                        requireContext(),
+                        "✅ $message",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
 
                 etUsername.text?.clear()
                 etCoins.text?.clear()
-                tvCurrentBalance.text = "$newBalance coins"
+
+                tvCurrentBalance.text =
+                    "$newBalance coins"
 
                 loadCurrentBalance()
             }
             .addOnFailureListener { error ->
                 showLoading(false)
 
-                Toast.makeText(
-                    requireContext(),
-                    error.message ?: "Failed to send coins",
-                    Toast.LENGTH_LONG
-                ).show()
+                /*
+                 * IMPORTANT:
+                 *
+                 * Do NOT clear pendingRequestId here.
+                 *
+                 * The failure might only mean that
+                 * the response was lost/timed out even
+                 * though the backend already processed
+                 * the transfer.
+                 *
+                 * If the user retries the same
+                 * username + amount, the same requestId
+                 * will therefore be sent again.
+                 */
+                if (isAdded) {
+                    Toast.makeText(
+                        requireContext(),
+                        error.message
+                            ?: "Failed to send coins",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             }
     }
 
-    private fun showLoading(isLoading: Boolean) {
-        progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+    private fun clearPendingRequest() {
+        pendingRequestId = null
+        pendingUsername = null
+        pendingAmount = null
+    }
+
+    private fun showLoading(
+        isLoading: Boolean
+    ) {
+        progressBar.visibility =
+            if (isLoading) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
+
         btnSend.isEnabled = !isLoading
-        btnSend.text = if (isLoading) "Processing..." else "Send"
+
+        btnSend.text =
+            if (isLoading) {
+                "Processing..."
+            } else {
+                "Send"
+            }
     }
 
     override fun onResume() {

@@ -12,6 +12,12 @@ data class TransactionModel(
     val status: String = "",
     val transactionId: String = "",
     val referenceNo: String = "",
+    val paymentMethod: String = "",
+    val paymentId: String = "",
+    val provider: String = "",
+    val checkoutSessionId: String = "",
+    val walletBalanceAfter: Int? = null,
+    val timestamp: Long = 0L,
     val fromName: String = "",
     val toName: String = ""
 ) : Serializable {
