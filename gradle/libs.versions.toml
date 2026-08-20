@@ -46,6 +46,7 @@ navigationFragmentKtx = "2.9.5"
 navigationUiKtx = "2.9.5"
 simplebadgeview = "1.0.8"
 playServicesWallet = "19.5.0"
+playBilling = "9.1.0"
 
 [libraries]
 android = { module = "io.imagekit:android", version.ref = "android" }
@@ -115,6 +116,7 @@ navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fr
 navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigationUiKtx" }
 simplebadgeview = { module = "com.github.ome450901:SimpleBadgeView", version.ref = "simplebadgeview" }
 play-services-wallet = { group = "com.google.android.gms", name = "play-services-wallet", version.ref = "playServicesWallet" }
+billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "playBilling" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "androidGradlePlugin" }

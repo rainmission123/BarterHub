@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_coin_dialog_panel"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="54dp"
+        android:layout_height="54dp"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/bg_receipt_gold_icon"
+        android:gravity="center"
+        android:text="🪙"
+        android:textSize="26sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:text="Buy Barter Coins"
+        android:textColor="#F9FAFB"
+        android:textSize="22sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:gravity="center"
+        android:text="Choose a package that suits you"
+        android:textColor="#A7A7B5"
+        android:textSize="13sp" />
+
+    <LinearLayout
+        android:id="@+id/cardCoins100"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="18dp"
+        android:background="@drawable/bg_coin_dialog_option"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp">
+
+        <RadioButton
+            android:id="@+id/rbCoins100"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:buttonTint="#A855F7"
+            android:clickable="false" />
+
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="4dp"
+            android:contentDescription="Coins"
+            android:src="@drawable/ic_barter_coins" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:text="100 Coins"
+            android:textColor="#F9FAFB"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvCoins100Price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="₱50"
+            android:textColor="#F9FAFB"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/cardCoins200"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/bg_coin_dialog_option"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp">
+
+        <RadioButton
+            android:id="@+id/rbCoins200"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:buttonTint="#A855F7"
+            android:clickable="false" />
+
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="4dp"
+            android:contentDescription="Coins"
+            android:src="@drawable/ic_barter_coins" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:text="200 Coins"
+            android:textColor="#F9FAFB"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvCoins200Price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="₱100"
+            android:textColor="#F9FAFB"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="74dp"
+        android:layout_marginTop="10dp">
+
+        <LinearLayout
+            android:id="@+id/cardCoins500"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_coin_dialog_option_selected"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="12dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="8dp">
+
+            <RadioButton
+                android:id="@+id/rbCoins500"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:buttonTint="#A855F7"
+                android:clickable="false" />
+
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginStart="4dp"
+                android:contentDescription="Coins"
+                android:src="@drawable/ic_barter_coins" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="500 Coins"
+                    android:textColor="#F9FAFB"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Most popular choice 🔥"
+                    android:textColor="#F6C453"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvCoins500Price"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="₱250"
+                android:textColor="#F6C453"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="-1dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/bg_coin_dialog_best_value"
+            android:text="BEST VALUE"
+            android:textColor="#FFFFFF"
+            android:textSize="9sp"
+            android:textStyle="bold" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="18dp"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCancelBuyCoins"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="0.82"
+            android:background="@drawable/bg_receipt_secondary_button"
+            android:text="Cancel"
+            android:textAllCaps="false"
+            android:textColor="#C084FC"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:backgroundTint="@null"
+            app:cornerRadius="14dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnConfirmBuyCoins"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1.5"
+            android:background="@drawable/bg_receipt_primary_button"
+            android:text="Buy Now - ₱250.00"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:backgroundTint="@null"
+            app:cornerRadius="14dp" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:gravity="center"
+        android:text="🔒 Secure payment via Google Play"
+        android:textColor="#8D8A99"
+        android:textSize="11sp" />
+</LinearLayout>
