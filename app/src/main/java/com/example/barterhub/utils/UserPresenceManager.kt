@@ -1,7 +1,10 @@
 package com.example.barterhub.utils
 
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ServerValue
@@ -10,6 +13,7 @@ import com.google.firebase.database.ValueEventListener
 object UserPresenceManager {
     private const val DATABASE_URL = "https://barterhub-3c947-default-rtdb.firebaseio.com/"
     private const val TAG = "UserPresenceManager"
+    private const val HEARTBEAT_INTERVAL_MS = 60_000L
 
     private val database = FirebaseDatabase.getInstance(DATABASE_URL)
     private val statusRef = database.getReference("status")
@@ -17,6 +21,8 @@ object UserPresenceManager {
 
     private var currentUserId: String? = null
     private var connectedListener: ValueEventListener? = null
+    private val heartbeatHandler = Handler(Looper.getMainLooper())
+    private var heartbeatRunnable: Runnable? = null
 
     fun start(userId: String) {
         if (userId.isBlank()) return
@@ -43,19 +49,10 @@ object UserPresenceManager {
                     "isOnline" to true
                 )
 
-                userStatusRef.onDisconnect().setValue(offlineStatus)
-                    .addOnSuccessListener {
-                        userStatusRef.setValue(onlineStatus)
-                            .addOnSuccessListener {
-                                Log.d(TAG, "Presence online SUCCESS: $userId")
-                            }
-                            .addOnFailureListener { error ->
-                                Log.e(TAG, "Presence online FAILED: ${error.message}", error)
-                            }
-                    }
-                    .addOnFailureListener { error ->
-                        Log.e(TAG, "Failed to register onDisconnect: ${error.message}")
-                    }
+                registerOnDisconnect(userId, userStatusRef, offlineStatus) {
+                    setOnline(userId, userStatusRef, onlineStatus)
+                    startHeartbeat(userId, userStatusRef)
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -70,12 +67,15 @@ object UserPresenceManager {
     fun stop(markOffline: Boolean = true) {
         connectedListener?.let { connectedRef.removeEventListener(it) }
         connectedListener = null
+        stopHeartbeat()
 
         val userId = currentUserId
         currentUserId = null
 
         if (markOffline && !userId.isNullOrBlank()) {
-            statusRef.child(userId).setValue(
+            setOffline(
+                userId,
+                statusRef.child(userId),
                 mapOf(
                     "state" to "offline",
                     "lastSeen" to ServerValue.TIMESTAMP,
@@ -83,5 +83,74 @@ object UserPresenceManager {
                 )
             )
         }
+    }
+
+    private fun registerOnDisconnect(
+        userId: String,
+        userStatusRef: DatabaseReference,
+        offlineStatus: Map<String, Any>,
+        onRegistered: () -> Unit
+    ) {
+        userStatusRef.onDisconnect().setValue(offlineStatus)
+            .addOnSuccessListener {
+                onRegistered()
+            }
+            .addOnFailureListener { error ->
+                Log.e(TAG, "Failed to register onDisconnect: ${error.message}")
+            }
+    }
+
+    private fun setOnline(
+        userId: String,
+        userStatusRef: DatabaseReference,
+        onlineStatus: Map<String, Any>
+    ) {
+        userStatusRef.setValue(onlineStatus)
+            .addOnSuccessListener {
+                Log.d(TAG, "Presence online SUCCESS: $userId")
+            }
+            .addOnFailureListener { error ->
+                Log.e(TAG, "Presence online FAILED: ${error.message}", error)
+            }
+    }
+
+    private fun startHeartbeat(userId: String, userStatusRef: DatabaseReference) {
+        stopHeartbeat()
+
+        heartbeatRunnable = object : Runnable {
+            override fun run() {
+                if (currentUserId != userId) return
+
+                userStatusRef.updateChildren(
+                    mapOf(
+                        "state" to "online",
+                        "lastSeen" to ServerValue.TIMESTAMP,
+                        "isOnline" to true
+                    )
+                ).addOnFailureListener { error ->
+                    Log.e(TAG, "Presence heartbeat failed: ${error.message}", error)
+                }
+
+                heartbeatHandler.postDelayed(this, HEARTBEAT_INTERVAL_MS)
+            }
+        }
+
+        heartbeatHandler.postDelayed(heartbeatRunnable!!, HEARTBEAT_INTERVAL_MS)
+    }
+
+    private fun stopHeartbeat() {
+        heartbeatRunnable?.let { heartbeatHandler.removeCallbacks(it) }
+        heartbeatRunnable = null
+    }
+
+    private fun setOffline(
+        userId: String,
+        userStatusRef: DatabaseReference,
+        offlineStatus: Map<String, Any>
+    ) {
+        userStatusRef.setValue(offlineStatus)
+            .addOnFailureListener { error ->
+                Log.e(TAG, "Presence offline FAILED: ${error.message}", error)
+            }
     }
 }

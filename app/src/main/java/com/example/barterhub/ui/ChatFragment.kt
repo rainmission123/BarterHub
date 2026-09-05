@@ -62,8 +62,10 @@ class ChatFragment : Fragment() {
     private var currentPhotoPath: String? = null
     private var isFragmentActive = false
     private var hasPerformedInitialScroll = false
+    private var isLoadingMessages = true
     private var deletedAtForCurrentUser = 0L
     private var deletedAtListener: ValueEventListener? = null
+    private var initialMessagesListener: ValueEventListener? = null
     private val chatDatabase by lazy {
         FirebaseDatabase.getInstance("https://barterhub-3c947-default-rtdb.firebaseio.com/")
     }
@@ -117,6 +119,7 @@ class ChatFragment : Fragment() {
         parseArguments()
         setupFirebaseAndViewModel()
         setupUI()
+        observeInitialMessageLoadState()
         loadCurrentUserName()
         observeDeletedAtForCurrentUser()
         observeViewModel()
@@ -210,6 +213,8 @@ class ChatFragment : Fragment() {
                 binding.scrollToBottomButton.visibility = View.GONE
             }
         }
+
+        updateEmptyMessagesState()
     }
 
     private fun setupChatInsets() {
@@ -485,6 +490,7 @@ class ChatFragment : Fragment() {
         messagesList.clear()
         messagesList.addAll(filterMessagesAfterDelete(state.messages))
         messagesAdapter.notifyDataSetChanged()
+        updateEmptyMessagesState()
 
         if (messagesList.isNotEmpty() && !hasPerformedInitialScroll) {
             hasPerformedInitialScroll = true
@@ -500,6 +506,8 @@ class ChatFragment : Fragment() {
                     binding.messagesRecyclerView.scrollToPosition(messagesList.size - 1)
                 }
             }
+            binding.scrollToBottomButton.visibility = View.GONE
+        } else if (messagesList.isEmpty()) {
             binding.scrollToBottomButton.visibility = View.GONE
         } else {
             binding.scrollToBottomButton.visibility = View.VISIBLE
@@ -523,6 +531,55 @@ class ChatFragment : Fragment() {
                 messagesList[index].uploadProgress = progress
                 messagesAdapter.notifyItemChanged(index)
             }
+        }
+    }
+
+    private fun observeInitialMessageLoadState() {
+        if (chatId.isBlank()) {
+            isLoadingMessages = false
+            updateEmptyMessagesState()
+            return
+        }
+
+        isLoadingMessages = true
+        updateEmptyMessagesState()
+
+        val messagesRef = chatDatabase
+            .getReference("chats")
+            .child(chatId)
+            .child("messages")
+
+        initialMessagesListener?.let { messagesRef.removeEventListener(it) }
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                finishInitialMessageLoad()
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("ChatFragment", "Failed to check initial messages: ${error.message}")
+                finishInitialMessageLoad()
+            }
+        }
+        initialMessagesListener = listener
+        messagesRef.addListenerForSingleValueEvent(listener)
+    }
+
+    private fun finishInitialMessageLoad() {
+        val binding = _binding ?: return
+        binding.messagesRecyclerView.post {
+            if (_binding == null) return@post
+            isLoadingMessages = false
+            updateEmptyMessagesState()
+        }
+    }
+
+    private fun updateEmptyMessagesState() {
+        val binding = _binding ?: return
+        val showEmpty = !isLoadingMessages && messagesList.isEmpty()
+        binding.emptyMessagesState.visibility = if (showEmpty) View.VISIBLE else View.GONE
+        binding.messagesRecyclerView.visibility = if (showEmpty) View.GONE else View.VISIBLE
+        if (showEmpty) {
+            binding.scrollToBottomButton.visibility = View.GONE
         }
     }
 
@@ -706,6 +763,15 @@ class ChatFragment : Fragment() {
                     .removeEventListener(it)
             }
             deletedAtListener = null
+        }
+        if (chatId.isNotBlank()) {
+            initialMessagesListener?.let {
+                chatDatabase.getReference("chats")
+                    .child(chatId)
+                    .child("messages")
+                    .removeEventListener(it)
+            }
+            initialMessagesListener = null
         }
         isFragmentActive = false
         viewModel.clearListeners()

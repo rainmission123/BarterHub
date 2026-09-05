@@ -36,6 +36,7 @@ class MessagesFragment : Fragment() {
     private var selectedFilter = FilterType.ALL
     private var searchQuery: String = ""
     private var isChatMenuOpen = false
+    private var isLoadingConversations = false
 
     enum class FilterType {
         ALL,
@@ -272,18 +273,7 @@ class MessagesFragment : Fragment() {
 
     private fun deleteConversation(chatId: String, position: Int) {
         val currentUserId = auth.currentUser?.uid ?: return
-        val conversation = filteredConversationList.getOrNull(position)
-            ?: conversationList.firstOrNull { it.chatId == chatId }
-        val partnerId = conversation?.participants?.keys?.firstOrNull { it != currentUserId }.orEmpty()
-        val partnerName = conversation?.participantNames?.get(partnerId).orEmpty()
-        val lastMessage = conversation?.lastMessage.orEmpty()
-        val lastMessageTime = conversation?.lastMessageTime ?: System.currentTimeMillis()
-        val deletedInboxEntry = mapOf(
-            "chatId" to chatId,
-            "partnerId" to partnerId,
-            "partnerName" to partnerName,
-            "lastMessage" to lastMessage,
-            "lastMessageTime" to lastMessageTime,
+        val deletedInboxUpdates = mapOf(
             "unreadCount" to 0,
             "deleted" to true,
             "deletedAt" to ServerValue.TIMESTAMP
@@ -292,7 +282,7 @@ class MessagesFragment : Fragment() {
         database.child("user_inbox")
             .child(currentUserId)
             .child(chatId)
-            .setValue(deletedInboxEntry)
+            .updateChildren(deletedInboxUpdates)
             .addOnSuccessListener {
                 if (position in filteredConversationList.indices) {
                     val removedChatId = filteredConversationList[position].chatId
@@ -319,12 +309,21 @@ class MessagesFragment : Fragment() {
     @SuppressLint("NotifyDataSetChanged")
     private fun fetchConversations() {
         try {
-            val userId = auth.currentUser?.uid ?: return
             if (_binding == null) return
+            val userId = auth.currentUser?.uid
+            if (userId.isNullOrBlank()) {
+                conversationList.clear()
+                filteredConversationList.clear()
+                adapter.notifyDataSetChanged()
+                setMessagesLoading(false)
+                updateEmptyState()
+                return
+            }
 
-            binding.progressBar.visibility = View.VISIBLE
+            setMessagesLoading(true)
             conversationList.clear()
             filteredConversationList.clear()
+            adapter.notifyDataSetChanged()
 
             val inboxRef = database.child("user_inbox").child(userId)
             Log.d("MESSAGES_INBOX_PATH", "Listening to user_inbox/$userId")
@@ -340,7 +339,7 @@ class MessagesFragment : Fragment() {
                             Log.d("MESSAGES_INBOX_COUNT", "exists=${snapshot.exists()} count=${snapshot.childrenCount}")
 
                             if (!snapshot.exists()) {
-                                binding.progressBar.visibility = View.GONE
+                                setMessagesLoading(false)
                                 updateEmptyState()
                                 return
                             }
@@ -353,7 +352,7 @@ class MessagesFragment : Fragment() {
                             fun finishChatRead() {
                                 pendingChatReads--
                                 if (pendingChatReads <= 0 && conversationsQueued == 0) {
-                                    binding.progressBar.visibility = View.GONE
+                                    setMessagesLoading(false)
                                     applyFilters()
                                     updateEmptyState()
                                 }
@@ -463,13 +462,17 @@ class MessagesFragment : Fragment() {
 
                         } catch (e: Exception) {
                             Log.e("DEBUG_MESSAGES", "Error in onDataChange: ${e.message}", e)
-                            if (_binding != null) binding.progressBar.visibility = View.GONE
+                            if (_binding != null) {
+                                setMessagesLoading(false)
+                                updateEmptyState()
+                            }
                         }
                     }
 
                     override fun onCancelled(error: DatabaseError) {
                         if (_binding != null) {
-                            binding.progressBar.visibility = View.GONE
+                            setMessagesLoading(false)
+                            updateEmptyState()
                             Log.e(
                                 "MESSAGES_INBOX_ERROR",
                                 "Inbox listener cancelled: ${error.message}",
@@ -485,7 +488,8 @@ class MessagesFragment : Fragment() {
         } catch (e: Exception) {
             Log.e("DEBUG_MESSAGES", "Error in fetch: ${e.message}", e)
             if (_binding != null) {
-                binding.progressBar.visibility = View.GONE
+                setMessagesLoading(false)
+                updateEmptyState()
             }
         }
     }
@@ -665,7 +669,7 @@ class MessagesFragment : Fragment() {
         archivedStateMap[chatId] = isArchived
 
         applyFilters()
-        binding.progressBar.visibility = View.GONE
+        setMessagesLoading(false)
         updateEmptyState()
     }
 
@@ -718,8 +722,16 @@ class MessagesFragment : Fragment() {
 
     private fun updateEmptyState() {
         val isEmpty = filteredConversationList.isEmpty()
-        binding.messagesRecyclerView.visibility = if (isEmpty) View.GONE else View.VISIBLE
-        binding.emptyState.visibility = if (isEmpty) View.VISIBLE else View.GONE
+        binding.progressBar.visibility = if (isLoadingConversations) View.VISIBLE else View.GONE
+        binding.messagesRecyclerView.visibility =
+            if (!isLoadingConversations && !isEmpty) View.VISIBLE else View.GONE
+        binding.emptyState.visibility =
+            if (!isLoadingConversations && isEmpty) View.VISIBLE else View.GONE
+    }
+
+    private fun setMessagesLoading(isLoading: Boolean) {
+        isLoadingConversations = isLoading
+        updateEmptyState()
     }
 
     override fun onDestroyView() {

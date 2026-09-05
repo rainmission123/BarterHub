@@ -6,14 +6,14 @@ import com.example.barterhub.utils.ChatUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import kotlinx.coroutines.tasks.await
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 import javax.inject.Inject
 
 class ChatRepository @Inject constructor(
     private val database: FirebaseDatabase
 ) : IChatRepository {
+    companion object {
+        private const val ONLINE_STALE_AFTER_MS = 2 * 60 * 1000L
+    }
 
     private val messagesRef = database.getReference("chats")
     private val inboxRef = database.getReference("user_inbox")
@@ -272,14 +272,6 @@ class ChatRepository @Inject constructor(
                     return ""
                 }
 
-                ensureDirectInboxEntries(
-                    chatId = chatId,
-                    currentUserId = currentUserId,
-                    partnerId = partnerId,
-                    partnerName = partnerName,
-                    lastMessage = existingChat.child("lastMessage").getValue(String::class.java).orEmpty(),
-                    lastMessageTime = existingChat.child("lastMessageTime").getValue(Long::class.java) ?: now
-                )
                 Log.d("CHAT_SEND_SUCCESS", "Reusing direct chat: $chatId")
                 return chatId
             }
@@ -304,15 +296,6 @@ class ChatRepository @Inject constructor(
             Log.d("CHAT_SEND_FIREBASE_WRITE", "Creating direct chat chats/$chatId before navigation")
             chatRef.setValue(chatData).await()
 
-            ensureDirectInboxEntries(
-                chatId = chatId,
-                currentUserId = currentUserId,
-                partnerId = partnerId,
-                partnerName = partnerName,
-                lastMessage = "",
-                lastMessageTime = now
-            )
-
             Log.d("CHAT_SEND_SUCCESS", "Created direct chat before navigation: $chatId")
             chatId
         } catch (e: Exception) {
@@ -322,91 +305,6 @@ class ChatRepository @Inject constructor(
                 e
             )
             ""
-        }
-    }
-
-    private suspend fun ensureDirectInboxEntries(
-        chatId: String,
-        currentUserId: String,
-        partnerId: String,
-        partnerName: String,
-        lastMessage: String,
-        lastMessageTime: Long
-    ) {
-        try {
-            writeDirectInboxEntry(
-                userId = currentUserId,
-                chatId = chatId,
-                partnerId = partnerId,
-                partnerName = partnerName.ifBlank { "Chat Partner" },
-                lastMessage = lastMessage,
-                lastMessageTime = lastMessageTime
-            )
-            writeDirectInboxEntry(
-                userId = partnerId,
-                chatId = chatId,
-                partnerId = currentUserId,
-                partnerName = "",
-                lastMessage = lastMessage,
-                lastMessageTime = lastMessageTime
-            )
-            Log.d("CHAT_SEND_SUCCESS", "Direct inbox entries ready for $chatId")
-        } catch (e: Exception) {
-            Log.e(
-                "CHAT_SEND_DATABASE_ERROR",
-                "Direct chat exists but inbox repair failed for $chatId: ${e.message}",
-                e
-            )
-        }
-    }
-
-    private suspend fun writeDirectInboxEntry(
-        userId: String,
-        chatId: String,
-        partnerId: String,
-        partnerName: String,
-        lastMessage: String,
-        lastMessageTime: Long
-    ) {
-        val inboxEntryRef = inboxRef.child(userId).child(chatId)
-
-        suspendCoroutine<Unit> { continuation ->
-            inboxEntryRef.runTransaction(object : Transaction.Handler {
-                override fun doTransaction(currentData: MutableData): Transaction.Result {
-                    if (currentData.child("deleted").getValue(Boolean::class.java) == true) {
-                        return Transaction.abort()
-                    }
-
-                    val currentUnread = currentData.child("unreadCount").getValue(Int::class.java)
-                        ?: currentData.child("unreadCount").getValue(Long::class.java)?.toInt()
-                        ?: 0
-                    val currentPartnerName =
-                        currentData.child("partnerName").getValue(String::class.java).orEmpty()
-
-                    currentData.value = mapOf(
-                        "chatId" to chatId,
-                        "partnerId" to partnerId,
-                        "partnerName" to currentPartnerName.ifBlank { partnerName },
-                        "lastMessage" to lastMessage,
-                        "lastMessageTime" to lastMessageTime,
-                        "unreadCount" to currentUnread
-                    )
-
-                    return Transaction.success(currentData)
-                }
-
-                override fun onComplete(
-                    error: DatabaseError?,
-                    committed: Boolean,
-                    currentData: DataSnapshot?
-                ) {
-                    when {
-                        error != null -> continuation.resumeWithException(error.toException())
-                        !committed -> continuation.resume(Unit)
-                        else -> continuation.resume(Unit)
-                    }
-                }
-            })
         }
     }
 
@@ -455,41 +353,11 @@ class ChatRepository @Inject constructor(
 
         messagesRef.child(chatId).setValue(chatMap).await()
 
-        // Create inbox entries
-        val currentUserInbox = mapOf(
-            "chatId" to chatId,
-            "partnerId" to userId2,
-            "partnerName" to "", // Will be filled later
-            "lastMessage" to (firstMessage.text ?: ""),
-            "lastMessageTime" to (firstMessage.timestamp ?: System.currentTimeMillis()),
-            "unreadCount" to 0
-        )
-
-        val partnerInbox = mapOf(
-            "chatId" to chatId,
-            "partnerId" to userId1,
-            "partnerName" to "", // Will be filled later
-            "lastMessage" to (firstMessage.text ?: ""),
-            "lastMessageTime" to (firstMessage.timestamp ?: System.currentTimeMillis()),
-            "unreadCount" to 1
-        )
-
-        inboxRef.child(userId1).child(chatId).setValue(currentUserInbox).await()
-        inboxRef.child(userId2).child(chatId).setValue(partnerInbox).await()
-
         return chatId
     }
 
     override suspend fun updateLastMessage(chatId: String, messageText: String, timestamp: Long) {
-        try {
-            Log.d("CHAT_SEND_FIREBASE_WRITE", "Writing chats/$chatId/lastMessage")
-            messagesRef.child(chatId).child("lastMessage").setValue(messageText).await()
-            Log.d("CHAT_SEND_FIREBASE_WRITE", "Writing chats/$chatId/lastMessageTime")
-            messagesRef.child(chatId).child("lastMessageTime").setValue(timestamp).await()
-        } catch (e: Exception) {
-            Log.e("CHAT_SEND_EXCEPTION", "Failed updateLastMessage for $chatId: ${e.message}", e)
-            throw e
-        }
+        Log.d("CHAT_SEND_FIREBASE_WRITE", "Skipped client chat metadata update for $chatId")
     }
 
     override suspend fun markMessagesAsRead(chatId: String, userId: String, messages: List<Message>) {
@@ -516,33 +384,13 @@ class ChatRepository @Inject constructor(
 
     override suspend fun clearChatForUser(chatId: String, userId: String) {
         val inboxEntryRef = inboxRef.child(userId).child(chatId)
-        val existingInbox = inboxEntryRef.get().await()
-        val chatSnapshot = messagesRef.child(chatId).get().await()
-        val now = System.currentTimeMillis()
-
-        val partnerId = existingInbox.child("partnerId").getValue(String::class.java)
-            ?: resolveOtherParticipantId(chatSnapshot, userId)
-            ?: ""
-        val partnerName = existingInbox.child("partnerName").getValue(String::class.java).orEmpty()
-        val lastMessage = existingInbox.child("lastMessage").getValue(String::class.java)
-            ?: chatSnapshot.child("lastMessage").getValue(String::class.java)
-            ?: ""
-        val lastMessageTime = existingInbox.child("lastMessageTime").longValue()
-            ?: chatSnapshot.child("lastMessageTime").longValue()
-            ?: now
-
-        val tombstone = mapOf(
-            "chatId" to chatId,
-            "partnerId" to partnerId,
-            "partnerName" to partnerName,
-            "lastMessage" to lastMessage,
-            "lastMessageTime" to lastMessageTime,
+        val updates = mapOf(
             "unreadCount" to 0,
             "deleted" to true,
             "deletedAt" to ServerValue.TIMESTAMP
         )
 
-        inboxEntryRef.setValue(tombstone).await()
+        inboxEntryRef.updateChildren(updates).await()
     }
 
     override fun observePartnerStatus(userId: String, onStatusChange: (String) -> Unit): ValueEventListener {
@@ -553,7 +401,12 @@ class ChatRepository @Inject constructor(
                         if (isOnline) "online" else "offline"
                     }
                     ?: "offline"
-                onStatusChange(state)
+                val lastSeen = snapshot.child("lastSeen").asLong() ?: 0L
+                val onlineIsFresh = lastSeen > 0L &&
+                        System.currentTimeMillis() - lastSeen <= ONLINE_STALE_AFTER_MS
+                val displayState =
+                    if (state.equals("online", ignoreCase = true) && onlineIsFresh) "online" else "offline"
+                onStatusChange(displayState)
             }
 
             override fun onCancelled(error: DatabaseError) {}
@@ -561,6 +414,16 @@ class ChatRepository @Inject constructor(
 
         statusRef.child(userId).addValueEventListener(listener)
         return listener
+    }
+
+    private fun DataSnapshot.asLong(): Long? {
+        return when (val value = getValue()) {
+            is Long -> value
+            is Int -> value.toLong()
+            is Double -> value.toLong()
+            is String -> value.toLongOrNull()
+            else -> null
+        }
     }
 
     override fun setupUserPresence(userId: String) {

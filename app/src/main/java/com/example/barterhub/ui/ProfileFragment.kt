@@ -108,6 +108,19 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     private lateinit var emailVerifiedStatus: TextView
     private lateinit var tvFavoritesCount: TextView
     private lateinit var tvUsernameHandle: TextView
+    private var favoritesCountRef: DatabaseReference? = null
+    private var favoritesCountListener: ValueEventListener? = null
+    private var referralCodeRef: DatabaseReference? = null
+    private var referralCodeListener: ValueEventListener? = null
+    private var walletCoinsRef: DatabaseReference? = null
+    private var walletCoinsListener: ValueEventListener? = null
+    private val editProfileLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK && _binding != null) {
+                loadCurrentProfileData(showProgress = true)
+                (activity as? HomeActivity)?.refreshNavigationHeader()
+            }
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -140,21 +153,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
         val currentUserId = auth.currentUser?.uid
 
-        dataLoader.loadUserData(
-            tvUsernameHandle = tvUsernameHandle,
-            tvHeaderUserName = tvHeaderUserName,
-            tvUserName = tvUserName,
-            tvUserEmail = tvUserEmail,
-            tvUserPhone = tvUserPhone,
-            tvUserBio = tvUserBio,
-            tvUserLocation = tvUserLocation,
-            memberSinceText = memberSinceText,
-            ivProfileImage = ivProfileImage,
-            tradesCountText = tradesCountText,
-            onLoadingComplete = {
-                showLoading(false)
-            }
-        )
+        loadCurrentProfileData()
 
         currentUserId?.let { userId ->
             notificationManager.setupUnreadNotificationsListener(tvUnreadNotifications)
@@ -175,31 +174,8 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 referralCountText = referralCountText
             )
 
-            database.child("favorites").child(userId)
-                .addValueEventListener(object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        val count = snapshot.childrenCount.toInt()
-                        updateFavoritesCount(count)
-                    }
-
-                    override fun onCancelled(error: DatabaseError) {
-                        tvFavoritesCount.visibility = View.GONE
-                    }
-                })
-
-            database.child("users").child(userId).child("referralCode")
-                .addValueEventListener(object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        val code = snapshot.getValue(String::class.java)?.trim()
-                        Log.d("ProfileFragment", "Referral code loaded: $code")
-                        referralCodeText.text = if (!code.isNullOrEmpty()) code else "---"
-                    }
-
-                    override fun onCancelled(error: DatabaseError) {
-                        Log.e("ProfileFragment", "Failed to load referral code: ${error.message}")
-                        referralCodeText.text = "---"
-                    }
-                })
+            setupFavoritesCountListener(userId)
+            setupReferralCodeListener(userId)
 
             database.child("users").child(userId).child("isPremium")
                 .addValueEventListener(object : ValueEventListener {
@@ -229,29 +205,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                     }
                 })
 
-            database.child("users")
-                .child(userId)
-                .child("wallet")
-                .child("coins")
-                .addValueEventListener(object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        val coins = when (val value = snapshot.value) {
-                            is Long -> value.toInt()
-                            is Int -> value
-                            is Double -> value.toInt()
-                            is String -> value.toIntOrNull() ?: 0
-                            else -> 0
-                        }
-
-                        coinsBalanceText.text = coins.toString()
-                        Log.d("ProfileFragment", "Coins loaded: $coins")
-                    }
-
-                    override fun onCancelled(error: DatabaseError) {
-                        coinsBalanceText.text = "0"
-                        Log.e("ProfileFragment", "Failed to load coins: ${error.message}")
-                    }
-                })
+            setupWalletCoinsListener(userId)
         }
 
         badgeManager.loadUserBadges(binding.badgesLinearLayout)
@@ -303,7 +257,110 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             statsManager.clear(userId)
         }
 
+        if (::badgeManager.isInitialized) {
+            badgeManager.clear()
+        }
+
+        clearFavoritesCountListener()
+        clearReferralCodeListener()
+        clearWalletCoinsListener()
+
         _binding = null
+    }
+
+    private fun setupFavoritesCountListener(userId: String) {
+        clearFavoritesCountListener()
+        val ref = database.child("favorites").child(userId)
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val count = snapshot.childrenCount.toInt()
+                updateFavoritesCount(count)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                tvFavoritesCount.visibility = View.GONE
+            }
+        }
+
+        favoritesCountRef = ref
+        favoritesCountListener = listener
+        ref.addValueEventListener(listener)
+    }
+
+    private fun setupReferralCodeListener(userId: String) {
+        clearReferralCodeListener()
+        val ref = database.child("users").child(userId).child("referralCode")
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val code = snapshot.getValue(String::class.java)?.trim()
+                Log.d("ProfileFragment", "Referral code loaded: $code")
+                referralCodeText.text = if (!code.isNullOrEmpty()) code else "---"
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("ProfileFragment", "Failed to load referral code: ${error.message}")
+                referralCodeText.text = "---"
+            }
+        }
+
+        referralCodeRef = ref
+        referralCodeListener = listener
+        ref.addValueEventListener(listener)
+    }
+
+    private fun setupWalletCoinsListener(userId: String) {
+        clearWalletCoinsListener()
+        val ref = database.child("users")
+            .child(userId)
+            .child("wallet")
+            .child("coins")
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val coins = when (val value = snapshot.value) {
+                    is Long -> value.toInt()
+                    is Int -> value
+                    is Double -> value.toInt()
+                    is String -> value.toIntOrNull() ?: 0
+                    else -> 0
+                }
+
+                coinsBalanceText.text = coins.toString()
+                Log.d("ProfileFragment", "Coins loaded: $coins")
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                coinsBalanceText.text = "0"
+                Log.e("ProfileFragment", "Failed to load coins: ${error.message}")
+            }
+        }
+
+        walletCoinsRef = ref
+        walletCoinsListener = listener
+        ref.addValueEventListener(listener)
+    }
+
+    private fun clearFavoritesCountListener() {
+        favoritesCountListener?.let { listener ->
+            favoritesCountRef?.removeEventListener(listener)
+        }
+        favoritesCountListener = null
+        favoritesCountRef = null
+    }
+
+    private fun clearReferralCodeListener() {
+        referralCodeListener?.let { listener ->
+            referralCodeRef?.removeEventListener(listener)
+        }
+        referralCodeListener = null
+        referralCodeRef = null
+    }
+
+    private fun clearWalletCoinsListener() {
+        walletCoinsListener?.let { listener ->
+            walletCoinsRef?.removeEventListener(listener)
+        }
+        walletCoinsListener = null
+        walletCoinsRef = null
     }
 
     private val googleLinkLauncher =
@@ -566,7 +623,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         }
 
         view.findViewById<View>(R.id.editProfileButton).setOnClickListener {
-            startActivity(Intent(requireContext(), EditProfileActivity::class.java))
+            editProfileLauncher.launch(Intent(requireContext(), EditProfileActivity::class.java))
         }
 
         idVerificationStatus.setOnClickListener {
@@ -742,5 +799,25 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             progressBar.visibility = View.GONE
             mainContent.visibility = View.VISIBLE
         }
+    }
+
+    private fun loadCurrentProfileData(showProgress: Boolean = false) {
+        if (showProgress) showLoading(true)
+
+        dataLoader.loadUserData(
+            tvUsernameHandle = tvUsernameHandle,
+            tvHeaderUserName = tvHeaderUserName,
+            tvUserName = tvUserName,
+            tvUserEmail = tvUserEmail,
+            tvUserPhone = tvUserPhone,
+            tvUserBio = tvUserBio,
+            tvUserLocation = tvUserLocation,
+            memberSinceText = memberSinceText,
+            ivProfileImage = ivProfileImage,
+            tradesCountText = tradesCountText,
+            onLoadingComplete = {
+                if (_binding != null) showLoading(false)
+            }
+        )
     }
 }

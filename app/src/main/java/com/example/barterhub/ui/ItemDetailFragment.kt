@@ -219,25 +219,34 @@ class ItemDetailFragment : Fragment() {
 
                     if (imagesNode.exists()) {
                         when (val raw = imagesNode.value) {
-
+                            is String -> {
+                                imageUrls.addAll(
+                                    raw.split(",").map { it.trim() }.filter { it.isNotBlank() }
+                                )
+                            }
                             is List<*> -> {
-                                raw.forEach { v ->
-                                    val url = v?.toString()?.trim()
-                                    if (!url.isNullOrBlank()) imageUrls.add(url)
+                                raw.forEach { value ->
+                                    value?.toString()?.trim()
+                                        ?.takeIf { it.isNotBlank() }
+                                        ?.let { imageUrls.add(it) }
                                 }
                             }
-
-                            is String -> {
-                                if (raw.isNotBlank()) {
-                                    imageUrls.addAll(
-                                        raw.split(",").map { it.trim() }.filter { it.isNotBlank() }
-                                    )
+                            else -> {
+                                imagesNode.children.forEach { imageSnap ->
+                                    imageSnap.getValue(String::class.java)
+                                        ?.trim()
+                                        ?.takeIf { it.isNotBlank() }
+                                        ?.let { imageUrls.add(it) }
                                 }
                             }
                         }
                     }
 
-// fallback single imageUrl
+                    val distinctImageUrls = imageUrls.map { it.trim() }.distinct()
+                    imageUrls.clear()
+                    imageUrls.addAll(distinctImageUrls)
+
+                    // fallback single imageUrl
                     if (imageUrls.isEmpty()) {
                         val single = snapshot.child("imageUrl").getValue(String::class.java)
                         if (!single.isNullOrBlank()) imageUrls.add(single.trim())
@@ -273,8 +282,6 @@ class ItemDetailFragment : Fragment() {
                             }
                             findNavController().navigate(R.id.fullscreenImageViewerFragment, bundle)
                         }
-                        // Optional: count
-                        binding.tvImageCount.text = "${imageUrls.size}"
                     } else {
                         ImageGalleryManager.loadDefaultImage(requireContext(), binding)
                         binding.tvImageCount.text = "0"

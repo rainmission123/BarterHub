@@ -3,6 +3,7 @@ package com.example.barterhub.ui
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import android.util.Log
 import android.widget.EditText
 import android.widget.ImageView
@@ -48,6 +49,7 @@ class EditProfileActivity : AppCompatActivity() {
     private lateinit var database: DatabaseReference
     private lateinit var usernameManager: UsernameManager
     private var oldUsername: String = ""
+    private var saveButtonOriginalText: CharSequence? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,6 +75,7 @@ class EditProfileActivity : AppCompatActivity() {
         etPhone = requireView(R.id.editPhone, "editPhone")
         etLocation = requireView(R.id.editLocation, "editLocation")
         btnSave = requireView(R.id.btnSave, "btnSave")
+        saveButtonOriginalText = btnSave.text
         ivProfileImage.setOnClickListener { openFileChooser() }
         fabChangePhoto.setOnClickListener { openFileChooser() }
         btnSave.setOnClickListener { saveProfile() }
@@ -142,7 +145,7 @@ class EditProfileActivity : AppCompatActivity() {
             return
         }
 
-        btnSave.isEnabled = false
+        setSavingState(true)
 
         if (imageUri != null) {
             uploadToCloudinary(
@@ -151,7 +154,7 @@ class EditProfileActivity : AppCompatActivity() {
                     saveProfileToDatabase(uid, fullName, newUsername, bio, phone, location, imageUrl)
                 },
                 onError = { errorMsg ->
-                    btnSave.isEnabled = true
+                    setSavingState(false)
                     Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show()
                 }
             )
@@ -281,16 +284,14 @@ class EditProfileActivity : AppCompatActivity() {
                     }
             }
             .addOnFailureListener { e ->
-                btnSave.isEnabled = true
+                setSavingState(false)
                 Toast.makeText(this, e.message ?: "Failed to update profile", Toast.LENGTH_SHORT).show()
             }
     }
 
     private fun updateUsernameIfNeeded(uid: String, newUsername: String) {
         if (newUsername == oldUsername.trim().lowercase()) {
-            btnSave.isEnabled = true
-            Toast.makeText(this, "Profile updated", Toast.LENGTH_SHORT).show()
-            finish()
+            finishWithSuccess()
             return
         }
 
@@ -299,14 +300,28 @@ class EditProfileActivity : AppCompatActivity() {
             oldUsername = oldUsername,
             newUsernameInput = newUsername,
             onSuccess = {
-                btnSave.isEnabled = true
-                Toast.makeText(this, "Profile updated", Toast.LENGTH_SHORT).show()
-                finish()
+                finishWithSuccess()
             },
             onError = { error ->
-                btnSave.isEnabled = true
+                setSavingState(false)
                 Toast.makeText(this, error, Toast.LENGTH_LONG).show()
             }
         )
+    }
+
+    private fun setSavingState(isSaving: Boolean) {
+        btnSave.isEnabled = !isSaving
+        btnSave.text = if (isSaving) "Saving..." else saveButtonOriginalText
+        btnSave.icon = null
+        btnSave.alpha = if (isSaving) 0.75f else 1f
+        btnSave.visibility = View.VISIBLE
+    }
+
+    private fun finishWithSuccess() {
+        setSavingState(false)
+        btnSave.text = "Saved"
+        Toast.makeText(this, "Profile updated", Toast.LENGTH_SHORT).show()
+        setResult(RESULT_OK)
+        finish()
     }
 }

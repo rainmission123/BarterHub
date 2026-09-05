@@ -28,6 +28,7 @@ import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.messaging.FirebaseMessaging
@@ -52,6 +53,8 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHomeBinding
     lateinit var drawerLayout: DrawerLayout
     private lateinit var navController: NavController
+    private var navHeaderUserRef: DatabaseReference? = null
+    private var navHeaderUserListener: ValueEventListener? = null
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -305,45 +308,13 @@ class HomeActivity : AppCompatActivity() {
         navigationView.setupWithNavController(navController)
 
         val headerView = navigationView.getHeaderView(0)
-        val profileImageView = headerView.findViewById<CircleImageView>(R.id.userProfileSection)
-        val usernameText = headerView.findViewById<TextView>(R.id.userName)
-        val emailText = headerView.findViewById<TextView>(R.id.userEmail)
-        val uid = FirebaseAuth.getInstance().currentUser?.uid
         val btnCloseDrawer = headerView.findViewById<ImageView>(R.id.btnCloseDrawer)
 
         btnCloseDrawer.setOnClickListener {
             drawerLayout.closeDrawer(binding.navigationView)
         }
 
-        if (uid != null) {
-            FirebaseDatabase.getInstance().getReference("users").child(uid)
-                .addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        if (isDestroyed || isFinishing) return
-                        val username = snapshot.child("username").getValue(String::class.java) ?: "No Name"
-                        val email = FirebaseAuth.getInstance().currentUser?.email ?: "No Email"
-                        val imageUrl = snapshot.child("profileImageUrl").getValue(String::class.java)
-
-                        usernameText.text = username
-                        emailText.text = email
-
-                        if (!imageUrl.isNullOrEmpty()) {
-                            Glide.with(applicationContext)
-                                .load(imageUrl)
-                                .placeholder(R.drawable.ic_profile_placeholder)
-                                .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
-                                .into(profileImageView)
-                        } else {
-                            profileImageView.setImageResource(R.drawable.ic_profile_placeholder)
-                        }
-                    }
-
-                    override fun onCancelled(error: DatabaseError) {
-                        if (isDestroyed || isFinishing) return
-                        Log.e("FIREBASE_ERROR", "Failed to load user data: ${error.message}")
-                    }
-                })
-        }
+        refreshNavigationHeader()
 
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
@@ -383,6 +354,71 @@ class HomeActivity : AppCompatActivity() {
             drawerLayout.closeDrawer(navigationView)
             true
         }
+    }
+
+    fun refreshNavigationHeader() {
+        if (!::binding.isInitialized) return
+
+        val headerView = binding.navigationView.getHeaderView(0)
+        val profileImageView = headerView.findViewById<CircleImageView>(R.id.userProfileSection)
+        val usernameText = headerView.findViewById<TextView>(R.id.userName)
+        val emailText = headerView.findViewById<TextView>(R.id.userEmail)
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+
+        navHeaderUserListener?.let { listener ->
+            navHeaderUserRef?.removeEventListener(listener)
+        }
+        navHeaderUserRef = null
+        navHeaderUserListener = null
+
+        if (uid == null) {
+            usernameText.text = "No Name"
+            emailText.text = "No Email"
+            profileImageView.setImageResource(R.drawable.ic_profile_placeholder)
+            return
+        }
+
+        val ref = FirebaseDatabase.getInstance().getReference("users").child(uid)
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (isDestroyed || isFinishing) return
+                val fullName = snapshot.child("fullName")
+                    .getValue(String::class.java)
+                    ?.trim()
+                    .orEmpty()
+                val username = snapshot.child("username")
+                    .getValue(String::class.java)
+                    ?.trim()
+                    .orEmpty()
+                val displayName = fullName.ifBlank {
+                    username.ifBlank { "No Name" }
+                }
+                val email = FirebaseAuth.getInstance().currentUser?.email ?: "No Email"
+                val imageUrl = snapshot.child("profileImageUrl").getValue(String::class.java)
+
+                usernameText.text = displayName
+                emailText.text = email
+
+                if (!imageUrl.isNullOrEmpty()) {
+                    Glide.with(applicationContext)
+                        .load(imageUrl)
+                        .placeholder(R.drawable.ic_profile_placeholder)
+                        .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+                        .into(profileImageView)
+                } else {
+                    profileImageView.setImageResource(R.drawable.ic_profile_placeholder)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                if (isDestroyed || isFinishing) return
+                Log.e("FIREBASE_ERROR", "Failed to load user data: ${error.message}")
+            }
+        }
+
+        navHeaderUserRef = ref
+        navHeaderUserListener = listener
+        ref.addValueEventListener(listener)
     }
 
     private fun saveFcmToken() {
@@ -569,6 +605,11 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        navHeaderUserListener?.let { listener ->
+            navHeaderUserRef?.removeEventListener(listener)
+        }
+        navHeaderUserListener = null
+        navHeaderUserRef = null
         badgeManager.removeListeners()
     }
 }
