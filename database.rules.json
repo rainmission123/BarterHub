@@ -11,56 +11,143 @@
         ".write": "auth != null && auth.uid == $uid && !data.exists()",
 
         "wallet": {
+          ".validate": "newData.hasChildren(['coins'])",
           "coins": {
             ".read": "auth != null && (auth.uid == $uid || root.child('admin_users').child(auth.uid).val() == true)",
-            ".write": false
+            ".write": "auth != null && auth.uid == $uid && !data.exists() && newData.val() == 0",
+            ".validate": "newData.isNumber() && ((!data.exists() && newData.val() == 0) || (data.exists() && newData.val() == data.val()))"
           },
           "$other": {
-            ".write": false
+            ".write": false,
+            ".validate": false
           }
         },
 
+        "fullName": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().length <= 120"
+        },
+        "username": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().matches(/^[a-z0-9_]{4,20}$/)"
+        },
+        "email": {
+          ".write": "auth != null && auth.uid == $uid && !data.exists()",
+          ".validate": "newData.isString() && newData.val().length <= 254"
+        },
+        "address": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().length <= 500"
+        },
+        "addressText": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().length <= 500"
+        },
+        "location": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().length <= 500"
+        },
+        "cityMunicipality": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().length <= 120"
+        },
+        "city": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().length <= 120"
+        },
+        "province": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().length <= 120"
+        },
+        "bio": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().length <= 500"
+        },
+        "phoneNumber": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "profileImage": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().length <= 2048"
+        },
+        "profileImageUrl": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().length <= 2048"
+        },
+        "referralCode": {
+          ".write": "auth != null && auth.uid == $uid && (!data.exists() || data.val() == '')",
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "referredBy": {
+          ".write": "auth != null && auth.uid == $uid && !data.exists()",
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "createdAt": {
+          ".write": "auth != null && auth.uid == $uid && !data.exists()",
+          ".validate": "newData.isNumber()"
+        },
+        "updatedAt": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isNumber()"
+        },
+        "fcmToken": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().length <= 4096"
+        },
+        "idFrontPath": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().length <= 2048"
+        },
+        "idBackPath": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().length <= 2048"
+        },
+        "verificationSubmittedAt": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isNumber()"
+        },
         "isPremium": {
-          ".write": false,
+          ".write": "auth != null && auth.uid == $uid && !data.exists() && newData.val() == false",
           ".validate": "newData.isBoolean()"
         },
         "premiumExpiry": {
-          ".write": false,
+          ".write": "auth != null && auth.uid == $uid && !data.exists() && newData.val() == 0",
           ".validate": "newData.isNumber()"
         },
         "isIDVerified": {
           ".write": "auth != null && auth.uid == $uid && (newData.val() == 'none' || newData.val() == 'pending' || newData.val() == data.val())"
         },
         "rating": {
-          ".write": false,
+          ".write": "auth != null && auth.uid == $uid && !data.exists() && newData.val() == 0",
           ".validate": "newData.isNumber()"
         },
         "reviewsCount": {
-          ".write": false,
+          ".write": "auth != null && auth.uid == $uid && !data.exists() && newData.val() == 0",
           ".validate": "newData.isNumber()"
         },
         "tradesCompleted": {
-          ".write": false,
+          ".write": "auth != null && auth.uid == $uid && !data.exists() && newData.val() == 0",
           ".validate": "newData.isNumber()"
         },
         "totalTrades": {
-          ".write": false,
+          ".write": "auth != null && auth.uid == $uid && !data.exists() && newData.val() == 0",
           ".validate": "newData.isNumber()"
         },
         "failedTrades": {
-          ".write": false,
+          ".write": "auth != null && auth.uid == $uid && !data.exists() && newData.val() == 0",
           ".validate": "newData.isNumber()"
         },
         "successRate": {
-          ".write": false,
+          ".write": "auth != null && auth.uid == $uid && !data.exists() && newData.val() == 0",
           ".validate": "newData.isNumber()"
         },
         "weeklyTrades": {
-          ".write": false,
+          ".write": "auth != null && auth.uid == $uid && !data.exists() && newData.val() == 0",
           ".validate": "newData.isNumber()"
         },
         "weeklyReviews": {
-          ".write": false,
+          ".write": "auth != null && auth.uid == $uid && !data.exists() && newData.val() == 0",
           ".validate": "newData.isNumber()"
         },
         "lastRated": {
@@ -76,20 +163,38 @@
           ".validate": "newData.isString()"
         },
         "freeLuckySpins": {
-          ".write": false
+          ".write": "auth != null && auth.uid == $uid && !data.exists() && newData.val() == 0",
+          ".validate": "newData.isNumber()"
         },
         "mysteryBoxes": {
-          ".write": false
+          ".write": "auth != null && auth.uid == $uid && !data.exists() && newData.val() == 0",
+          ".validate": "newData.isNumber()"
         },
         "badges": {
-          ".write": false
+          ".write": false,
+          ".validate": false
         },
         "daily_challenges": {
           ".read": "auth != null && auth.uid == $uid",
-          ".write": "auth != null && auth.uid == $uid"
+          "$date": {
+            ".write": "auth != null && auth.uid == $uid",
+            "$action": {
+              ".validate": "newData.hasChildren(['title', 'action', 'progress', 'target', 'reward', 'completed', 'rewarded']) && newData.child('title').isString() && newData.child('title').val().length <= 80 && newData.child('action').isString() && newData.child('action').val() == $action && ($action == 'post_item' || $action == 'complete_transactions' || $action == 'daily_login' || $action == 'rate_partner' || $action == 'share_app') && newData.child('progress').isNumber() && newData.child('target').isNumber() && newData.child('reward').isNumber() && newData.child('completed').isBoolean() && newData.child('rewarded').isBoolean() && ((!data.exists() && newData.child('rewarded').val() == false) || (data.exists() && newData.child('rewarded').val() == data.child('rewarded').val())) && (newData.child('completed').val() == false || $action == 'daily_login' || ($action == 'post_item' && root.child('post_rewards').child($uid).child($date).child('rewarded').val() == true))",
+              "$other": {
+                ".validate": false
+              }
+            }
+          }
+        },
+        "hidden_game_history": {
+          "$key": {
+            ".write": "auth != null && auth.uid == $uid",
+            ".validate": "newData.val() == true || !newData.exists()"
+          }
         },
         "$other": {
-          ".write": "auth != null && auth.uid == $uid"
+          ".write": false,
+          ".validate": false
         }
       }
     },
@@ -98,29 +203,77 @@
       "$uid": {
         ".read": true,
         ".write": "auth != null && auth.uid == $uid && !data.exists()",
+        "fullName": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().length <= 120"
+        },
+        "username": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().matches(/^[a-z0-9_]{4,20}$/)"
+        },
+        "profileImage": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().length <= 2048"
+        },
+        "profileImageUrl": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().length <= 2048"
+        },
+        "cityMunicipality": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().length <= 120"
+        },
+        "city": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().length <= 120"
+        },
+        "province": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().length <= 120"
+        },
+        "location": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().length <= 500"
+        },
+        "addressText": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isString() && newData.val().length <= 500"
+        },
+        "createdAt": {
+          ".write": "auth != null && auth.uid == $uid && !data.exists()",
+          ".validate": "newData.isNumber()"
+        },
+        "updatedAt": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isNumber()"
+        },
         "isPremium": {
-          ".write": false,
+          ".write": "auth != null && auth.uid == $uid && !data.exists() && newData.val() == false",
           ".validate": "newData.isBoolean()"
         },
         "premiumExpiry": {
-          ".write": false,
+          ".write": "auth != null && auth.uid == $uid && !data.exists() && newData.val() == 0",
           ".validate": "newData.isNumber()"
         },
         "isIDVerified": {
-          ".write": false
+          ".write": "auth != null && auth.uid == $uid && !data.exists() && newData.val() == 'none'",
+          ".validate": "newData.isString()"
         },
         "rating": {
-          ".write": false
+          ".write": "auth != null && auth.uid == $uid && !data.exists() && newData.val() == 0",
+          ".validate": "newData.isNumber()"
         },
         "reviewsCount": {
-          ".write": false
+          ".write": "auth != null && auth.uid == $uid && !data.exists() && newData.val() == 0",
+          ".validate": "newData.isNumber()"
         },
         "badges": {
           ".write": false,
           ".validate": false
         },
         "$other": {
-          ".write": "auth != null && auth.uid == $uid"
+          ".write": false,
+          ".validate": false
         }
       }
     },
@@ -225,7 +378,7 @@
       "$uid": {
         ".read": "auth != null",
         ".write": "auth != null && auth.uid == $uid",
-        ".validate": "newData.hasChildren(['state', 'lastSeen', 'isOnline']) && (newData.child('state').val() == 'online' || newData.child('state').val() == 'offline') && newData.child('isOnline').isBoolean()"
+        ".validate": "newData.hasChildren(['state', 'lastSeen', 'isOnline']) && (newData.child('state').val() == 'online' || newData.child('state').val() == 'offline') && newData.child('lastSeen').isNumber() && newData.child('isOnline').isBoolean()"
       }
     },
     "favorites": {
@@ -377,8 +530,21 @@
         ".read": "auth != null && auth.uid == $userId",
         "$chatId": {
           ".read": "auth != null && auth.uid == $userId",
-          ".write": "auth != null && auth.uid == $userId",
-          ".validate": "!newData.exists() || newData.hasChildren(['chatId', 'partnerId', 'partnerName', 'lastMessage', 'lastMessageTime', 'unreadCount'])"
+          "unreadCount": {
+            ".write": "auth != null && auth.uid == $userId && newData.isNumber() && newData.val() == 0"
+          },
+          "deleted": {
+            ".write": "auth != null && auth.uid == $userId && newData.isBoolean()"
+          },
+          "deletedAt": {
+            ".write": "auth != null && auth.uid == $userId && newData.isNumber()"
+          },
+          "archived": {
+            ".write": "auth != null && auth.uid == $userId && newData.isBoolean()"
+          },
+          "$other": {
+            ".write": false
+          }
         }
       }
     },
@@ -386,6 +552,7 @@
       "$chatId": {
         ".read": "auth != null && (!data.exists() || data.child('participants').child(auth.uid).val() == true || data.child('participantIds').child(auth.uid).val() == true || data.child('buyerId').val() == auth.uid || data.child('sellerId').val() == auth.uid || data.child('senderId').val() == auth.uid || data.child('receiverId').val() == auth.uid || data.child('user1Id').val() == auth.uid || data.child('user2Id').val() == auth.uid)",
         ".write": "auth != null && !data.exists() && (newData.child('participants').child(auth.uid).val() == true || newData.child('participantIds').child(auth.uid).val() == true || newData.child('buyerId').val() == auth.uid || newData.child('sellerId').val() == auth.uid || newData.child('senderId').val() == auth.uid || newData.child('receiverId').val() == auth.uid || newData.child('user1Id').val() == auth.uid || newData.child('user2Id').val() == auth.uid)",
+        ".validate": "!newData.exists() || (newData.hasChildren(['participants', 'participantIds', 'user1Id', 'user2Id', 'createdAt']) && newData.child('user1Id').isString() && newData.child('user2Id').isString() && newData.child('user1Id').val() != newData.child('user2Id').val() && newData.child('participants').child(newData.child('user1Id').val()).val() == true && newData.child('participants').child(newData.child('user2Id').val()).val() == true && newData.child('participantIds').child(newData.child('user1Id').val()).val() == true && newData.child('participantIds').child(newData.child('user2Id').val()).val() == true && newData.child('createdAt').isNumber())",
         "messages": {
           "$messageId": {
             ".read": "auth != null && (root.child('chats').child($chatId).child('participants').child(auth.uid).val() == true || root.child('chats').child($chatId).child('participantIds').child(auth.uid).val() == true || root.child('chats').child($chatId).child('buyerId').val() == auth.uid || root.child('chats').child($chatId).child('sellerId').val() == auth.uid || root.child('chats').child($chatId).child('senderId').val() == auth.uid || root.child('chats').child($chatId).child('receiverId').val() == auth.uid || root.child('chats').child($chatId).child('user1Id').val() == auth.uid || root.child('chats').child($chatId).child('user2Id').val() == auth.uid)",
@@ -402,15 +569,11 @@
             }
           }
         },
-        "lastMessage": {
-          ".write": "auth != null && (root.child('chats').child($chatId).child('participants').child(auth.uid).val() == true || root.child('chats').child($chatId).child('participantIds').child(auth.uid).val() == true || root.child('chats').child($chatId).child('buyerId').val() == auth.uid || root.child('chats').child($chatId).child('sellerId').val() == auth.uid || root.child('chats').child($chatId).child('senderId').val() == auth.uid || root.child('chats').child($chatId).child('receiverId').val() == auth.uid || root.child('chats').child($chatId).child('user1Id').val() == auth.uid || root.child('chats').child($chatId).child('user2Id').val() == auth.uid)"
-        },
-        "lastMessageTime": {
-          ".write": "auth != null && (root.child('chats').child($chatId).child('participants').child(auth.uid).val() == true || root.child('chats').child($chatId).child('participantIds').child(auth.uid).val() == true || root.child('chats').child($chatId).child('buyerId').val() == auth.uid || root.child('chats').child($chatId).child('sellerId').val() == auth.uid || root.child('chats').child($chatId).child('senderId').val() == auth.uid || root.child('chats').child($chatId).child('receiverId').val() == auth.uid || root.child('chats').child($chatId).child('user1Id').val() == auth.uid || root.child('chats').child($chatId).child('user2Id').val() == auth.uid)"
-        },
+        "lastMessage": { ".write": false },
+        "lastMessageTime": { ".write": false },
         "unreadCount": {
           "$uid": {
-            ".write": "auth != null && (auth.uid == $uid || root.child('chats').child($chatId).child('participants').child(auth.uid).val() == true || root.child('chats').child($chatId).child('participantIds').child(auth.uid).val() == true || root.child('chats').child($chatId).child('buyerId').val() == auth.uid || root.child('chats').child($chatId).child('sellerId').val() == auth.uid || root.child('chats').child($chatId).child('senderId').val() == auth.uid || root.child('chats').child($chatId).child('receiverId').val() == auth.uid || root.child('chats').child($chatId).child('user1Id').val() == auth.uid || root.child('chats').child($chatId).child('user2Id').val() == auth.uid)"
+            ".write": "auth != null && auth.uid == $uid && newData.isNumber() && newData.val() == 0"
           }
         },
         "archivedBy": {
@@ -423,7 +586,7 @@
     "trade_requests": {
       "$requestId": {
         ".read": "auth != null && (data.child('fromUserId').val() == auth.uid || data.child('toUserId').val() == auth.uid || data.child('requesterId').val() == auth.uid || data.child('receiverId').val() == auth.uid || data.child('fromUser').child('userId').val() == auth.uid || data.child('toUser').child('userId').val() == auth.uid)",
-        ".write": "auth != null && ((!data.exists() && newData.exists() && newData.child('status').val() != 'Completed' && (newData.child('fromUserId').val() == auth.uid || newData.child('requesterId').val() == auth.uid || newData.child('fromUser').child('userId').val() == auth.uid) && (newData.child('toUserId').isString() || newData.child('receiverId').isString() || newData.child('toUser').child('userId').isString())) || (data.exists() && newData.exists() && !(newData.child('status').val() == 'Completed' && data.child('status').val() != 'Completed') && (data.child('fromUserId').val() == auth.uid || data.child('toUserId').val() == auth.uid || data.child('requesterId').val() == auth.uid || data.child('receiverId').val() == auth.uid || data.child('fromUser').child('userId').val() == auth.uid || data.child('toUser').child('userId').val() == auth.uid) && newData.child('fromUserId').val() == data.child('fromUserId').val() && newData.child('toUserId').val() == data.child('toUserId').val() && newData.child('requesterId').val() == data.child('requesterId').val() && newData.child('receiverId').val() == data.child('receiverId').val()))",
+        ".write": "auth != null && ((!data.exists() && newData.exists() && newData.child('status').val() == 'Pending' && (newData.child('fromUserId').val() == auth.uid || newData.child('requesterId').val() == auth.uid || newData.child('fromUser').child('userId').val() == auth.uid) && (newData.child('toUserId').isString() || newData.child('receiverId').isString() || newData.child('toUser').child('userId').isString())) || (data.exists() && newData.exists() && data.child('status').val() == 'Pending' && newData.child('status').val() == 'Declined' && (data.child('toUserId').val() == auth.uid || data.child('receiverId').val() == auth.uid || data.child('toUser').child('userId').val() == auth.uid) && newData.child('fromUserId').val() == data.child('fromUserId').val() && newData.child('toUserId').val() == data.child('toUserId').val() && newData.child('requesterId').val() == data.child('requesterId').val() && newData.child('receiverId').val() == data.child('receiverId').val() && newData.child('fromUser').child('userId').val() == data.child('fromUser').child('userId').val() && newData.child('toUser').child('userId').val() == data.child('toUser').child('userId').val()))",
         "requestId": { ".validate": "newData.isString() && newData.val() == $requestId" },
         "itemId": { ".validate": "newData.isString()" },
         "owner": { ".validate": "newData.isString()" },
@@ -439,7 +602,7 @@
         "targetItem": { ".validate": "newData.hasChildren(['itemId', 'title']) && newData.child('itemId').isString() && newData.child('title').isString()" },
         "offeredItem": { ".validate": "newData.hasChildren(['title']) && newData.child('title').isString()" },
         "message": { ".validate": "newData.isString()" },
-        "status": { ".validate": "newData.isString() && (newData.val() == 'Pending' || newData.val() == 'Accepted' || newData.val() == 'Declined' || newData.val() == 'Rejected' || newData.val() == 'Completed' || newData.val() == 'Cancelled')" },
+        "status": { ".validate": "newData.isString() && (newData.val() == 'Pending' || newData.val() == 'Accepted' || newData.val() == 'Declined' || newData.val() == 'Completed')" },
         "preferredMeetup": { ".validate": "newData.isString()" },
         "date": { ".validate": "newData.isNumber()" },
         "timestamp": { ".validate": "newData.isNumber()" },
@@ -465,7 +628,7 @@
     "trade_events": {
       ".read": "auth != null",
       "$eventId": {
-        ".write": "auth != null && newData.child('fromUserId').val() == auth.uid",
+        ".write": false,
         ".validate": "newData.hasChildren(['type', 'toUserId', 'fromUserId', 'chatId', 'timestamp'])"
       }
     },
