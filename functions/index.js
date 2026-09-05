@@ -1272,3 +1272,6 @@ const tradeCompletionStats = require("./rewards/tradeCompletionStats");
 
 exports.processCompletedTradeStats =
   tradeCompletionStats.processCompletedTradeStats;
+
+exports.acceptTradeRequest =
+  require("./acceptTradeRequest").acceptTradeRequest;
