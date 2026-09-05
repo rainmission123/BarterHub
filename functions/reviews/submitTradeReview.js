@@ -6,6 +6,16 @@ if (!admin.apps.length) {
 }
 
 const db = admin.database();
+const SAFE_KEY_PATTERN = /^[^.#$/[\]]+$/;
+
+function isSafeRtdbKey(value, maxLength) {
+  return (
+    typeof value === "string" &&
+    value.length > 0 &&
+    value.length <= maxLength &&
+    SAFE_KEY_PATTERN.test(value)
+  );
+}
 
 exports.submitTradeReview = onCall(
     {
@@ -30,12 +40,20 @@ exports.submitTradeReview = onCall(
       const rating = data.rating;
       const comment = data.comment;
 
-      if (!tradeId || typeof tradeId !== "string") {
+      if (!isSafeRtdbKey(tradeId, 256)) {
         throw new HttpsError("invalid-argument", "Missing tradeId.");
       }
 
-      if (!reviewedUserId || typeof reviewedUserId !== "string") {
+      if (!isSafeRtdbKey(reviewedUserId, 128)) {
         throw new HttpsError("invalid-argument", "Missing reviewedUserId.");
+      }
+
+      if (chatId && !isSafeRtdbKey(chatId, 300)) {
+        throw new HttpsError("invalid-argument", "Invalid chatId.");
+      }
+
+      if (messageId && !isSafeRtdbKey(messageId, 256)) {
+        throw new HttpsError("invalid-argument", "Invalid messageId.");
       }
 
       if (reviewedUserId === uid) {
@@ -57,19 +75,11 @@ exports.submitTradeReview = onCall(
 
       const tradeSnap = await db.ref("trade_requests/" + tradeId).get();
 
-      console.log("===== submitTradeReview =====");
-      console.log("tradeId:", tradeId);
-
       if (!tradeSnap.exists()) {
-        console.log("trade key exists = false");
         throw new HttpsError("not-found", "Trade not found.");
       }
 
-      console.log("trade key exists = true");
-
       const trade = tradeSnap.val() || {};
-
-      console.log("trade.status =", trade.status);
 
       const fromUid =
         (trade.fromUser && trade.fromUser.userId) ||

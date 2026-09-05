@@ -4,6 +4,16 @@ const admin = require("firebase-admin");
 
 const PRIOR_RATING = 4.0;
 const PRIOR_COUNT = 5;
+const SAFE_KEY_PATTERN = /^[^.#$/[\]]+$/;
+
+function isSafeRtdbKey(value, maxLength) {
+  return (
+    typeof value === "string" &&
+    value.length > 0 &&
+    value.length <= maxLength &&
+    SAFE_KEY_PATTERN.test(value)
+  );
+}
 
 /**
  * Recalculates trusted rating for a user.
@@ -12,7 +22,7 @@ const PRIOR_COUNT = 5;
  * @return {Promise<object|null>} Rating result.
  */
 async function recalculateTrustedRating(uid) {
-  if (!uid || typeof uid !== "string") {
+  if (!isSafeRtdbKey(uid, 128)) {
     return null;
   }
 
@@ -107,7 +117,7 @@ exports.backfillTrustedRating = onCall(async (request) => {
 
   const uid = request.data && request.data.uid;
 
-  if (!uid || typeof uid !== "string") {
+  if (!isSafeRtdbKey(uid, 128)) {
     throw new HttpsError("invalid-argument", "uid is required.");
   }
 

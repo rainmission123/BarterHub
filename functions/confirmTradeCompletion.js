@@ -8,6 +8,16 @@ if (!admin.apps.length) {
 }
 
 const db = admin.database();
+const SAFE_KEY_PATTERN = /^[^.#$/[\]]+$/;
+
+function isSafeRtdbKey(value, maxLength) {
+  return (
+    typeof value === "string" &&
+    value.length > 0 &&
+    value.length <= maxLength &&
+    SAFE_KEY_PATTERN.test(value)
+  );
+}
 
 exports.confirmTradeCompletion = onCall(
     {
@@ -29,8 +39,16 @@ exports.confirmTradeCompletion = onCall(
       const clientChatId = String(data.chatId || "").trim();
       const messageId = String(data.messageId || "").trim();
 
-      if (!tradeId) {
+      if (!isSafeRtdbKey(tradeId, 256)) {
         throw new HttpsError("invalid-argument", "Missing tradeId.");
+      }
+
+      if (clientChatId && !isSafeRtdbKey(clientChatId, 300)) {
+        throw new HttpsError("invalid-argument", "Invalid chatId.");
+      }
+
+      if (messageId && !isSafeRtdbKey(messageId, 256)) {
+        throw new HttpsError("invalid-argument", "Invalid messageId.");
       }
 
       const tradeSnap = await db.ref("trade_requests/" + tradeId).get();
@@ -46,6 +64,10 @@ exports.confirmTradeCompletion = onCall(
 
       if (!chatId) {
         throw new HttpsError("failed-precondition", "Missing chatId.");
+      }
+
+      if (!isSafeRtdbKey(chatId, 300)) {
+        throw new HttpsError("failed-precondition", "Invalid chatId.");
       }
 
       if (!fromUid || !toUid) {

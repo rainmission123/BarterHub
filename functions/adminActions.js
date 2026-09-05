@@ -3,6 +3,16 @@ const logger = require("firebase-functions/logger");
 const admin = require("firebase-admin");
 
 const ID_STORAGE_BUCKET = "barterhub-3c947.firebasestorage.app";
+const SAFE_KEY_PATTERN = /^[^.#$/[\]]+$/;
+
+function isSafeRtdbKey(value, maxLength) {
+  return (
+    typeof value === "string" &&
+    value.length > 0 &&
+    value.length <= maxLength &&
+    SAFE_KEY_PATTERN.test(value)
+  );
+}
 
 /**
  * Verifies that the callable request is from an admin user.
@@ -40,9 +50,11 @@ async function requireAdmin(request) {
  * @return {string} Target user uid.
  */
 function requireUid(data) {
-  const uid = data && data.uid;
+  const uid = typeof (data && data.uid) === "string" ?
+    data.uid.trim() :
+    "";
 
-  if (!uid || typeof uid !== "string") {
+  if (!isSafeRtdbKey(uid, 128)) {
     throw new HttpsError("invalid-argument", "A valid uid is required.");
   }
 
@@ -93,7 +105,9 @@ exports.adminRejectAccountDeletion = onCall(
       const adminUid = await requireAdmin(request);
       const data = request.data || {};
       const uid = requireUid(data);
-      const reason = String(data.reason || "Rejected by admin.");
+      const reason = String(data.reason || "Rejected by admin.")
+          .trim()
+          .slice(0, 500);
       const now = Date.now();
 
       const updates = {};
@@ -127,7 +141,9 @@ exports.adminCompleteAccountDeletion = onCall(
       const adminUid = await requireAdmin(request);
       const data = request.data || {};
       const uid = requireUid(data);
-      const note = String(data.note || "Processed by admin.");
+      const note = String(data.note || "Processed by admin.")
+          .trim()
+          .slice(0, 500);
       const now = Date.now();
 
       const requestSnap = await admin.database()
