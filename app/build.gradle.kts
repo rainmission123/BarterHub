@@ -77,6 +77,8 @@ dependencies {
     implementation(libs.firebase.storage.ktx)
     implementation(libs.firebase.messaging.ktx)
     implementation("com.google.firebase:firebase-functions-ktx")
+    implementation("com.google.firebase:firebase-appcheck-playintegrity")
+    debugImplementation("com.google.firebase:firebase-appcheck-debug")
 
     // Mapbox
     implementation("com.mapbox.maps:android:10.16.1")

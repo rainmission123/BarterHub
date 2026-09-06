@@ -10,6 +10,8 @@ import com.google.android.gms.ads.LoadAdError
 import android.util.Log
 import com.google.android.gms.ads.RequestConfiguration
 import com.example.barterhub.utils.UserPresenceManager
+import com.google.firebase.FirebaseApp
+import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.auth.FirebaseAuth
 
 class MyApplication : Application(), Application.ActivityLifecycleCallbacks {
@@ -30,6 +32,7 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks {
 
     override fun onCreate() {
         super.onCreate()
+        initializeAppCheck()
 
         // Initialize AdMob
         MobileAds.initialize(this) { initializationStatus ->
@@ -111,6 +114,12 @@ class MyApplication : Application(), Application.ActivityLifecycleCallbacks {
         } else {
             Log.d("AdMob", "Ad not ready to show")
         }
+    }
+
+    private fun initializeAppCheck() {
+        FirebaseApp.initializeApp(this)
+        FirebaseAppCheck.getInstance()
+            .installAppCheckProviderFactory(getAppCheckProviderFactory())
     }
 
     /** Activity Lifecycle Callbacks */
